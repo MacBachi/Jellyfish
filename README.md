@@ -56,8 +56,52 @@ Changes so far, relative to the original `main`:
   are configured.
 - **Small fixes.** An out-of-bounds read in the default mode, a noodle index bug in the ambient effect that
   only showed with more than four tentacles, a clamp on the noodle PWM level, non-copyable driver classes.
+- **WLAN between jellies.** One jelly becomes the access point, the others join it, and everything is kept in
+  step: display mode, brightness, hue offset, the animation clock, and beats. Buttons on any jelly switch all
+  of them. See below for how to use it.
+- **Two palette modes.** Every jelly gets its own base colour from an 8-entry palette (the AP hands out colour
+  slots as jellies join); the cycle variant rotates all jellies one colour further every 10 s with a smooth
+  blend, in sync.
+- **Identify.** A command makes the AP jelly blink red three times while all others blink blue in the same
+  rhythm, so you can tell which one runs the network.
 
-Planned next: enabling the Pico 2 W's WLAN, then looking at more strips.
+Planned next: a small web page served by the AP jelly for phones (runtime control only, never persistent
+configuration changes), and re-election details.
+
+### Using the WLAN
+
+Every jelly runs the same firmware. On power-up it listens for the jelly network for a random 10 to 120
+seconds. If it hears one it joins as a station; if not, it listens through one more scan and then becomes
+the access point itself. So: switch the first jelly on, wait for its onboard LED to go solid, then switch
+on the rest. If the AP jelly disappears, the others keep their last state and start a new election.
+
+- Network name is the jellyfish emoji 🪼, password `FroschUndMaus`. Both can be changed at build time with
+  the compile definitions `JELL_WIFI_SSID` and `JELL_WIFI_PASSWORD` (see `jell_config.hpp`).
+- Joining the network is the only access control. Anyone on it can control the bloom.
+- Onboard LED: fast blink = looking for a network, solid = access point, slow blink = station.
+
+Control is one plain-text line per UDP datagram on port 4210. From a laptop on the jelly network:
+
+```
+nc -u 192.168.4.1 4210          # then type commands, one per line
+nc -lu 4210                     # in a second terminal: watch heartbeats, beats and replies
+```
+
+| Command | Effect |
+|---|---|
+| `MODE n`, `NEXT`, `PREV` | switch the display mode on every jelly |
+| `BRIGHT 0..1` | overall brightness |
+| `HUE deg` | shift every colour by this many degrees |
+| `CYCLE s` | period of the palette cycle mode |
+| `IDENT` | AP blinks red three times, all others blue |
+| `HELLO` | roll call: every jelly answers with its id, role, colour slot and IP |
+| `BEAT` | trigger a beat on all jellies (for testing the drops mode) |
+
+Modes in button order: mic level check, LED channel test, mic field (default), drops, palette, palette cycle,
+ambient rainbow, ambient deep sea.
+
+The USB serial console prints the election, role changes, every command sent or received, and the time
+offset a station keeps to the AP's clock.
 
 ## License
 

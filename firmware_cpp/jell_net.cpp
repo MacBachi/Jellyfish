@@ -168,10 +168,19 @@ namespace
     // ------------------------------------------------------------------ lwIP / cyw43 callbacks
 
     // IRQ context: copy the datagram into the queue, nothing else.
-    void on_udp_recv(void*, udp_pcb*, pbuf* p, const ip_addr_t*, u16_t)
+    void on_udp_recv(void*, udp_pcb*, pbuf* p, const ip_addr_t* from, u16_t)
     {
         if (p == nullptr)
             return;
+
+        // Never act on our own broadcasts, should the radio ever reflect them back.
+        // (The AP re-sends a BEAT it receives, which would otherwise loop forever.)
+        if (interface_up() && from != nullptr
+            && ip4_addr_cmp(ip_2_ip4(from), netif_ip4_addr(&cyw43_state.netif[itf()])))
+        {
+            pbuf_free(p);
+            return;
+        }
 
         const int next = (rx_head + 1) % RX_QUEUE_SIZE;
         if (next != rx_tail)
