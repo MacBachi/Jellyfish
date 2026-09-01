@@ -693,7 +693,7 @@ void Net::poll()
         current_rx_us = 0;
     }
 
-    switch (role)
+    switch (::role) // the variable; unqualified `role` here is the accessor Net::role()
     {
     case Role::Scanning:
         if (ssid_seen)

@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include "pico/stdlib.h"
+#include "hardware/sync.h" // __dmb
 #include "jell_config.hpp"
 
 // Everything core 1 needs to render a frame. Core 0 owns it: the buttons and the network
