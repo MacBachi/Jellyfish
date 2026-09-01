@@ -30,7 +30,8 @@ jobs:
 
   release:
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Only the original repository publishes releases; forks just build.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'Sheffield-by-the-sea/Jellyfish'
     runs-on: ubuntu-latest
 
     permissions:
