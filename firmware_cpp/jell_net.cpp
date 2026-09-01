@@ -16,7 +16,10 @@
 #include "lwip/netif.h"
 #include "lwip/ip_addr.h"
 
-#include "dhcpserver.h"
+extern "C"
+{
+#include "dhcpserver.h" // plain C from pico-examples
+}
 #include "jell_config.hpp"
 #include "jell_state.hpp"
 
