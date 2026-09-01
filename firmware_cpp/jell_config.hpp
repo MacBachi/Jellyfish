@@ -61,5 +61,33 @@ public:
     // Identify: the AP jelly blinks red, all others blue, IDENT_BLINKS times in step.
     static constexpr float IDENT_BLINK_PERIOD_S = 0.5f;
     static constexpr int IDENT_BLINKS = 3;
+
+    // --- Network ---
+    // Every jelly runs the same firmware. On boot it looks for this network; if it finds
+    // it, it joins as a station, otherwise it becomes the access point itself. Any device
+    // that joins the network can control the bloom; there is no further authentication.
+    //
+    // Defaults can be overridden without editing this file, e.g. in CMake:
+    //   target_compile_definitions(JellyOS PRIVATE JELL_WIFI_SSID="bloom" JELL_WIFI_PASSWORD="secret123")
+#ifndef JELL_WIFI_SSID
+#define JELL_WIFI_SSID "\xF0\x9F\xAA\xBC" // the jellyfish emoji U+1FABC as UTF-8; an SSID is just bytes
+#endif
+#ifndef JELL_WIFI_PASSWORD
+#define JELL_WIFI_PASSWORD "FroschUndMaus" // WPA2, at least 8 characters
+#endif
+    static constexpr const char* WIFI_SSID = JELL_WIFI_SSID;
+    static constexpr const char* WIFI_PASSWORD = JELL_WIFI_PASSWORD;
+
+    static constexpr uint16_t NET_PORT = 4210;               // UDP, one text line per datagram
+
+    // Election: a jelly that finds no network keeps listening for a random time in this
+    // range, then listens through one more full scan, and only then becomes the AP.
+    static constexpr uint32_t NET_ELECTION_MIN_MS = 10000;
+    static constexpr uint32_t NET_ELECTION_MAX_MS = 120000;
+    static constexpr uint32_t NET_JOIN_TIMEOUT_MS = 15000;   // give up joining and go back to the election
+    static constexpr uint32_t NET_STATE_PERIOD_MS = 1000;    // AP: heartbeat with the full state
+    static constexpr uint32_t NET_STATE_MIN_GAP_MS = 50;     // AP: throttle for state-after-change
+    static constexpr uint32_t NET_HELLO_RETRY_MS = 5000;     // station: ask for a colour slot until it has one
+    static constexpr int NET_MAX_JELLIES = 16;               // roster size on the AP
 };
 #endif

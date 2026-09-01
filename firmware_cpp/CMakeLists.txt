@@ -47,6 +47,8 @@ add_executable(JellyOS
         jell_config.hpp
         jell_state.hpp
         jell_beat.cpp
+        jell_net.cpp
+        dhcpserver.c
 )
 
 pico_generate_pio_header(JellyOS ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
@@ -73,10 +75,12 @@ target_include_directories(JellyOS PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-# Add any user requested libraries
-target_link_libraries(JellyOS 
-        #pico_cyw43_arch_lwip_poll
-        #pico_cyw43_arch_lwip_threadsafe_background
+# WLAN: CYW43 driver plus lwIP, run from a background IRQ on the core that calls
+# cyw43_arch_init (core 0). lwipopts.h in this directory configures lwIP.
+target_link_libraries(JellyOS
+        pico_cyw43_arch_lwip_threadsafe_background
+        pico_unique_id
+        pico_rand
         )
 
 pico_add_extra_outputs(JellyOS)

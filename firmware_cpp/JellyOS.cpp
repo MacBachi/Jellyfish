@@ -11,6 +11,7 @@
 #include "jell_effects.hpp"
 #include "jell_state.hpp"
 #include "jell_beat.hpp"
+#include "jell_net.hpp"
 
 namespace {
     constexpr uint BUTTON_PREV = 19;
@@ -18,12 +19,9 @@ namespace {
     constexpr uint LOOP_SLEEP_DURATION_MS = 20;
 }
 
-// Shared between the cores, see jell_state.hpp.
+// Shared between the cores, see jell_state.hpp. Core 0 (jell_net) writes, core 1 reads.
 SharedState g_state;
 volatile uint32_t g_local_beat_count = 0;
-
-// Core 0's own copy of the state; every change goes through here and then into g_state.
-JellState core0_state;
 
 // --- Global State ---
 // Initialize LEDs     
@@ -52,16 +50,6 @@ PwmLight noodles[JellConfig::NUMBER_OF_NOODLES] = {
 Microphone mic(256);
 
 Canvas canvas(ring, spokes, noodles);
-
-//button helpers
-void step_mode(int delta)
-{
-    constexpr int count = static_cast<int>(JellConfig::DisplayMode::Count);
-    int mode = static_cast<int>(core0_state.mode);
-    mode = ((mode + delta) % count + count) % count;
-    core0_state.mode = static_cast<JellConfig::DisplayMode>(mode);
-    g_state.write(core0_state);
-}
 
 // Identify: the AP jelly blinks red, every other jelly blue, IDENT_BLINKS times in step
 // with each other (the blink phase comes from the shared master time). Returns true
@@ -242,8 +230,11 @@ bool render_ident(const JellState& s, int64_t master_us)
         }
     }
 
-    g_state.write(core0_state);
+    g_state.write(JellState{});
     multicore_launch_core1(core1_entry);
+
+    // Radio and role election; the LEDs are already running on core 1 by now.
+    Net::init();
 
     bool last_prev = false;
     bool last_next = false;
@@ -253,18 +244,21 @@ bool render_ident(const JellState& s, int64_t master_us)
         const bool prev = !gpio_get(BUTTON_PREV);
         const bool next = !gpio_get(BUTTON_NEXT);
 
+        // Buttons act on every jelly: the new mode is announced to the network.
         if (prev && !last_prev)
         {
-            step_mode(-1);
+            Net::handle_line("PREV", true);
         }
 
         if (next && !last_next)
         {
-            step_mode(+1);
+            Net::handle_line("NEXT", true);
         }
 
         last_prev = prev;
         last_next = next;
+
+        Net::poll();
 
         sleep_ms(LOOP_SLEEP_DURATION_MS);
     }
