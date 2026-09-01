@@ -9,6 +9,8 @@
 #include "jell_canvas.hpp"
 #include "jell_config.hpp"
 #include "jell_effects.hpp"
+#include "jell_state.hpp"
+#include "jell_beat.hpp"
 
 namespace {
     constexpr uint BUTTON_PREV = 19;
@@ -16,7 +18,12 @@ namespace {
     constexpr uint LOOP_SLEEP_DURATION_MS = 20;
 }
 
-volatile auto display_mode = JellConfig::DEFAULT_DISPLAY_MODE;
+// Shared between the cores, see jell_state.hpp.
+SharedState g_state;
+volatile uint32_t g_local_beat_count = 0;
+
+// Core 0's own copy of the state; every change goes through here and then into g_state.
+JellState core0_state;
 
 // --- Global State ---
 // Initialize LEDs     
@@ -47,18 +54,36 @@ Microphone mic(256);
 Canvas canvas(ring, spokes, noodles);
 
 //button helpers
-void next_mode()
+void step_mode(int delta)
 {
-    int mode = static_cast<int>(display_mode);
-    mode = (mode + 1) % static_cast<int>(JellConfig::DisplayMode::Count);
-    display_mode = static_cast<JellConfig::DisplayMode>(mode);
+    constexpr int count = static_cast<int>(JellConfig::DisplayMode::Count);
+    int mode = static_cast<int>(core0_state.mode);
+    mode = ((mode + delta) % count + count) % count;
+    core0_state.mode = static_cast<JellConfig::DisplayMode>(mode);
+    g_state.write(core0_state);
 }
 
-void previous_mode()
+// Identify: the AP jelly blinks red, every other jelly blue, IDENT_BLINKS times in step
+// with each other (the blink phase comes from the shared master time). Returns true
+// while it is drawing, in which case the normal effect is skipped for this frame.
+bool render_ident(const JellState& s, int64_t master_us)
 {
-    int mode = static_cast<int>(display_mode);
-    mode = (mode - 1 + static_cast<int>(JellConfig::DisplayMode::Count)) % static_cast<int>(JellConfig::DisplayMode::Count);
-    display_mode = static_cast<JellConfig::DisplayMode>(mode);
+    if (s.ident_start_master_us == 0)
+        return false;
+
+    const int64_t period_us = (int64_t)(JellConfig::IDENT_BLINK_PERIOD_S * 1e6f);
+    const int64_t elapsed_us = master_us - s.ident_start_master_us;
+
+    if (elapsed_us < 0 || elapsed_us >= period_us * JellConfig::IDENT_BLINKS)
+        return false;
+
+    const bool on = (elapsed_us % period_us) < period_us / 2;
+
+    canvas.set_global(1.0f, 0.0f); // true red / blue regardless of the current hue offset
+    canvas.all_pixels_hsv(s.is_ap ? 0.0f : 240.0f, 1.0f, on ? 1.0f : 0.0f);
+    canvas.all_noodles_level(on ? 1.0f : 0.0f);
+    canvas.show();
+    return true;
 }
 
 
@@ -67,9 +92,23 @@ void previous_mode()
 // This runs ONLY on Core 1
 [[noreturn]] void core1_entry()
 {
+    static BeatDetector beat_detector;
+    static uint32_t seen_network_beats = 0;
+
     while (true)
     {
-        switch (display_mode)
+        const JellState s = g_state.read();
+
+        // Master time: the AP's clock, which every station follows via time_offset_us.
+        const int64_t master_us = (int64_t)time_us_64() + s.time_offset_us;
+        const float time = (float)master_us * 1e-6f;
+
+        if (render_ident(s, master_us))
+            continue;
+
+        canvas.set_global(s.brightness, s.hue_offset);
+
+        switch (s.mode)
         {
         case JellConfig::DisplayMode::micLevelCheck:
             {
@@ -90,7 +129,6 @@ void previous_mode()
         case JellConfig::DisplayMode::Mic_NField:
             {
                 AudioFrame audio = mic.capture();
-                float time = time_us_64() * 1e-6f;
                 effect_micNField(canvas, audio, time);
                 break;
             }
@@ -98,21 +136,46 @@ void previous_mode()
         case JellConfig::DisplayMode::Mic_Drops:
             {
                 AudioFrame audio = mic.capture();
-                float time = time_us_64() * 1e-6f;
-                effect_micDrops(canvas, audio, time);
+
+                bool beat;
+                if (s.follow_network_beats)
+                {
+                    // Station: drop whenever the AP told us it heard a beat.
+                    beat = (s.beat_count != seen_network_beats);
+                    seen_network_beats = s.beat_count;
+                }
+                else
+                {
+                    // AP or lone jelly: listen ourselves, and let core 0 tell the others.
+                    beat = beat_detector.update(audio.level);
+                    if (beat)
+                        g_local_beat_count = g_local_beat_count + 1;
+                }
+
+                effect_micDrops(canvas, audio, time, beat);
+                break;
+            }
+
+        case JellConfig::DisplayMode::Palette:
+            {
+                effect_palette(canvas, time, palette_hue(s.slot, time, s.cycle_period_s, false));
+                break;
+            }
+
+        case JellConfig::DisplayMode::Palette_Cycle:
+            {
+                effect_palette(canvas, time, palette_hue(s.slot, time, s.cycle_period_s, true));
                 break;
             }
 
         case JellConfig::DisplayMode::Ambient_Rainbow:
             {
-                float time = time_us_64() * 1e-6f;
                 effect_ambientNField(canvas, time, 1.0f, 220.0f, 360.0f, 0.15f);
                 break;
             }
 
         case JellConfig::DisplayMode::Ambient_Deepsea:
             {
-                float time = time_us_64() * 1e-6f;
                 effect_ambientNField(canvas, time, 2.0f, 220.0f, 100.0f, 0.8f);
                 break;
             }
@@ -179,6 +242,7 @@ void previous_mode()
         }
     }
 
+    g_state.write(core0_state);
     multicore_launch_core1(core1_entry);
 
     bool last_prev = false;
@@ -191,12 +255,12 @@ void previous_mode()
 
         if (prev && !last_prev)
         {
-            previous_mode();
+            step_mode(-1);
         }
 
         if (next && !last_next)
         {
-            next_mode();
+            step_mode(+1);
         }
 
         last_prev = prev;

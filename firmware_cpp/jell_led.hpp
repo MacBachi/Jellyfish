@@ -88,14 +88,16 @@ public:
     }
 
 
-    void paint_string()
+    // Send the buffer to the strip. brightness (0..1) and hue_offset (degrees) are applied
+    // only in the conversion to RGB; the stored HSV values stay untouched.
+    void paint_string(float brightness = 1.0f, float hue_offset = 0.0f)
     {
         for (int i = 0; i < numLEDs; i++)
         {
             uint8_t r_out, g_out, b_out;
 
             // Convert the "Live" HSV state to RGB just for the hardware
-            hsv_to_rgb(h_buf[i], s_buf[i], v_buf[i], r_out, g_out, b_out);
+            hsv_to_rgb(h_buf[i] + hue_offset, s_buf[i], v_buf[i] * brightness, r_out, g_out, b_out);
 
             uint32_t pixel;
 

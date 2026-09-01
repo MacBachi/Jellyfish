@@ -18,6 +18,19 @@ namespace
         last_us = now_us;
         return std::min(dt, 0.1f);
     }
+
+    // Interpolate between two hues the short way round the colour circle.
+    float hue_lerp_shortest(float a, float b, float t)
+    {
+        const float d = fmodf(b - a + 540.0f, 360.0f) - 180.0f; // -180..180
+        return fmodf(a + d * t + 360.0f, 360.0f);
+    }
+
+    float smoothstep01(float t)
+    {
+        t = std::clamp(t, 0.0f, 1.0f);
+        return t * t * (3.0f - 2.0f * t);
+    }
 }
 
 void effect_miclevelCheck(
@@ -117,7 +130,7 @@ void effect_micNField(Canvas& canvas, const AudioFrame& audio, float time)
                 i,
                 220.0f + (n * n * 100),
                 1.0f,
-                audio.smoothed_level * JellConfig::BRIGHTNESS_MODIFIER);
+                audio.smoothed_level);
         }
     }
 
@@ -131,14 +144,11 @@ void effect_micNField(Canvas& canvas, const AudioFrame& audio, float time)
     canvas.show();
 }
 
-void effect_micDrops(Canvas& canvas, const AudioFrame& audio, float time)
+void effect_micDrops(Canvas& canvas, const AudioFrame& audio, float time, bool beat)
 {
     // --- Tunables ---
     constexpr float TRAIL_TAU_S = 0.12f;           // afterglow behind a drop head
     constexpr float DROP_SPEED_LEDS_PER_S = 30.0f; // how fast a drop runs down a tentacle
-    constexpr float BEAT_MIN_LEVEL = 0.5f;         // level a frame needs to count as a beat...
-    constexpr float BEAT_MIN_RISE = 0.15f;         // ...and how much it must have jumped since the last frame
-    constexpr float BEAT_HOLDOFF_S = 0.25f;        // no two beats closer than this
     constexpr float FLASH_TAU_S = 0.25f;           // ring and noodle flash decay after a beat
     constexpr float IDLE_DROP_EVERY_S = 1.5f;      // in silence, a lone drop now and then
     constexpr float HUE_IDLE = 220.0f;
@@ -146,7 +156,6 @@ void effect_micDrops(Canvas& canvas, const AudioFrame& audio, float time)
 
     // --- State ---
     static uint64_t last_us = 0;
-    static float last_level = 0.0f;
     static float since_beat_s = 1000.0f;
     static float since_idle_drop_s = 0.0f;
     static float drop_pos[JellConfig::NUMBER_OF_TENTACLES]; // head position in LEDs, < 0 = no drop
@@ -162,12 +171,6 @@ void effect_micDrops(Canvas& canvas, const AudioFrame& audio, float time)
     const float dt = seconds_since_last_call(last_us);
     since_beat_s += dt;
     since_idle_drop_s += dt;
-
-    // A beat is a sharp rise to a high level, not too soon after the previous one.
-    const bool beat = audio.level > BEAT_MIN_LEVEL
-        && (audio.level - last_level) > BEAT_MIN_RISE
-        && since_beat_s > BEAT_HOLDOFF_S;
-    last_level = audio.level;
 
     if (beat)
     {
@@ -212,6 +215,39 @@ void effect_micDrops(Canvas& canvas, const AudioFrame& audio, float time)
     canvas.all_noodles_level(std::max(0.15f, flash));
 
     canvas.show();
+}
+
+float palette_hue(int slot, float time, float cycle_period_s, bool cycle)
+{
+    constexpr int N = JellConfig::PALETTE_SIZE;
+
+    if (slot < 0)
+        slot = 0;
+
+    if (!cycle)
+        return JellConfig::PALETTE[slot % N];
+
+    if (cycle_period_s < 1.0f)
+        cycle_period_s = 1.0f;
+
+    const float blend_s = std::min(JellConfig::CYCLE_BLEND_S, cycle_period_s * 0.5f);
+
+    // Which period we are in, and how far into it.
+    const float phase = time / cycle_period_s;
+    const int step = (int)floorf(phase);
+    const float within_s = (phase - (float)step) * cycle_period_s;
+
+    const int from = (((slot + step) % N) + N) % N;
+    const int to = (from + 1) % N;
+
+    const float t = (within_s - (cycle_period_s - blend_s)) / blend_s; // < 0 outside the blend window
+    return hue_lerp_shortest(JellConfig::PALETTE[from], JellConfig::PALETTE[to], smoothstep01(t));
+}
+
+void effect_palette(Canvas& canvas, float time, float hue)
+{
+    // The ambient noise animation, held to +-10 degrees around this jelly's hue.
+    effect_ambientNField(canvas, time, 1.0f, hue, 20.0f, 0.15f);
 }
 
 void effect_ambientNField(Canvas& canvas, float time, float noisescale, float huebase, float huerange, float timescale)

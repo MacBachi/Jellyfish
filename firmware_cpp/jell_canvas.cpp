@@ -56,10 +56,18 @@ Point3 Canvas::spoke_position(int spoke, int pixel) const
 
 void Canvas::show()
 {
-    ring.paint_string();
+    ring.paint_string(brightness_, hue_offset_);
 
     for (int i = 0; i < JellConfig::NUMBER_OF_TENTACLES; i++)
-        spokes[i].paint_string();
+        spokes[i].paint_string(brightness_, hue_offset_);
+}
+
+void Canvas::set_global(float brightness, float hue_offset)
+{
+    brightness_ = std::clamp(brightness, 0.0f, 1.0f) * JellConfig::BRIGHTNESS_MODIFIER;
+    hue_offset_ = fmodf(hue_offset, 360.0f);
+    if (hue_offset_ < 0.0f)
+        hue_offset_ += 360.0f;
 }
 
 void Canvas::fade(float dt_s, float tau_s)
@@ -104,7 +112,7 @@ void Canvas::all_noodles_level(float level)
 {
     for (int i = 0; i < JellConfig::NUMBER_OF_NOODLES; i++)
     {
-        noodles[i].set_level(level);
+        noodles[i].set_level(level * brightness_);
     }
 }
 
@@ -120,7 +128,7 @@ void Canvas::spoke_pixel_hsv(
 
 void Canvas::noodle_level(int noodle, float level)
 {
-    noodles[noodle].set_level(level);
+    noodles[noodle].set_level(level * brightness_);
 }
 
 Point3 Canvas::noodle_position(int noodle)

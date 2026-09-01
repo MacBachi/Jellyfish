@@ -13,6 +13,8 @@ public:
         LEDChannelTest,
         Mic_NField,
         Mic_Drops,
+        Palette,
+        Palette_Cycle,
         Ambient_Rainbow,
         Ambient_Deepsea,
 
@@ -38,7 +40,26 @@ public:
 
     static constexpr auto LED_ORDER_TENTACLE  = ColourOrder::RGB;
 
+    // Compile-time cap on the overall brightness, multiplied into every pixel and noodle.
     static constexpr float BRIGHTNESS_MODIFIER = 1.0f;
     static constexpr auto DEFAULT_DISPLAY_MODE = DisplayMode::Mic_NField;
+
+    // Runtime defaults for the values that can later be changed over the network.
+    static constexpr float DEFAULT_BRIGHTNESS = 1.0f;
+    static constexpr float DEFAULT_HUE_OFFSET = 0.0f;
+
+    // Palette modes: every jelly gets one of these hues (degrees) by its colour slot.
+    // With more than PALETTE_SIZE jellies the palette wraps around.
+    static constexpr int PALETTE_SIZE = 8;
+    static constexpr float PALETTE[PALETTE_SIZE] = {0.0f, 30.0f, 60.0f, 120.0f, 180.0f, 220.0f, 270.0f, 310.0f};
+
+    // Palette_Cycle: every jelly moves one palette step further every DEFAULT_CYCLE_PERIOD_S
+    // seconds (changeable at runtime), blending over the last CYCLE_BLEND_S seconds of a period.
+    static constexpr float DEFAULT_CYCLE_PERIOD_S = 10.0f;
+    static constexpr float CYCLE_BLEND_S = 2.0f;
+
+    // Identify: the AP jelly blinks red, all others blue, IDENT_BLINKS times in step.
+    static constexpr float IDENT_BLINK_PERIOD_S = 0.5f;
+    static constexpr int IDENT_BLINKS = 3;
 };
 #endif
