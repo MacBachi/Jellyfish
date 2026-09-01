@@ -65,6 +65,10 @@ public:
         delete[] posZ;
     } // clean up memory
 
+    // Owns raw buffers and a PIO state machine: copying would double-free and double-claim.
+    LedString(const LedString&) = delete;
+    LedString& operator=(const LedString&) = delete;
+
     // coordinate getters
     float get_x(int i) { return posX[i]; }
     float get_y(int i) { return posY[i]; }
@@ -118,12 +122,6 @@ public:
             }
 
             pio_sm_put_blocking(pio, sm, pixel << 8u);
-
-            // Apply decay to the Value (brightness) for the trail effect
-            v_buf[i] *= decay;
-
-            // Clean up: if it's basically dark, kill it to prevent "ghosting"
-            if (v_buf[i] < 0.001f) v_buf[i] = 0.0f;
         }
         sleep_us(100);
     }
@@ -159,7 +157,19 @@ public:
         }
     }
 
-    float decay = 0.8f;
+    // Multiply every pixel's brightness by factor (0..1). Effects that draw only a few
+    // pixels per frame call this first; whatever they don't redraw fades out over the
+    // following frames. That is where drop trails and beat flashes get their tail from.
+    void fade(float factor)
+    {
+        for (int i = 0; i < numLEDs; i++)
+        {
+            v_buf[i] *= factor;
+
+            // If it's basically dark, kill it to prevent "ghosting"
+            if (v_buf[i] < 0.001f) v_buf[i] = 0.0f;
+        }
+    }
 
     void off()
     {

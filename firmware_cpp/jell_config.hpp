@@ -12,6 +12,7 @@ public:
         micLevelCheck,
         LEDChannelTest,
         Mic_NField,
+        Mic_Drops,
         Ambient_Rainbow,
         Ambient_Deepsea,
 

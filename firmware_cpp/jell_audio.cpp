@@ -117,7 +117,8 @@ AudioFrame Microphone::capture()
 
         // Shift left to force the 24th bit into the 32nd bit slot, 
         // then arithmetic shift right back down to sign-extend automatically.
-        samples[i] = (samples[i] << 8) >> 8;
+        // The left shift happens on the unsigned copy, which is well defined for any value.
+        samples[i] = (int32_t)((uint32_t)samples[i] << 8) >> 8;
     
         sum += samples[i];
     }

@@ -1,6 +1,24 @@
 #include "jell_effects.hpp"
+#include <algorithm>
+#include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include "pico/time.h"
 #include "jell_config.hpp"
+
+namespace
+{
+    // Seconds since this function was last called from the given timestamp slot.
+    // Uses the 64-bit microsecond clock directly so the result stays exact after days
+    // of uptime, and caps long gaps (e.g. right after a mode switch).
+    float seconds_since_last_call(uint64_t& last_us)
+    {
+        const uint64_t now_us = time_us_64();
+        float dt = (last_us == 0) ? 0.0f : (float)(now_us - last_us) * 1e-6f;
+        last_us = now_us;
+        return std::min(dt, 0.1f);
+    }
+}
 
 void effect_miclevelCheck(
     Canvas& canvas,
@@ -14,11 +32,17 @@ void effect_miclevelCheck(
 
 void effect_LEDchanneltest(Canvas& canvas)
 {
-    static int frame = 0;
+    constexpr uint64_t STEP_US = 1000000; // one second per colour and per noodle
+
+    static uint64_t last_step_us = 0;
     static int state = 0;
 
-    if (frame % 120 == 0)
+    const uint64_t now_us = time_us_64();
+    if (now_us - last_step_us >= STEP_US)
+    {
         state++;
+        last_step_us = now_us;
+    }
 
     if (state % 3 == 0)
     {
@@ -62,7 +86,6 @@ void effect_LEDchanneltest(Canvas& canvas)
         canvas.noodle_level(2, 0.0f);
         canvas.noodle_level(3, 1.0f);
     }
-    frame++;
     canvas.show();
 }
 
@@ -104,6 +127,89 @@ void effect_micNField(Canvas& canvas, const AudioFrame& audio, float time)
         pwml = 1.0f;
 
     canvas.all_noodles_level(pwml);
+
+    canvas.show();
+}
+
+void effect_micDrops(Canvas& canvas, const AudioFrame& audio, float time)
+{
+    // --- Tunables ---
+    constexpr float TRAIL_TAU_S = 0.12f;           // afterglow behind a drop head
+    constexpr float DROP_SPEED_LEDS_PER_S = 30.0f; // how fast a drop runs down a tentacle
+    constexpr float BEAT_MIN_LEVEL = 0.5f;         // level a frame needs to count as a beat...
+    constexpr float BEAT_MIN_RISE = 0.15f;         // ...and how much it must have jumped since the last frame
+    constexpr float BEAT_HOLDOFF_S = 0.25f;        // no two beats closer than this
+    constexpr float FLASH_TAU_S = 0.25f;           // ring and noodle flash decay after a beat
+    constexpr float IDLE_DROP_EVERY_S = 1.5f;      // in silence, a lone drop now and then
+    constexpr float HUE_IDLE = 220.0f;
+    constexpr float HUE_DROP = 190.0f;
+
+    // --- State ---
+    static uint64_t last_us = 0;
+    static float last_level = 0.0f;
+    static float since_beat_s = 1000.0f;
+    static float since_idle_drop_s = 0.0f;
+    static float drop_pos[JellConfig::NUMBER_OF_TENTACLES]; // head position in LEDs, < 0 = no drop
+    static bool initialised = false;
+
+    if (!initialised)
+    {
+        for (int s = 0; s < JellConfig::NUMBER_OF_TENTACLES; s++)
+            drop_pos[s] = -1.0f;
+        initialised = true;
+    }
+
+    const float dt = seconds_since_last_call(last_us);
+    since_beat_s += dt;
+    since_idle_drop_s += dt;
+
+    // A beat is a sharp rise to a high level, not too soon after the previous one.
+    const bool beat = audio.level > BEAT_MIN_LEVEL
+        && (audio.level - last_level) > BEAT_MIN_RISE
+        && since_beat_s > BEAT_HOLDOFF_S;
+    last_level = audio.level;
+
+    if (beat)
+    {
+        since_beat_s = 0.0f;
+        since_idle_drop_s = 0.0f;
+        for (int s = 0; s < JellConfig::NUMBER_OF_TENTACLES; s++)
+            drop_pos[s] = 0.0f;
+    }
+    else if (since_idle_drop_s > IDLE_DROP_EVERY_S)
+    {
+        since_idle_drop_s = 0.0f;
+        drop_pos[rand() % JellConfig::NUMBER_OF_TENTACLES] = 0.0f;
+    }
+
+    // Everything drawn in earlier frames fades; the drops' tails are what this leaves behind.
+    canvas.fade(dt, TRAIL_TAU_S);
+
+    const float flash = expf(-since_beat_s / FLASH_TAU_S);
+
+    // Ring: a dim glow that follows the music, with the beat flash on top.
+    const float ring_v = std::max(0.05f + 0.35f * audio.smoothed_level, flash);
+    for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_RING; i++)
+    {
+        Point3 p = canvas.ring_position(i);
+        float n = Field::noise(p, 1.0f, time * 0.3f);
+        canvas.ring_pixel_hsv(i, HUE_IDLE + (HUE_DROP - HUE_IDLE) * flash + n * 30.0f, 1.0f, ring_v);
+    }
+
+    // Drops: only the head is drawn each frame, the fade above draws the tail.
+    for (int s = 0; s < JellConfig::NUMBER_OF_TENTACLES; s++)
+    {
+        if (drop_pos[s] < 0.0f)
+            continue;
+
+        canvas.spoke_pixel_hsv(s, (int)drop_pos[s], HUE_DROP, 0.8f, 1.0f);
+
+        drop_pos[s] += DROP_SPEED_LEDS_PER_S * dt;
+        if (drop_pos[s] >= (float)JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE)
+            drop_pos[s] = -1.0f;
+    }
+
+    canvas.all_noodles_level(std::max(0.15f, flash));
 
     canvas.show();
 }

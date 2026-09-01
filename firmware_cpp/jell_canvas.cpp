@@ -62,6 +62,16 @@ void Canvas::show()
         spokes[i].paint_string();
 }
 
+void Canvas::fade(float dt_s, float tau_s)
+{
+    const float factor = expf(-dt_s / tau_s);
+
+    ring.fade(factor);
+
+    for (int i = 0; i < JellConfig::NUMBER_OF_TENTACLES; i++)
+        spokes[i].fade(factor);
+}
+
 void Canvas::clear()
 {
     ring.off();

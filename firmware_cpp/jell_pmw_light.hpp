@@ -2,6 +2,7 @@
 #ifndef JELL_PMW_LIGHT_HPP
 #define JELL_PMW_LIGHT_HPP
 
+#include <algorithm>
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 
@@ -21,6 +22,7 @@ public:
 
     void set_level(float level)
     {
+        level = std::clamp(level, 0.0f, 1.0f);
         pwm_set_gpio_level(gpio, (uint16_t)(level * 255.0f));
     }
 

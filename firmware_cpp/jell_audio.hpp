@@ -25,6 +25,10 @@ public:
     Microphone(int32_t sample_count);
     ~Microphone();
 
+    // Owns DMA buffers, a DMA channel and a PIO state machine: never copy.
+    Microphone(const Microphone&) = delete;
+    Microphone& operator=(const Microphone&) = delete;
+
     void init(PIO pio,
               uint sm,
               uint pin_bclk,
