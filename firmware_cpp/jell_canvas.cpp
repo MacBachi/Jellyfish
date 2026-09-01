@@ -12,77 +12,28 @@ Canvas::Canvas(
       spokes(spokes),
       noodles(noodles)
 {
-    bounds_min.x = std::min({
-        ring.get_min_x(),
-        spokes[0].get_min_x(),
-        spokes[1].get_min_x(),
-        spokes[2].get_min_x(),
-        spokes[3].get_min_x(),
-        noodles[0].get_x(),
-        noodles[1].get_x(),
-        noodles[2].get_x(),
-        noodles[3].get_x()
-    });
+    bounds_min = {ring.get_min_x(), ring.get_min_y(), ring.get_min_z()};
+    bounds_max = {ring.get_max_x(), ring.get_max_y(), ring.get_max_z()};
 
-    bounds_max.x = std::max({
-        ring.get_max_x(),
-        spokes[0].get_max_x(),
-        spokes[1].get_max_x(),
-        spokes[2].get_max_x(),
-        spokes[3].get_max_x(),
-        noodles[0].get_x(),
-        noodles[1].get_x(),
-        noodles[2].get_x(),
-        noodles[3].get_x()
-    });
+    for (int s = 0; s < JellConfig::NUMBER_OF_TENTACLES; s++)
+    {
+        bounds_min.x = std::min(bounds_min.x, spokes[s].get_min_x());
+        bounds_min.y = std::min(bounds_min.y, spokes[s].get_min_y());
+        bounds_min.z = std::min(bounds_min.z, spokes[s].get_min_z());
+        bounds_max.x = std::max(bounds_max.x, spokes[s].get_max_x());
+        bounds_max.y = std::max(bounds_max.y, spokes[s].get_max_y());
+        bounds_max.z = std::max(bounds_max.z, spokes[s].get_max_z());
+    }
 
-    bounds_min.y = std::min({
-        ring.get_min_y(),
-        spokes[0].get_min_y(),
-        spokes[1].get_min_y(),
-        spokes[2].get_min_y(),
-        spokes[3].get_min_y(),
-        noodles[0].get_y(),
-        noodles[1].get_y(),
-        noodles[2].get_y(),
-        noodles[3].get_y()
-    });
-
-    bounds_max.y = std::max({
-        ring.get_max_y(),
-        spokes[0].get_max_y(),
-        spokes[1].get_max_y(),
-        spokes[2].get_max_y(),
-        spokes[3].get_max_y(),
-        noodles[0].get_y(),
-        noodles[1].get_y(),
-        noodles[2].get_y(),
-        noodles[3].get_y()
-    });
-
-    bounds_min.z = std::min({
-        ring.get_min_z(),
-        spokes[0].get_min_z(),
-        spokes[1].get_min_z(),
-        spokes[2].get_min_z(),
-        spokes[3].get_min_z(),
-        noodles[0].get_z(),
-        noodles[1].get_z(),
-        noodles[2].get_z(),
-        noodles[3].get_z()
-    });
-
-    bounds_max.z = std::max({
-        ring.get_max_z(),
-        spokes[0].get_max_z(),
-        spokes[1].get_max_z(),
-        spokes[2].get_max_z(),
-        spokes[3].get_max_z(),
-        noodles[0].get_z(),
-        noodles[1].get_z(),
-        noodles[2].get_z(),
-        noodles[3].get_z()
-    });
+    for (int n = 0; n < JellConfig::NUMBER_OF_NOODLES; n++)
+    {
+        bounds_min.x = std::min(bounds_min.x, noodles[n].get_x());
+        bounds_min.y = std::min(bounds_min.y, noodles[n].get_y());
+        bounds_min.z = std::min(bounds_min.z, noodles[n].get_z());
+        bounds_max.x = std::max(bounds_max.x, noodles[n].get_x());
+        bounds_max.y = std::max(bounds_max.y, noodles[n].get_y());
+        bounds_max.z = std::max(bounds_max.z, noodles[n].get_z());
+    }
 }
 
 Point3 Canvas::ring_position(int pixel) const
@@ -107,14 +58,14 @@ void Canvas::show()
 {
     ring.paint_string();
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < JellConfig::NUMBER_OF_TENTACLES; i++)
         spokes[i].paint_string();
 }
 
 void Canvas::clear()
 {
     ring.off();
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < JellConfig::NUMBER_OF_TENTACLES; i++)
         spokes[i].off();
     show();
 }
@@ -130,7 +81,7 @@ void Canvas::all_pixels_hsv(float h, float s, float v)
     {
         ring.write_pixel_hsv(i, h, s, v);
     }
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < JellConfig::NUMBER_OF_TENTACLES; i++)
     {
         for (int j = 0; j < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; j++)
         {
@@ -141,7 +92,7 @@ void Canvas::all_pixels_hsv(float h, float s, float v)
 
 void Canvas::all_noodles_level(float level)
 {
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < JellConfig::NUMBER_OF_NOODLES; i++)
     {
         noodles[i].set_level(level);
     }

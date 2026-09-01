@@ -1,5 +1,6 @@
 #include "jell_audio.hpp"
 #include "i2s_microphone.pio.h"
+#include "pico/time.h"
 #include "math.h"
 
 Microphone::Microphone(int32_t samp_size)
@@ -30,6 +31,9 @@ void Microphone::audio_input_init(PIO pio, uint sm, uint pin_bclk, uint pin_din)
 {
     audio_pio = pio;
     audio_sm = sm;
+
+    // Mark the state machine as taken so the CYW43 WLAN driver can't grab it.
+    pio_sm_claim(pio, sm);
 
     // Load the PIO program
     uint offset = pio_add_program(pio, &i2s_microphone_mono_24_program);
@@ -135,17 +139,26 @@ AudioFrame Microphone::capture()
     // Calculate RMS
     frame.rms = sqrtf((float)sum_of_squares / frame.sample_count);
 
-    float decay_rate = 0.002f;
+    // Seconds since the previous capture. The filters below are expressed in time, so
+    // their response is the same whether the render loop runs at 60 or 140 frames per second.
+    const uint64_t now_us = time_us_64();
+    float dt = (last_capture_us == 0) ? 0.0f : (float)(now_us - last_capture_us) * 1e-6f;
+    last_capture_us = now_us;
+    if (dt > MAX_FRAME_GAP_S)
+        dt = MAX_FRAME_GAP_S;
+
+    const float range_alpha = 1.0f - expf(-dt / RANGE_TRACK_TAU_S);
+    const float level_keep = expf(-dt / LEVEL_DECAY_TAU_S);
 
     if (frame.rms > rms_max)
         rms_max = frame.rms;
     else
-        rms_max += (frame.rms - rms_max) * decay_rate;
+        rms_max += (frame.rms - rms_max) * range_alpha;
 
     if (frame.rms < rms_min)
         rms_min = frame.rms;
     else
-        rms_min += (frame.rms - rms_min) * decay_rate;
+        rms_min += (frame.rms - rms_min) * range_alpha;
 
     frame.level = (frame.rms - rms_min) / (rms_max - rms_min);
 
@@ -156,21 +169,19 @@ AudioFrame Microphone::capture()
     if (rms_max < 90000.0f)
         rms_max = 90000.0f;
 
-    float level_decay = 0.99f;
     if (frame.level > smoothed_level)
         smoothed_level = frame.level;
     else
-        smoothed_level = smoothed_level*level_decay;
+        smoothed_level = smoothed_level * level_keep;
 
     if (smoothed_level < 0.05)
         smoothed_level = 0.05f;
 
         
-    float peak_decay = 0.99f;
     if ((frame.level > smoothed_peak) and (frame.level > 0.5))
         smoothed_peak = frame.level;
     else
-        smoothed_peak = smoothed_peak*peak_decay;
+        smoothed_peak = smoothed_peak * level_keep;
         
     //copy persistant mic data for returrn in frame
     frame.rms_min = rms_min;

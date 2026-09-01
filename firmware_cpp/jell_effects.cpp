@@ -81,9 +81,9 @@ void effect_micNField(Canvas& canvas, const AudioFrame& audio, float time)
             audio.smoothed_level);
     }
 
-    for (int s = 0; s < 4; s++)
+    for (int s = 0; s < JellConfig::NUMBER_OF_TENTACLES; s++)
     {
-        for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_RING; i++)
+        for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; i++)
         {
             Point3 p = canvas.spoke_position(s, i);
 
@@ -130,7 +130,7 @@ void effect_ambientNField(Canvas& canvas, float time, float noisescale, float hu
             f_b);
     }
 
-    for (int s = 0; s < 4; s++)
+    for (int s = 0; s < JellConfig::NUMBER_OF_TENTACLES; s++)
     {
         for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; i++)
         {
@@ -140,20 +140,21 @@ void effect_ambientNField(Canvas& canvas, float time, float noisescale, float hu
             float f_h = Field::noise({p.x + field_offset, p.y, p.z}, noisescale, time * timescale);
 
             canvas.spoke_pixel_hsv(
-
                 s,
                 i,
                 huebase + (f_h * f_h - 0.5) * huerange,
                 1.0f,
                 f_b);
         }
+    }
 
-        Point3 np = canvas.noodle_position(s);
+    for (int n = 0; n < JellConfig::NUMBER_OF_NOODLES; n++)
+    {
+        Point3 np = canvas.noodle_position(n);
 
         float f_b = Field::noise(np, noisescale, time * timescale);
 
-
-        canvas.noodle_level(s, (f_b * .6f) + 0.4f);
+        canvas.noodle_level(n, (f_b * .6f) + 0.4f);
     }
 
     canvas.show();

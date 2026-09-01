@@ -7,7 +7,6 @@
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
 #include "ws2812.pio.h" // Ensure this is accessible
-#include "jell_led.hpp"
 #include <cmath>
 
 
@@ -286,10 +285,30 @@ private:
 
     bool has_custom_mapping = false; //defaults to a unit-spaced 1d line without custom mapping
 
+    // Loads the WS2812 program at most once per PIO block and returns its offset.
+    // Every LedString on the same PIO shares that single copy of the program.
+    static uint ws2812_program_offset(PIO pio)
+    {
+        static bool loaded[NUM_PIOS] = {};
+        static uint offsets[NUM_PIOS] = {};
+        const uint index = pio_get_index(pio);
+        if (!loaded[index])
+        {
+            offsets[index] = pio_add_program(pio, &ws2812_program);
+            loaded[index] = true;
+        }
+        return offsets[index];
+    }
+
     //Private: Configures the PIO state machine using the generated header
     void ws2812_init()
     {
-        uint offset = pio_add_program(pio, &ws2812_program);
+        uint offset = ws2812_program_offset(pio);
+
+        // Mark the state machine as taken so SDK drivers that look for a free one
+        // (e.g. the CYW43 WLAN driver) don't grab it. Panics on a double assignment.
+        pio_sm_claim(pio, sm);
+
         pio_gpio_init(pio, pin);
         pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
 

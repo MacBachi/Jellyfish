@@ -21,14 +21,20 @@ volatile auto display_mode = JellConfig::DEFAULT_DISPLAY_MODE;
 // --- Global State ---
 // Initialize LEDs     
 LedString ring(pio0, 1, 2, JellConfig::NUMBER_LEDS_IN_RING, JellConfig::LED_ORDER_RING);
-LedString spokes[] = {
+// One LedString per tentacle header NeoPix2..NeoPix8 (GPIO 3..9).
+// PIO0 SM0 belongs to the microphone. PIO1 SM2/SM3 and PIO2 SM3 stay unclaimed so the
+// CYW43 WLAN driver can pick one of them.
+LedString spokes[JellConfig::NUMBER_OF_TENTACLES] = {
     LedString(pio0, 2, 3, JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE, JellConfig::LED_ORDER_TENTACLE),
     LedString(pio0, 3, 4, JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE, JellConfig::LED_ORDER_TENTACLE),
     LedString(pio1, 0, 5, JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE, JellConfig::LED_ORDER_TENTACLE),
-    LedString(pio1, 1, 6, JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE, JellConfig::LED_ORDER_TENTACLE)
+    LedString(pio1, 1, 6, JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE, JellConfig::LED_ORDER_TENTACLE),
+    LedString(pio2, 0, 7, JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE, JellConfig::LED_ORDER_TENTACLE),
+    LedString(pio2, 1, 8, JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE, JellConfig::LED_ORDER_TENTACLE),
+    LedString(pio2, 2, 9, JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE, JellConfig::LED_ORDER_TENTACLE)
 };
 
-PwmLight noodles[] = {
+PwmLight noodles[JellConfig::NUMBER_OF_NOODLES] = {
     PwmLight(12, 0.5f, 0.0f, 0.8f),
     PwmLight(13, 0.0f, 0.5f, 0.8f),
     PwmLight(14, -0.5f, 0.0f, 0.8f),
@@ -141,13 +147,28 @@ void previous_mode()
         ring.map_pixel(i, x, y, 0.0f);
     }
 
-    for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; i++)
+    // Height of each tentacle LED below the ring. The first 12 values were measured on the
+    // draped tentacles; beyond that the tentacle is assumed to hang straight down.
+    constexpr float height_map[] = {
+        -1, -2, -2.75, -1.75, -0.5, -0.5, -1.5, -2.5, -3.5, -4.5, -5.5, -6.5,
+        -7.5, -8.5, -9.5, -10.5};
+    static_assert(sizeof(height_map) / sizeof(height_map[0]) == JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE,
+                  "height_map needs one entry per tentacle LED");
+
+    // Where each tentacle hangs on the unit circle of the ring. NeoPix2..5 sit on the four
+    // ribs of the print, NeoPix6..8 in between them.
+    constexpr float tentacle_xy[][2] = {
+        {1.0f, 0.0f}, {0.0f, 1.0f}, {-1.0f, 0.0f}, {0.0f, -1.0f},
+        {0.7071f, 0.7071f}, {-0.7071f, 0.7071f}, {-0.7071f, -0.7071f}};
+    static_assert(sizeof(tentacle_xy) / sizeof(tentacle_xy[0]) == JellConfig::NUMBER_OF_TENTACLES,
+                  "tentacle_xy needs one entry per tentacle");
+
+    for (int s = 0; s < JellConfig::NUMBER_OF_TENTACLES; s++)
     {
-        constexpr float height_map[] = {-1, -2, -2.75, -1.75, -0.5, -0.5, -1.5, -2.5, -3.5, -4.5, -5.5, -6.5};
-        spokes[0].map_pixel(i, 1.0f, 0.0f, height_map[i]);
-        spokes[1].map_pixel(i, 0.0f, 1.0f, height_map[i]);
-        spokes[2].map_pixel(i, -1.0f, 0.0f, height_map[i]);
-        spokes[3].map_pixel(i, 0.0f, -1.0f, height_map[i]);
+        for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; i++)
+        {
+            spokes[s].map_pixel(i, tentacle_xy[s][0], tentacle_xy[s][1], height_map[i]);
+        }
     }
 
     multicore_launch_core1(core1_entry);

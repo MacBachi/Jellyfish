@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include "hardware/pio.h"
 #include "hardware/dma.h"
 
@@ -38,6 +39,17 @@ public:
     float smoothed_peak = 0.0f;
     float smoothed_level = 0.0f;
 
+    // Time constants of the adaptive filters, in seconds. They reproduce the original
+    // per-frame factors (0.002 for the range, 0.99 for level and peak) at the ~140 frames
+    // per second the firmware ran at with 4 x 12 tentacle LEDs, but no longer depend on
+    // how long a frame takes.
+    static constexpr float RANGE_TRACK_TAU_S = 3.5f;
+    static constexpr float LEVEL_DECAY_TAU_S = 0.7f;
+
+    // Longest gap between captures that is fed into the filters. Anything longer
+    // (e.g. after a mode change) is treated as this, so one stall can't collapse the range.
+    static constexpr float MAX_FRAME_GAP_S = 0.1f;
+
 
 private:
 
@@ -53,6 +65,8 @@ private:
     int32_t *next_buffer_to_fill;
 
     int dma_chan;
+
+    uint64_t last_capture_us = 0;
 
     uint audio_sm;
     PIO audio_pio;
