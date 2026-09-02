@@ -64,6 +64,9 @@ Changes so far, relative to the original `main`:
   blend, in sync.
 - **Identify.** A command makes the AP jelly blink red three times while all others blink blue in the same
   rhythm, so you can tell which one runs the network.
+- **Ten calm modes and a playlist.** Breathe, Glimmer, Aurora, Current, Lantern, Moonlight, Drizzle,
+  Fireflies, Swarm and Whisper, all slow and dim, plus a Playlist mode that wanders through them. Mode
+  changes crossfade instead of cutting. See the mode table below.
 
 Planned next: a small web page served by the AP jelly for phones (runtime control only, never persistent
 configuration changes), and re-election details.
@@ -97,8 +100,32 @@ nc -lu 4210                     # in a second terminal: watch heartbeats, beats 
 | `HELLO` | roll call: every jelly answers with its id, role, colour slot and IP |
 | `BEAT` | trigger a beat on all jellies (for testing the drops mode) |
 
-Modes in button order: mic level check, LED channel test, mic field (default), drops, palette, palette cycle,
-ambient rainbow, ambient deep sea.
+Modes in button order (the number is what `MODE n` takes):
+
+| n | Mode | What it does |
+|---|---|---|
+| 0 | Breathe | a 6 s pulse from the ring down the tentacles |
+| 1 | Glimmer | near dark, sparse cyan/green sparks |
+| 2 | Aurora | slow bands of green, teal and violet |
+| 3 | Current | a gentle wave travelling up the tentacles |
+| 4 | Lantern | warm amber with a hint of candle flicker |
+| 5 | Moonlight | very dim, cool blue-white night light |
+| 6 | Drizzle | single slow drops with trails |
+| 7 | Fireflies | single LEDs glowing up and down in yellow-green |
+| 8 | Swarm | a pulse that visits one jelly after the other, in each jelly's palette colour |
+| 9 | Whisper | slow microphone response, cool when quiet, warm when lively |
+| 10 | Playlist | cycles through the calm modes every 3 minutes, all jellies together |
+| 11 | Mic field (default) | the original sound-reactive noise field |
+| 12 | Drops | beat-triggered drops down the tentacles |
+| 13 | Palette | one colour per jelly |
+| 14 | Palette cycle | same, rotating one colour further every `CYCLE` seconds |
+| 15 | Ambient rainbow | |
+| 16 | Ambient deep sea | |
+| 17 | Mic level check | prints levels to the serial console |
+| 18 | LED channel test | red, green, blue, and one noodle at a time |
+
+Every mode change crossfades over one second. Because `MODE n` is a bare number, all jellies in a bloom
+must run the same firmware version.
 
 The USB serial console prints the election, role changes, every command sent or received, and the time
 offset a station keeps to the AP's clock.

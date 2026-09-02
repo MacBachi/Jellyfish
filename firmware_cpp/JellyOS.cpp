@@ -125,8 +125,48 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         effect_ambientNField(canvas, time, 2.0f, 220.0f, 100.0f, 0.8f);
         break;
 
+    case JellConfig::DisplayMode::Breathe:
+        effect_breathe(canvas, time);
+        break;
+
+    case JellConfig::DisplayMode::Glimmer:
+        effect_glimmer(canvas);
+        break;
+
+    case JellConfig::DisplayMode::Aurora:
+        effect_aurora(canvas, time);
+        break;
+
+    case JellConfig::DisplayMode::Current:
+        effect_current(canvas, time);
+        break;
+
+    case JellConfig::DisplayMode::Lantern:
+        effect_lantern(canvas, time);
+        break;
+
+    case JellConfig::DisplayMode::Moonlight:
+        effect_moonlight(canvas, time);
+        break;
+
+    case JellConfig::DisplayMode::Drizzle:
+        effect_drizzle(canvas);
+        break;
+
+    case JellConfig::DisplayMode::Fireflies:
+        effect_fireflies(canvas);
+        break;
+
+    case JellConfig::DisplayMode::Swarm:
+        effect_swarm(canvas, time, s.slot);
+        break;
+
+    case JellConfig::DisplayMode::Whisper:
+        effect_whisper(canvas, audio, time);
+        break;
+
     default:
-        // Modes without an effect yet: hold black so the crossfade still has a target.
+        // Playlist itself never gets here (effective_mode resolves it); hold black.
         canvas.clear();
         break;
     }

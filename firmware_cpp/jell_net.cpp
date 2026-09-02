@@ -661,6 +661,7 @@ void Net::init()
     id_hash = 0;
     for (uint8_t b : id.id)
         id_hash = id_hash * 31u + b;
+    srand(id_hash); // otherwise every jelly sparkles in exactly the same sequence
 
     state = JellState{};
     publish();
