@@ -70,8 +70,66 @@ bool render_ident(const JellState& s, int64_t master_us)
     canvas.set_global(1.0f, 0.0f); // true red / blue regardless of the current hue offset
     canvas.all_pixels_hsv(s.is_ap ? 0.0f : 240.0f, 1.0f, on ? 1.0f : 0.0f);
     canvas.all_noodles_level(on ? 1.0f : 0.0f);
-    canvas.show();
     return true;
+}
+
+// The mode actually rendered this frame. The playlist resolves to one of its entries
+// from the master time, in integer microseconds so every jelly picks the same one.
+JellConfig::DisplayMode effective_mode(const JellState& s, int64_t master_us)
+{
+    if (s.mode != JellConfig::DisplayMode::Playlist)
+        return s.mode;
+
+    constexpr int64_t step_us = (int64_t)(JellConfig::PLAYLIST_STEP_S * 1e6f);
+    constexpr int n = JellConfig::PLAYLIST_SIZE;
+    const int index = (int)(((master_us / step_us) % n + n) % n);
+    return JellConfig::PLAYLIST[index];
+}
+
+// Draw one frame of `mode` into the canvas. Nothing is sent to the LEDs here.
+void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFrame& audio, float time, bool beat)
+{
+    switch (mode)
+    {
+    case JellConfig::DisplayMode::micLevelCheck:
+        printf(">Level: %f, RMS: %f, RMS_Min: %f, RMS_Max: %f, smoothed_peak: %f, smoothed_level: %f\n",
+               audio.level, audio.rms, audio.rms_min, audio.rms_max, audio.smoothed_peak, audio.smoothed_level);
+        effect_miclevelCheck(canvas, audio);
+        break;
+
+    case JellConfig::DisplayMode::LEDChannelTest:
+        effect_LEDchanneltest(canvas);
+        break;
+
+    case JellConfig::DisplayMode::Mic_NField:
+        effect_micNField(canvas, audio, time);
+        break;
+
+    case JellConfig::DisplayMode::Mic_Drops:
+        effect_micDrops(canvas, audio, time, beat);
+        break;
+
+    case JellConfig::DisplayMode::Palette:
+        effect_palette(canvas, time, palette_hue(s.slot, time, s.cycle_period_s, false));
+        break;
+
+    case JellConfig::DisplayMode::Palette_Cycle:
+        effect_palette(canvas, time, palette_hue(s.slot, time, s.cycle_period_s, true));
+        break;
+
+    case JellConfig::DisplayMode::Ambient_Rainbow:
+        effect_ambientNField(canvas, time, 1.0f, 220.0f, 360.0f, 0.15f);
+        break;
+
+    case JellConfig::DisplayMode::Ambient_Deepsea:
+        effect_ambientNField(canvas, time, 2.0f, 220.0f, 100.0f, 0.8f);
+        break;
+
+    default:
+        // Modes without an effect yet: hold black so the crossfade still has a target.
+        canvas.clear();
+        break;
+    }
 }
 
 
@@ -83,94 +141,86 @@ bool render_ident(const JellState& s, int64_t master_us)
     static BeatDetector beat_detector;
     static uint32_t seen_network_beats = 0;
 
+    // Crossfade bookkeeping: which mode is on the LEDs and how far the blend from the
+    // previous picture has come. The timer runs on the local clock; master time can slew.
+    JellConfig::DisplayMode shown = JellConfig::DisplayMode::Count; // nothing shown yet
+    bool fading = false;
+    uint64_t fade_start_us = 0;
+    float mix = 1.0f;
+
     while (true)
     {
         const JellState s = g_state.read();
+
+        // Every mode captures audio: it keeps the adaptive range calibrated and paces the
+        // loop at the microphone's buffer rate. The DMA fills while we render.
+        const AudioFrame audio = mic.capture();
 
         // Master time: the AP's clock, which every station follows via time_offset_us.
         const int64_t master_us = (int64_t)time_us_64() + s.time_offset_us;
         const float time = (float)master_us * 1e-6f;
 
+        const JellConfig::DisplayMode mode = effective_mode(s, master_us);
+
         if (render_ident(s, master_us))
+        {
+            canvas.show();
+            shown = mode; // no crossfade out of the blink
+            fading = false;
+            mix = 1.0f;
             continue;
+        }
+
+        if (mode != shown)
+        {
+            if (shown != JellConfig::DisplayMode::Count)
+            {
+                canvas.begin_crossfade(fading ? mix : 1.0f);
+                fading = true;
+                fade_start_us = time_us_64();
+                mix = 0.0f;
+            }
+            if (mode == JellConfig::DisplayMode::Mic_Drops)
+                seen_network_beats = s.beat_count; // don't fire a stale beat on entry
+            shown = mode;
+        }
+
+        if (fading)
+        {
+            const float t = (float)(time_us_64() - fade_start_us) * 1e-6f / JellConfig::CROSSFADE_S;
+            if (t >= 1.0f)
+            {
+                fading = false;
+                mix = 1.0f;
+            }
+            else
+            {
+                mix = t * t * (3.0f - 2.0f * t);
+            }
+        }
 
         canvas.set_global(s.brightness, s.hue_offset);
 
-        switch (s.mode)
+        bool beat = false;
+        if (mode == JellConfig::DisplayMode::Mic_Drops)
         {
-        case JellConfig::DisplayMode::micLevelCheck:
+            if (s.follow_network_beats)
             {
-                AudioFrame audio = mic.capture();
-                printf(">Level: %f, RMS: %f, RMS_Min: %f, RMS_Max: %f, smoothed_peak: %f, smoothed_level: %f\n",
-                       audio.level, audio.rms, audio.rms_min, audio.rms_max, audio.smoothed_peak, audio.smoothed_level);
-
-                effect_miclevelCheck(canvas, audio);
-                break;
+                // Station: drop whenever the AP told us it heard a beat.
+                beat = (s.beat_count != seen_network_beats);
+                seen_network_beats = s.beat_count;
             }
-
-        case JellConfig::DisplayMode::LEDChannelTest:
+            else
             {
-                effect_LEDchanneltest(canvas);
-                break;
+                // AP or lone jelly: listen ourselves, and let core 0 tell the others.
+                beat = beat_detector.update(audio.level);
+                if (beat)
+                    g_local_beat_count = g_local_beat_count + 1;
             }
-
-        case JellConfig::DisplayMode::Mic_NField:
-            {
-                AudioFrame audio = mic.capture();
-                effect_micNField(canvas, audio, time);
-                break;
-            }
-
-        case JellConfig::DisplayMode::Mic_Drops:
-            {
-                AudioFrame audio = mic.capture();
-
-                bool beat;
-                if (s.follow_network_beats)
-                {
-                    // Station: drop whenever the AP told us it heard a beat.
-                    beat = (s.beat_count != seen_network_beats);
-                    seen_network_beats = s.beat_count;
-                }
-                else
-                {
-                    // AP or lone jelly: listen ourselves, and let core 0 tell the others.
-                    beat = beat_detector.update(audio.level);
-                    if (beat)
-                        g_local_beat_count = g_local_beat_count + 1;
-                }
-
-                effect_micDrops(canvas, audio, time, beat);
-                break;
-            }
-
-        case JellConfig::DisplayMode::Palette:
-            {
-                effect_palette(canvas, time, palette_hue(s.slot, time, s.cycle_period_s, false));
-                break;
-            }
-
-        case JellConfig::DisplayMode::Palette_Cycle:
-            {
-                effect_palette(canvas, time, palette_hue(s.slot, time, s.cycle_period_s, true));
-                break;
-            }
-
-        case JellConfig::DisplayMode::Ambient_Rainbow:
-            {
-                effect_ambientNField(canvas, time, 1.0f, 220.0f, 360.0f, 0.15f);
-                break;
-            }
-
-        case JellConfig::DisplayMode::Ambient_Deepsea:
-            {
-                effect_ambientNField(canvas, time, 2.0f, 220.0f, 100.0f, 0.8f);
-                break;
-            }
-
-        default:
-            break;
         }
+
+        render_mode(mode, s, audio, time, beat);
+        canvas.show(mix);
     }
 }
 

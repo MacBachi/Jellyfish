@@ -16,6 +16,8 @@ struct AudioFrame
     float rms_max; 
     float smoothed_peak;
     float smoothed_level;
+
+    float dt_s; // seconds since the previous capture (capped), for time-based smoothing in effects
 };
 
 class Microphone

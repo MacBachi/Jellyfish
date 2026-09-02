@@ -7,19 +7,53 @@ class JellConfig {
 
 public:
 
+    // Order defines the MODE numbers on the network and the button cycle, so every jelly
+    // in a bloom must run the same firmware version. The calm modes come first, the two
+    // test modes last.
     enum class DisplayMode
     {
-        micLevelCheck,
-        LEDChannelTest,
+        Breathe,
+        Glimmer,
+        Aurora,
+        Current,
+        Lantern,
+        Moonlight,
+        Drizzle,
+        Fireflies,
+        Swarm,
+        Whisper,
+        Playlist,
         Mic_NField,
         Mic_Drops,
         Palette,
         Palette_Cycle,
         Ambient_Rainbow,
         Ambient_Deepsea,
+        micLevelCheck,
+        LEDChannelTest,
 
         Count
     };
+
+    // Playlist: cycles through these modes, one every PLAYLIST_STEP_S seconds, chosen from
+    // the shared master time so every jelly switches at the same moment.
+    static constexpr float PLAYLIST_STEP_S = 180.0f;
+    static constexpr DisplayMode PLAYLIST[] = {
+        DisplayMode::Breathe, DisplayMode::Glimmer, DisplayMode::Aurora, DisplayMode::Current,
+        DisplayMode::Lantern, DisplayMode::Moonlight, DisplayMode::Drizzle, DisplayMode::Fireflies,
+        DisplayMode::Swarm, DisplayMode::Palette_Cycle};
+    static constexpr int PLAYLIST_SIZE = sizeof(PLAYLIST) / sizeof(PLAYLIST[0]);
+
+    static constexpr bool playlist_is_valid()
+    {
+        for (int i = 0; i < PLAYLIST_SIZE; i++)
+            if (PLAYLIST[i] == DisplayMode::Playlist || PLAYLIST[i] == DisplayMode::Count)
+                return false;
+        return true;
+    }
+
+    // Every mode change blends the previous picture into the new one over this long.
+    static constexpr float CROSSFADE_S = 1.0f;
 
     static constexpr int NUMBER_LEDS_IN_RING = 96;
 
@@ -90,4 +124,8 @@ public:
     static constexpr uint32_t NET_HELLO_RETRY_MS = 5000;     // station: ask for a colour slot until it has one
     static constexpr int NET_MAX_JELLIES = 16;               // roster size on the AP
 };
+
+// Checked here, after the class is complete, because a constexpr member function
+// cannot be evaluated inside its own class definition.
+static_assert(JellConfig::playlist_is_valid(), "the playlist must not contain itself");
 #endif

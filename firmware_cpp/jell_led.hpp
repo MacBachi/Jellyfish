@@ -17,6 +17,13 @@ enum class ColourOrder
     GBR
 };
 
+// Interpolate between two hues the short way round the colour circle.
+static inline float hue_lerp_shortest(float a, float b, float t)
+{
+    const float d = fmodf(b - a + 540.0f, 360.0f) - 180.0f; // -180..180
+    return fmodf(a + d * t + 360.0f, 360.0f);
+}
+
 class LedString
 {
 public:
@@ -34,6 +41,12 @@ public:
             s_buf[i] = 0.0f;
             v_buf[i] = 0.0f;
         }
+
+        snap_h = new float[numLEDs];
+        snap_s = new float[numLEDs];
+        snap_v = new float[numLEDs];
+        for (int i = 0; i < numLEDs; i++)
+            snap_h[i] = snap_s[i] = snap_v[i] = 0.0f;
 
         posX = new float[numLEDs];
         posY = new float[numLEDs];
@@ -60,6 +73,9 @@ public:
         delete[] h_buf;
         delete[] s_buf;
         delete[] v_buf;
+        delete[] snap_h;
+        delete[] snap_s;
+        delete[] snap_v;
         delete[] posX;
         delete[] posY;
         delete[] posZ;
@@ -88,16 +104,53 @@ public:
     }
 
 
+    // What the strip would show right now if the snapshot were blended in with `mix`
+    // (0 = snapshot only, 1 = live buffer only). Hue goes the short way round, weighted
+    // by brightness so a pixel fading in from black doesn't start at the black pixel's hue.
+    void blended_pixel(int i, float mix, float& h, float& s, float& v) const
+    {
+        if (mix >= 1.0f)
+        {
+            h = h_buf[i];
+            s = s_buf[i];
+            v = v_buf[i];
+            return;
+        }
+        const float va = snap_v[i], vb = v_buf[i];
+        const float denom = (1.0f - mix) * va + mix * vb;
+        const float w = denom > 1e-4f ? (mix * vb) / denom : mix;
+        h = hue_lerp_shortest(snap_h[i], h_buf[i], w);
+        s = snap_s[i] + (s_buf[i] - snap_s[i]) * mix;
+        v = va + (vb - va) * mix;
+    }
+
+    // Freeze what is currently shown (the live buffer, or the blend in progress) so the
+    // next frames can crossfade away from it.
+    void snapshot(float current_mix = 1.0f)
+    {
+        for (int i = 0; i < numLEDs; i++)
+        {
+            float h, s, v;
+            blended_pixel(i, current_mix, h, s, v);
+            snap_h[i] = h;
+            snap_s[i] = s;
+            snap_v[i] = v;
+        }
+    }
+
     // Send the buffer to the strip. brightness (0..1) and hue_offset (degrees) are applied
-    // only in the conversion to RGB; the stored HSV values stay untouched.
-    void paint_string(float brightness = 1.0f, float hue_offset = 0.0f)
+    // only in the conversion to RGB; the stored HSV values stay untouched. mix < 1 blends
+    // from the snapshot towards the live buffer (see blended_pixel).
+    void paint_string(float brightness = 1.0f, float hue_offset = 0.0f, float mix = 1.0f)
     {
         for (int i = 0; i < numLEDs; i++)
         {
             uint8_t r_out, g_out, b_out;
+            float h, s, v;
+            blended_pixel(i, mix, h, s, v);
 
             // Convert the "Live" HSV state to RGB just for the hardware
-            hsv_to_rgb(h_buf[i] + hue_offset, s_buf[i], v_buf[i] * brightness, r_out, g_out, b_out);
+            hsv_to_rgb(h + hue_offset, s, v * brightness, r_out, g_out, b_out);
 
             uint32_t pixel;
 
@@ -173,20 +226,14 @@ public:
         }
     }
 
+    // Clear the buffer to black. Nothing reaches the LEDs until the next paint_string().
     void off()
     {
-        // Clear buffers
         for (int i = 0; i < numLEDs; i++)
         {
             h_buf[i] = 0;
             s_buf[i] = 0;
             v_buf[i] = 0;
-        }
-
-        // Push a fully black frame to the LEDs
-        for (int i = 0; i < numLEDs; i++)
-        {
-            pio_sm_put_blocking(pio, sm, 0);
         }
     }
 
@@ -232,6 +279,7 @@ private:
 
 
     float *h_buf, *s_buf, *v_buf;
+    float *snap_h, *snap_s, *snap_v; // frozen picture for crossfades
 
     // Coordinate buffers
     float* posX;

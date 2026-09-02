@@ -147,6 +147,7 @@ AudioFrame Microphone::capture()
     last_capture_us = now_us;
     if (dt > MAX_FRAME_GAP_S)
         dt = MAX_FRAME_GAP_S;
+    frame.dt_s = dt;
 
     const float range_alpha = 1.0f - expf(-dt / RANGE_TRACK_TAU_S);
     const float level_keep = expf(-dt / LEVEL_DECAY_TAU_S);

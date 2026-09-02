@@ -54,12 +54,40 @@ Point3 Canvas::spoke_position(int spoke, int pixel) const
     };
 }
 
-void Canvas::show()
+void Canvas::show(float mix)
 {
-    ring.paint_string(brightness_, hue_offset_);
+    mix = std::clamp(mix, 0.0f, 1.0f);
+
+    ring.paint_string(brightness_, hue_offset_, mix);
 
     for (int i = 0; i < JellConfig::NUMBER_OF_TENTACLES; i++)
-        spokes[i].paint_string(brightness_, hue_offset_);
+        spokes[i].paint_string(brightness_, hue_offset_, mix);
+
+    for (int n = 0; n < JellConfig::NUMBER_OF_NOODLES; n++)
+    {
+        const float level = noodle_snapshot_[n] + (noodle_levels_[n] - noodle_snapshot_[n]) * mix;
+        noodles[n].set_level(level * brightness_);
+    }
+}
+
+void Canvas::begin_crossfade(float current_mix)
+{
+    current_mix = std::clamp(current_mix, 0.0f, 1.0f);
+
+    ring.snapshot(current_mix);
+    ring.off();
+
+    for (int i = 0; i < JellConfig::NUMBER_OF_TENTACLES; i++)
+    {
+        spokes[i].snapshot(current_mix);
+        spokes[i].off();
+    }
+
+    for (int n = 0; n < JellConfig::NUMBER_OF_NOODLES; n++)
+    {
+        noodle_snapshot_[n] = noodle_snapshot_[n] + (noodle_levels_[n] - noodle_snapshot_[n]) * current_mix;
+        noodle_levels_[n] = 0.0f;
+    }
 }
 
 void Canvas::set_global(float brightness, float hue_offset)
@@ -85,7 +113,8 @@ void Canvas::clear()
     ring.off();
     for (int i = 0; i < JellConfig::NUMBER_OF_TENTACLES; i++)
         spokes[i].off();
-    show();
+    for (int n = 0; n < JellConfig::NUMBER_OF_NOODLES; n++)
+        noodle_levels_[n] = 0.0f;
 }
 
 void Canvas::ring_pixel_hsv(int pixel, float h, float s, float v)
@@ -112,7 +141,7 @@ void Canvas::all_noodles_level(float level)
 {
     for (int i = 0; i < JellConfig::NUMBER_OF_NOODLES; i++)
     {
-        noodles[i].set_level(level * brightness_);
+        noodle_levels_[i] = std::clamp(level, 0.0f, 1.0f);
     }
 }
 
@@ -128,7 +157,8 @@ void Canvas::spoke_pixel_hsv(
 
 void Canvas::noodle_level(int noodle, float level)
 {
-    noodles[noodle].set_level(level * brightness_);
+    if (noodle >= 0 && noodle < JellConfig::NUMBER_OF_NOODLES)
+        noodle_levels_[noodle] = std::clamp(level, 0.0f, 1.0f);
 }
 
 Point3 Canvas::noodle_position(int noodle)

@@ -19,13 +19,6 @@ namespace
         return std::min(dt, 0.1f);
     }
 
-    // Interpolate between two hues the short way round the colour circle.
-    float hue_lerp_shortest(float a, float b, float t)
-    {
-        const float d = fmodf(b - a + 540.0f, 360.0f) - 180.0f; // -180..180
-        return fmodf(a + d * t + 360.0f, 360.0f);
-    }
-
     float smoothstep01(float t)
     {
         t = std::clamp(t, 0.0f, 1.0f);
@@ -39,7 +32,6 @@ void effect_miclevelCheck(
 {
     canvas.all_pixels_hsv(220.0f, 1.0f, audio.smoothed_level);
     canvas.all_noodles_level(audio.smoothed_level);
-    canvas.show();
 }
 
 
@@ -99,7 +91,6 @@ void effect_LEDchanneltest(Canvas& canvas)
         canvas.noodle_level(2, 0.0f);
         canvas.noodle_level(3, 1.0f);
     }
-    canvas.show();
 }
 
 void effect_micNField(Canvas& canvas, const AudioFrame& audio, float time)
@@ -141,7 +132,6 @@ void effect_micNField(Canvas& canvas, const AudioFrame& audio, float time)
 
     canvas.all_noodles_level(pwml);
 
-    canvas.show();
 }
 
 void effect_micDrops(Canvas& canvas, const AudioFrame& audio, float time, bool beat)
@@ -214,7 +204,6 @@ void effect_micDrops(Canvas& canvas, const AudioFrame& audio, float time, bool b
 
     canvas.all_noodles_level(std::max(0.15f, flash));
 
-    canvas.show();
 }
 
 float palette_hue(int slot, float time, float cycle_period_s, bool cycle)
@@ -299,5 +288,4 @@ void effect_ambientNField(Canvas& canvas, float time, float noisescale, float hu
         canvas.noodle_level(n, (f_b * .6f) + 0.4f);
     }
 
-    canvas.show();
 }
