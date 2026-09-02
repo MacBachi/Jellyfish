@@ -1,0 +1,26 @@
+# Normalise line endings in the repository; checkouts follow the platform.
+* text=auto
+
+# Firmware sources are LF in the repository.
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+*.pio text eol=lf
+*.cmake text eol=lf
+CMakeLists.txt text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+
+# Fabrication and CAD output: keep byte-exact.
+*.gbr -text
+*.drl -text
+*.gbrjob -text
+*.stl binary
+*.zip binary
+*.jpeg binary
+*.kicad_pcb -text
+*.kicad_sch -text
+*.kicad_pro -text
+*.csv -text
+sym-lib-table -text
