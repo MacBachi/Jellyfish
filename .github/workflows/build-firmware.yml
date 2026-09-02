@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Add Pico SDK import helper
         run: cp .github/pico_sdk_import.cmake firmware_cpp/pico_sdk_import.cmake
 
@@ -21,47 +21,34 @@ jobs:
         with:
           source_dir: firmware_cpp
           output_dir: build
-          board: pico2_w
 
       - uses: actions/upload-artifact@v4
         with:
-          name: JellyOS
-          path: firmware_cpp/build/JellyOS.uf2
+          name: JellyFloatOS
+          path: firmware_cpp/build/JellyFloatOS.uf2
 
+  # A release is a deliberate act: push a tag like v0.1.0 and this job publishes the
+  # firmware built from exactly that commit.
   release:
     needs: build
-    # Only the original repository publishes releases; forks just build.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'Sheffield-by-the-sea/Jellyfish'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     permissions:
       contents: write
-      
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Increment patch version
-        id: version
-        run: |
-          IFS=. read -r major minor patch <<< "$(git describe --tags --abbrev=0 | sed 's/^v//')"
-          version="v${major}.${minor}.$((patch + 1))"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Releasing $version"
-
       - name: Download firmware
         uses: actions/download-artifact@v4
         with:
-          name: JellyOS
+          name: JellyFloatOS
           path: release-files
 
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "$VERSION" release-files/JellyOS.uf2 \
-            --title "JellyOS $VERSION" \
-            --generate-notes \
-            --target "$GITHUB_SHA"
+          gh release create "$GITHUB_REF_NAME" release-files/JellyFloatOS.uf2 \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "JellyFloatOS $GITHUB_REF_NAME" \
+            --generate-notes

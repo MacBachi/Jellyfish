@@ -29,15 +29,15 @@ set(PICO_BOARD pico2_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(JellyOS C CXX ASM)
+project(JellyFloatOS C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(JellyOS 
-    JellyOS.cpp
+add_executable(JellyFloatOS 
+    JellyFloatOS.cpp
         jell_audio.cpp
         jell_led.hpp
         jell_pmw_light.hpp
@@ -51,18 +51,18 @@ add_executable(JellyOS
         dhcpserver.c
 )
 
-pico_generate_pio_header(JellyOS ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
-pico_generate_pio_header(JellyOS ${CMAKE_CURRENT_LIST_DIR}/i2s_microphone.pio)
+pico_generate_pio_header(JellyFloatOS ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
+pico_generate_pio_header(JellyFloatOS ${CMAKE_CURRENT_LIST_DIR}/i2s_microphone.pio)
 
-pico_set_program_name(JellyOS "JellyOS")
-pico_set_program_version(JellyOS "0.1")
+pico_set_program_name(JellyFloatOS "JellyFloatOS")
+pico_set_program_version(JellyFloatOS "0.1.0")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(JellyOS 0)
-pico_enable_stdio_usb(JellyOS 1)
+pico_enable_stdio_uart(JellyFloatOS 0)
+pico_enable_stdio_usb(JellyFloatOS 1)
 
 # Add the standard library to the build
-target_link_libraries(JellyOS
+target_link_libraries(JellyFloatOS
         pico_stdlib
         hardware_pio
         pico_multicore
@@ -71,18 +71,18 @@ target_link_libraries(JellyOS
         )
 
 # Add the standard include files to the build
-target_include_directories(JellyOS PRIVATE
+target_include_directories(JellyFloatOS PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # WLAN: CYW43 driver plus lwIP, run from a background IRQ on the core that calls
 # cyw43_arch_init (core 0). lwipopts.h in this directory configures lwIP.
-target_link_libraries(JellyOS
+target_link_libraries(JellyFloatOS
         pico_cyw43_arch_lwip_threadsafe_background
         pico_unique_id
         pico_rand
         )
 
-pico_add_extra_outputs(JellyOS)
+pico_add_extra_outputs(JellyFloatOS)
 
 

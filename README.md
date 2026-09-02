@@ -1,15 +1,16 @@
-# Playground fork of the Sheffield-by-the-Sea Jellyfish
+# JellyFloatOS
 
-> **This is not the original project.** It is a personal fork for playing around with the firmware.
+Firmware for a bloom of audio-reactive, WLAN-synchronised LED jellyfish on the Raspberry Pi Pico 2 W.
+
+> **Origin and credit.** JellyFloatOS started as a fork of the Sheffield-by-the-Sea EMF2026 Jellyfish,
+> **https://github.com/Sheffield-by-the-sea/Jellyfish**, and is continued here as its own project. The idea,
+> the design, the 3D models, the circuit board and the original firmware are the work of Alex and the
+> Sheffield-by-the-Sea crew; the original write-up is on
+> [Pimoroni Learn](https://learn.pimoroni.com/article/building-sound-reactive-jellyfish). Nothing here is
+> reviewed, endorsed or supported by them. If you want to build the original, start from their repository.
+> Both projects are MIT licensed, see [LICENSE.md](LICENSE.md).
 >
-> The real thing lives at **https://github.com/Sheffield-by-the-sea/Jellyfish**. All credit for the idea, the
-> design, the 3D models, the circuit board and the firmware goes to Alex and the Sheffield-by-the-Sea crew.
-> If you want to build a Jellyfish, start from the original repository. Nothing in this fork has been
-> reviewed, endorsed or supported by the original authors, and firmware built by this fork's CI is not
-> official firmware.
->
-> See [How this fork differs from the original](#how-this-fork-differs-from-the-original) for what has
-> been changed here.
+> See [How this differs from the original](#how-this-fork-differs-from-the-original) for what has changed.
 
 ---
 
@@ -38,10 +39,10 @@ We don't use the wireless functionality of Pico 2 W in this project so we could 
 
 ## How this fork differs from the original
 
-Only the C++ firmware in `firmware_cpp/` is being changed here. The 3D print files, the PCB and the
+Only the C++ firmware in `firmware_cpp/` is being developed here. The 3D print files, the PCB and the
 bill of materials are exactly as in the original repository.
 
-Changes so far, relative to the original `main`:
+Changes relative to the original `main`:
 
 - **All seven tentacle headers are driven.** The firmware always outputs to NeoPix2..NeoPix8 (GPIO 3..9),
   with a fixed maximum of 16 LEDs per tentacle. Headers without a strip simply send into nothing, so one
