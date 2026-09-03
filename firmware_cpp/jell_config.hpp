@@ -55,7 +55,13 @@ public:
     // Every mode change blends the previous picture into the new one over this long.
     static constexpr float CROSSFADE_S = 1.0f;
 
-    static constexpr int NUMBER_LEDS_IN_RING = 96;
+    // LEDs in the ring. Also sets the angular spacing of the ring's pixels, so it must match
+    // the strip actually fitted. Overridable per build like the network settings below, e.g.
+    //   cmake ... -DJELL_RING_LEDS=39
+#ifndef JELL_RING_LEDS
+#define JELL_RING_LEDS 96
+#endif
+    static constexpr int NUMBER_LEDS_IN_RING = JELL_RING_LEDS;
 
     // Tentacles hang off the NeoPix2..NeoPix8 headers of the jellyboard (GPIO 3..9).
     // The firmware always drives all of them; a header without a strip simply sends into nothing.
@@ -101,8 +107,8 @@ public:
     // it, it joins as a station, otherwise it becomes the access point itself. Any device
     // that joins the network can control the bloom; there is no further authentication.
     //
-    // Defaults can be overridden without editing this file, e.g. in CMake:
-    //   target_compile_definitions(JellyOS PRIVATE JELL_WIFI_SSID="bloom" JELL_WIFI_PASSWORD="secret123")
+    // Defaults can be overridden without editing this file, per build:
+    //   cmake ... -DJELL_WIFI_SSID=bloom -DJELL_WIFI_PASSWORD=secret123
 #ifndef JELL_WIFI_SSID
 #define JELL_WIFI_SSID "\xF0\x9F\xAA\xBC" // the jellyfish emoji U+1FABC as UTF-8; an SSID is just bytes
 #endif

@@ -3,6 +3,12 @@
 All notable changes to JellyFloatOS. The project continues the Sheffield-by-the-Sea Jellyfish firmware;
 entries start where the fork diverged.
 
+## Unreleased
+
+### Added
+- Per-build options `JELL_RING_LEDS`, `JELL_WIFI_SSID`, `JELL_WIFI_PASSWORD` as CMake variables and as
+  inputs of the CI workflow's manual run, so one source tree serves rings of any size.
+
 ## 0.1.0 - 2026-09-02
 
 First release under the JellyFloatOS name.

@@ -3,7 +3,21 @@ name: Build firmware
 on:
   push:
   pull_request:
+  # "Run workflow" in the Actions tab builds a variant for a specific jelly.
   workflow_dispatch:
+    inputs:
+      ring_leds:
+        description: "LEDs in the ring (empty = default 96)"
+        required: false
+        default: ""
+      wifi_ssid:
+        description: "Network name (empty = default)"
+        required: false
+        default: ""
+      wifi_password:
+        description: "Network password, 8+ characters (empty = default)"
+        required: false
+        default: ""
 
 jobs:
   build:
@@ -17,14 +31,31 @@ jobs:
       - name: Add Pico SDK import helper
         run: cp .github/pico_sdk_import.cmake firmware_cpp/pico_sdk_import.cmake
 
+      - name: Collect build options
+        id: opts
+        env:
+          RING: ${{ inputs.ring_leds }}
+          SSID: ${{ inputs.wifi_ssid }}
+          PASSWORD: ${{ inputs.wifi_password }}
+        run: |
+          args=""
+          suffix=""
+          [ -n "$RING" ] && args="$args -DJELL_RING_LEDS=$RING" && suffix="$suffix-ring$RING"
+          [ -n "$SSID" ] && args="$args -DJELL_WIFI_SSID=$SSID" && suffix="$suffix-custom-wifi"
+          [ -n "$PASSWORD" ] && args="$args -DJELL_WIFI_PASSWORD=$PASSWORD"
+          echo "args=$args" >> "$GITHUB_OUTPUT"
+          echo "suffix=$suffix" >> "$GITHUB_OUTPUT"
+          echo "cmake args: $args"
+
       - uses: samyarsadat/Pico-Build-Action@v1
         with:
           source_dir: firmware_cpp
           output_dir: build
+          cmake_args: ${{ steps.opts.outputs.args }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: JellyFloatOS
+          name: JellyFloatOS${{ steps.opts.outputs.suffix }}
           path: firmware_cpp/build/JellyFloatOS.uf2
 
   # A release is a deliberate act: push a tag like v0.1.0 and this job publishes the

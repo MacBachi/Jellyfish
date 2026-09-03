@@ -83,6 +83,21 @@ target_link_libraries(JellyFloatOS
         pico_rand
         )
 
+# Per-build overrides for hardware and network settings, so one source tree serves
+# every jelly:   cmake ... -DJELL_RING_LEDS=39 -DJELL_WIFI_SSID=bloom -DJELL_WIFI_PASSWORD=secret123
+# The CI workflow exposes the same three as inputs of its manual run.
+if (DEFINED JELL_RING_LEDS AND NOT "${JELL_RING_LEDS}" STREQUAL "")
+    target_compile_definitions(JellyFloatOS PRIVATE JELL_RING_LEDS=${JELL_RING_LEDS})
+    message(STATUS "JellyFloatOS: ring with ${JELL_RING_LEDS} LEDs")
+endif()
+if (DEFINED JELL_WIFI_SSID AND NOT "${JELL_WIFI_SSID}" STREQUAL "")
+    target_compile_definitions(JellyFloatOS PRIVATE "JELL_WIFI_SSID=\"${JELL_WIFI_SSID}\"")
+    message(STATUS "JellyFloatOS: network name ${JELL_WIFI_SSID}")
+endif()
+if (DEFINED JELL_WIFI_PASSWORD AND NOT "${JELL_WIFI_PASSWORD}" STREQUAL "")
+    target_compile_definitions(JellyFloatOS PRIVATE "JELL_WIFI_PASSWORD=\"${JELL_WIFI_PASSWORD}\"")
+endif()
+
 pico_add_extra_outputs(JellyFloatOS)
 
 

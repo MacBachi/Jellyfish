@@ -96,11 +96,16 @@ cmake --build firmware_cpp/build
 The firmware is `firmware_cpp/build/JellyFloatOS.uf2`. The CI does the same on every push and attaches the
 result as an artifact; a pushed tag such as `v0.2.0` publishes it as a release.
 
-Network name and password can be set at build time without editing the sources:
+Ring size, network name and password can be set per build without editing the sources:
 
 ```bash
-cmake ... -DCMAKE_CXX_FLAGS='-DJELL_WIFI_SSID=\"bloom\" -DJELL_WIFI_PASSWORD=\"secret123\"'
+cmake ... -DJELL_RING_LEDS=39 -DJELL_WIFI_SSID=bloom -DJELL_WIFI_PASSWORD=secret123
 ```
+
+The same three options are inputs of the CI workflow's manual run ("Run workflow" in the Actions tab), which
+attaches the variant as an artifact, e.g. `JellyFloatOS-ring39`. The ring size matters: it sets the angular
+spacing of the ring's pixels, so a 39-LED ring built with the default 96 would show position-based effects
+squeezed into part of the circle.
 
 ## The bloom: WLAN between jellies
 
