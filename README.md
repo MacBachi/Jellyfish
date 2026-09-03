@@ -94,13 +94,14 @@ cmake --build firmware_cpp/build
 ```
 
 The firmware is `firmware_cpp/build/JellyFloatOS.uf2`. The CI does the same on every push and attaches the
-result as an artifact; a pushed tag such as `v0.2.0` publishes it as a release.
+result as an artifact; a pushed tag such as `v0.5.0` publishes it as a release, with the
+default firmware and the 39-LED GRB/RGB variant attached.
 
 ### Versions
 
 The `VERSION` file at the repository root is the one version number for firmware and app: CMake compiles
 it into the firmware, and the app's build stamps it into its Info.plist. Between releases it reads like
-`0.2.0-dev`; a release sets it to the plain number and pushes the matching tag (the release job refuses a
+`0.5.1-dev`; a release sets it to the plain number and pushes the matching tag (the release job refuses a
 tag that does not match). Every jelly announces its version and its number of modes in its `HELLO`, prints
 them on the serial console at boot, and the app shows what each jelly runs, what the newest version is and
 where they differ.

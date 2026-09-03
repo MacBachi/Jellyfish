@@ -3,17 +3,16 @@
 All notable changes to JellyFloatOS. The project continues the Sheffield-by-the-Sea Jellyfish firmware;
 entries start where the fork diverged.
 
-## Unreleased
+## 0.5.0 - 2026-09-03
+
+First release with the JellyFloat iPhone app and the shared version number.
 
 ### Added
 - Per-build options `JELL_RING_LEDS`, `JELL_RING_ORDER`, `JELL_TENTACLE_ORDER`, `JELL_WIFI_SSID`,
   `JELL_WIFI_PASSWORD` as CMake variables and as inputs of the CI workflow's manual run, so one source
   tree serves rings of any size and strips of any colour order.
 - Colour orders RBG, BRG and BGR in the LED driver.
-
-## Unreleased
-
-### Added
+- Releases carry two firmware files: the default ring and the 39-LED GRB ring with RGB tentacles.
 - One version number for firmware and app, kept in `VERSION`. The firmware compiles it in, prints it at
   boot and announces it with its mode count in every `HELLO`; the app stamps it into its build.
 - The app shows each jelly's firmware version against the newest it knows, flags modes that not every
