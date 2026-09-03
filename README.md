@@ -96,6 +96,19 @@ cmake --build firmware_cpp/build
 The firmware is `firmware_cpp/build/JellyFloatOS.uf2`. The CI does the same on every push and attaches the
 result as an artifact; a pushed tag such as `v0.2.0` publishes it as a release.
 
+### Versions
+
+The `VERSION` file at the repository root is the one version number for firmware and app: CMake compiles
+it into the firmware, and the app's build stamps it into its Info.plist. Between releases it reads like
+`0.2.0-dev`; a release sets it to the plain number and pushes the matching tag (the release job refuses a
+tag that does not match). Every jelly announces its version and its number of modes in its `HELLO`, prints
+them on the serial console at boot, and the app shows what each jelly runs, what the newest version is and
+where they differ.
+
+Mixed versions keep working. Nothing is refused: a jelly told a mode number it does not know wraps around
+to a lower one (mode 19 on a 19-mode jelly shows mode 0), and the app says so on the tile and in the
+Jellies tab instead of hiding the mode.
+
 Ring size, colour order of the strips, network name and password can be set per build without editing
 the sources:
 
@@ -120,7 +133,8 @@ on the rest. If the AP jelly disappears, the others keep their last state and st
 - Network name is the jellyfish emoji 🪼, password `FroschUndMaus`. Both can be changed at build time, see above.
 - Joining the network is the only access control. Anyone on it can control the bloom.
 - Onboard LED: fast blink = looking for a network, solid = access point, slow blink = station.
-- All jellies in a bloom must run the same firmware version, because modes travel as bare numbers.
+- Jellies with different firmware versions can share a bloom; modes travel as bare numbers, so a mode a
+  jelly does not have wraps to a lower one there. Each jelly announces its version, see "Versions" above.
 
 ### Commands
 
@@ -138,9 +152,9 @@ nc -lu 4210                     # in a second terminal: watch heartbeats, beats 
 | `HUE deg` | shift every colour by this many degrees |
 | `CYCLE s` | period of the palette cycle mode |
 | `IDENT` | the AP jelly blinks red three times, all others blue |
-| `HELLO` | roll call: every jelly answers with its id, role, colour slot and IP |
+| `HELLO` | roll call: every jelly answers `HELLO <id> <AP\|STA> <slot> <ip> <version> <modes>` |
 | `BEAT` | trigger a beat on all jellies (for testing the drops mode) |
-| `HELLO <id> APP 0 <ip>` | register as an app: get a colour slot and unicast copies of everything the AP sends (STATE, BEAT, IDENT, SLOT) plus a `LEVEL 0..1` microphone stream, for 15 s per HELLO. Phones need this because iOS does not let apps receive broadcasts. |
+| `HELLO <id> APP <slot> <ip> [<version> <modes>]` | register as an app: get a colour slot and unicast copies of everything the AP sends (STATE, BEAT, IDENT, SLOT) plus a `LEVEL 0..1` microphone stream, for 15 s per HELLO. The AP answers with its own `HELLO` and one for every jelly it has heard from lately, and passes later jelly `HELLO`s on, so the app has the whole roster. Phones need this because iOS does not let apps receive broadcasts. |
 
 The USB serial console prints the election, role changes, every command sent or received, and the time
 offset a station keeps to the AP's clock.
@@ -184,7 +198,9 @@ returns to your usual Wi-Fi about 15 s after you leave the app.
 Build it with Xcode 16 or newer: `cd ios && xcodegen generate`, then open `JellyFloat.xcodeproj`, put
 your Team ID into `ios/Local.xcconfig` (see the `.example`) and run on your iPhone. In the simulator the
 app talks to a built-in demo bloom, since simulators cannot join Wi-Fi. The app relies on the firmware's
-`HELLO ... APP` subscription, so it needs firmware from this repository.
+`HELLO ... APP` subscription, so it needs firmware from this repository. The Jellies tab lists every
+jelly with its firmware version against the newest one the app knows, and marks modes that not every
+jelly has.
 
 ## Repository layout
 
@@ -194,6 +210,7 @@ app talks to a built-in demo bloom, since simulators cannot join Wi-Fi. The app 
 | `pcb/` | KiCad project and JLCPCB production files for the Jellyboard |
 | `3D print files/` | base, ribs, pillar, loops, fabric plug |
 | `ios/` | the JellyFloat iPhone app (SwiftUI, XcodeGen project) |
+| `VERSION` | the one version number for firmware and app |
 | `.github/workflows/` | CI: build on every push, release on `v*` tags |
 
 ## Roadmap

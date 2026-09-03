@@ -4,6 +4,7 @@ struct ModeTile: View {
     let mode: JellyMode
     let selected: Bool
     let playing: Bool   // the playlist is currently showing this mode
+    var missingOn = 0   // how many jellies in the bloom lack this mode
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -13,6 +14,10 @@ struct ModeTile: View {
                         .shadow(color: Theme.color(hue: h).opacity(0.7), radius: 5)
                 }
                 Spacer()
+                if missingOn > 0 {
+                    Label("\(missingOn)", systemImage: "exclamationmark.triangle.fill").font(.caption2.weight(.semibold)).foregroundStyle(Theme.amber)
+                        .accessibilityLabel("not on \(missingOn) jellies")
+                }
                 if playing { Image(systemName: "play.fill").font(.caption2).foregroundStyle(Theme.cyan) }
             }
             Spacer(minLength: 4)

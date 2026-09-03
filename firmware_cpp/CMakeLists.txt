@@ -54,8 +54,26 @@ add_executable(JellyFloatOS
 pico_generate_pio_header(JellyFloatOS ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
 pico_generate_pio_header(JellyFloatOS ${CMAKE_CURRENT_LIST_DIR}/i2s_microphone.pio)
 
+# Version: the VERSION file at the repository root is the single source, shared with the
+# app. Override with -DJELL_VERSION=... only for experiments. The git revision is taken
+# from the working tree, or from -DJELL_GIT_REV=... (the CI passes it in).
+if (NOT DEFINED JELL_VERSION OR "${JELL_VERSION}" STREQUAL "")
+    file(READ "${CMAKE_CURRENT_LIST_DIR}/../VERSION" JELL_VERSION)
+    string(STRIP "${JELL_VERSION}" JELL_VERSION)
+endif()
+if (NOT DEFINED JELL_GIT_REV OR "${JELL_GIT_REV}" STREQUAL "")
+    execute_process(COMMAND git rev-parse --short HEAD
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+                    OUTPUT_VARIABLE JELL_GIT_REV OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+    if ("${JELL_GIT_REV}" STREQUAL "")
+        set(JELL_GIT_REV "unknown")
+    endif()
+endif()
+message(STATUS "JellyFloatOS: version ${JELL_VERSION} (${JELL_GIT_REV})")
+target_compile_definitions(JellyFloatOS PRIVATE "JELL_VERSION=\"${JELL_VERSION}\"" "JELL_GIT_REV=\"${JELL_GIT_REV}\"")
+
 pico_set_program_name(JellyFloatOS "JellyFloatOS")
-pico_set_program_version(JellyFloatOS "0.1.0")
+pico_set_program_version(JellyFloatOS "${JELL_VERSION}")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(JellyFloatOS 0)

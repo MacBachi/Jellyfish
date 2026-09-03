@@ -6,6 +6,7 @@ enum Theme {
     static let deepBottom = Color(red: 8 / 255, green: 8 / 255, blue: 24 / 255)
     static let cyan = Color(red: 0.31, green: 0.89, blue: 1.0)
     static let magenta = Color(red: 1.0, green: 0.37, blue: 0.82)
+    static let amber = Color(red: 1.0, green: 0.76, blue: 0.35)
     static let ink = Color.white.opacity(0.92)
     static let inkDim = Color.white.opacity(0.55)
 

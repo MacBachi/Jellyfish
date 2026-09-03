@@ -90,6 +90,10 @@ namespace
     {
         char id[5];
         int slot;
+        bool is_app;
+        char ip[16];
+        char version[16];  // as announced in HELLO; "?" when the jelly runs firmware that predates version reporting
+        int modes;         // number of modes the jelly knows; 0 when unknown
         uint64_t last_seen_us;
     };
     Member roster[JellConfig::NET_MAX_JELLIES];
@@ -180,6 +184,16 @@ namespace
         cyw43_arch_lwip_end();
     }
 
+    // Send one line to a single address (an app answering our roster replay, say).
+    void send_to(const char* line, const ip_addr_t* ip, u16_t port)
+    {
+        if (!interface_up() || pcb == nullptr)
+            return;
+        cyw43_arch_lwip_begin();
+        send_datagram(line, ip, port);
+        cyw43_arch_lwip_end();
+    }
+
     bool any_subscriber()
     {
         for (const Subscriber& s : subscribers)
@@ -237,12 +251,39 @@ namespace
         state_dirty = false;
     }
 
+    // HELLO <id> <role> <slot> <ip> <version> <modes>. Older firmware sends only the first
+    // four fields and ignores the rest when it receives them.
+    void format_hello(char* line, size_t n, const char* id, const char* their_role, int slot,
+                      const char* ip, const char* version, int modes)
+    {
+        snprintf(line, n, "HELLO %s %s %d %s %s %d", id, their_role, slot, ip, version, modes);
+    }
+
     void send_hello()
     {
         char line[LINE_MAX];
-        snprintf(line, sizeof line, "HELLO %s %s %d %s",
-                 my_id, state.is_ap ? "AP" : "STA", state.slot, my_ip());
+        format_hello(line, sizeof line, my_id, state.is_ap ? "AP" : "STA", state.slot, my_ip(),
+                     JellConfig::VERSION, (int)JellConfig::DisplayMode::Count);
         send_line(line);
+    }
+
+    // Tell one app who is here: ourselves, then every member heard from recently.
+    void replay_roster_to(const ip_addr_t* ip, u16_t port)
+    {
+        char line[LINE_MAX];
+        format_hello(line, sizeof line, my_id, "AP", state.slot, my_ip(),
+                     JellConfig::VERSION, (int)JellConfig::DisplayMode::Count);
+        send_to(line, ip, port);
+
+        const uint64_t now = time_us_64();
+        for (int i = 0; i < roster_count; i++)
+        {
+            const Member& m = roster[i];
+            if (now - m.last_seen_us > (uint64_t)JellConfig::NET_MEMBER_TIMEOUT_MS * 1000)
+                continue;
+            format_hello(line, sizeof line, m.id, m.is_app ? "APP" : "STA", m.slot, m.ip, m.version, m.modes);
+            send_to(line, ip, port);
+        }
     }
 
     // ------------------------------------------------------------------ lwIP / cyw43 callbacks
@@ -404,7 +445,7 @@ namespace
         return nullptr;
     }
 
-    void roster_seen(const char* id, bool is_station)
+    void roster_seen(const char* id, bool is_station, bool is_app, const char* ip, const char* version, int modes)
     {
         Member* m = roster_find(id);
         if (m == nullptr)
@@ -419,11 +460,17 @@ namespace
             m->id[sizeof m->id - 1] = 0;
             m->slot = roster_count + 1; // slot 0 is the AP itself
             roster_count++;
-            log("new jelly %s gets slot %d", id, m->slot);
+            log("new %s %s gets slot %d, version %s, %d modes", is_app ? "app" : "jelly", id, m->slot, version, modes);
         }
         m->last_seen_us = time_us_64();
+        m->is_app = is_app;
+        strncpy(m->ip, ip, sizeof m->ip - 1);
+        m->ip[sizeof m->ip - 1] = 0;
+        strncpy(m->version, version, sizeof m->version - 1);
+        m->version[sizeof m->version - 1] = 0;
+        m->modes = modes;
 
-        if (is_station)
+        if (is_station || is_app)
         {
             char line[LINE_MAX];
             snprintf(line, sizeof line, "SLOT %s %d", id, m->slot);
@@ -705,18 +752,35 @@ void Net::handle_line(const char* line, bool local)
     }
     else if (strcmp(verb, "HELLO") == 0)
     {
-        char id[8], their_role[8];
-        int slot;
+        char id[8], their_role[8], ip[16], version[16];
+        int slot, modes;
         if (next_word(args, id, sizeof id) && next_word(args, their_role, sizeof their_role) && next_int(args, slot))
         {
+            // The last three fields are optional: firmware before 0.2 sends neither version nor modes.
+            if (!next_word(args, ip, sizeof ip))
+                strcpy(ip, "?");
+            if (!next_word(args, version, sizeof version))
+                strcpy(version, "?");
+            if (!next_int(args, modes))
+                modes = 0;
+
             if (state.is_ap && strcmp(id, my_id) != 0)
             {
                 // Stations and apps both get a colour slot; apps additionally get unicast copies
                 // of everything we send, because phones can't receive broadcasts.
                 const bool is_app = strcmp(their_role, "APP") == 0;
-                roster_seen(id, strcmp(their_role, "STA") == 0 || is_app);
+                const bool is_station = strcmp(their_role, "STA") == 0;
+                roster_seen(id, is_station, is_app, ip, version, modes);
                 if (is_app && current_rx_us != 0)
+                {
                     subscriber_seen(&current_from, current_from_port);
+                    replay_roster_to(&current_from, current_from_port);
+                }
+                else if (is_station && !local)
+                {
+                    // Apps never hear the stations' broadcasts; pass the line on so their roster stays live.
+                    send_subscribers_only(line);
+                }
             }
         }
         else
@@ -754,6 +818,8 @@ void Net::init()
     for (uint8_t b : id.id)
         id_hash = id_hash * 31u + b;
     srand(id_hash); // otherwise every jelly sparkles in exactly the same sequence
+    log("JellyFloatOS %s (%s), jelly %s, %d modes", JellConfig::VERSION, JellConfig::GIT_REV, my_id,
+        (int)JellConfig::DisplayMode::Count);
 
     state = JellState{};
     publish();
@@ -857,10 +923,13 @@ void Net::poll()
                 break;
             }
 
-            if (state.slot < 0 && now >= next_hello_us)
+            // Ask for a colour slot until we have one, then say hello now and then so the
+            // AP's roster (and the apps' view of it) knows we are still here.
+            if (now >= next_hello_us)
             {
                 send_hello();
-                next_hello_us = now + (uint64_t)JellConfig::NET_HELLO_RETRY_MS * 1000;
+                const uint32_t gap_ms = state.slot < 0 ? JellConfig::NET_HELLO_RETRY_MS : JellConfig::NET_HELLO_KEEPALIVE_MS;
+                next_hello_us = now + (uint64_t)gap_ms * 1000;
             }
             break;
         }

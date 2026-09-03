@@ -55,6 +55,8 @@ jobs:
           [ -n "$TENTACLE_ORDER" ] && args="$args -DJELL_TENTACLE_ORDER=$TENTACLE_ORDER" && suffix="$suffix-t$TENTACLE_ORDER"
           [ -n "$SSID" ] && args="$args -DJELL_WIFI_SSID=$SSID" && suffix="$suffix-custom-wifi"
           [ -n "$PASSWORD" ] && args="$args -DJELL_WIFI_PASSWORD=$PASSWORD"
+          args="$args -DJELL_GIT_REV=${GITHUB_SHA::7}"
+          echo "version=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_OUTPUT"
           echo "args=$args" >> "$GITHUB_OUTPUT"
           echo "suffix=$suffix" >> "$GITHUB_OUTPUT"
           echo "cmake args: $args"
@@ -81,6 +83,16 @@ jobs:
       contents: write
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that VERSION matches the tag
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "VERSION says $version but the tag is $GITHUB_REF_NAME; bump VERSION first." >&2
+            exit 1
+          fi
+
       - name: Download firmware
         uses: actions/download-artifact@v4
         with:

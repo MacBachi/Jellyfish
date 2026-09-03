@@ -19,7 +19,8 @@ struct HomeView: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(JellyMode.allCases.filter { $0.group == group }) { mode in
                                 Button { model.select(mode) } label: {
-                                    ModeTile(mode: mode, selected: model.state.mode == mode, playing: model.state.mode == .playlist && model.effectiveMode == mode)
+                                    ModeTile(mode: mode, selected: model.state.mode == mode, playing: model.state.mode == .playlist && model.effectiveMode == mode,
+                                             missingOn: model.jelliesLacking(mode).count)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -63,6 +64,24 @@ struct HomeView: View {
         .font(.title3)
         .foregroundStyle(Theme.cyan)
         .glassCard(padding: 14)
+        .overlay(alignment: .bottom) {
+            if !model.jelliesLacking(model.state.mode).isEmpty {
+                Text(lackingNote(for: model.state.mode)).font(.caption2).foregroundStyle(Theme.amber).lineLimit(2)
+                    .multilineTextAlignment(.center).padding(.horizontal, 12).offset(y: 18)
+            }
+        }
+        .padding(.bottom, model.jelliesLacking(model.state.mode).isEmpty ? 0 : 22)
+    }
+
+    /// "Jelly 1b3c doesn't know SOS and shows Breathe instead."
+    private func lackingNote(for mode: JellyMode) -> String {
+        let lacking = model.jelliesLacking(mode)
+        let names = lacking.prefix(3).map { "Jelly \($0.id)" }.joined(separator: ", ") + (lacking.count > 3 ? " and \(lacking.count - 3) more" : "")
+        let verb = lacking.count == 1 ? "doesn't" : "don't"
+        if let fb = lacking.first?.fallback(for: mode), lacking.allSatisfy({ $0.fallback(for: mode) == fb }) {
+            return "\(names) \(verb) know \(mode.name) and \(lacking.count == 1 ? "shows" : "show") \(fb.name) instead."
+        }
+        return "\(names) \(verb) know \(mode.name) and \(lacking.count == 1 ? "shows" : "show") another mode instead."
     }
 }
 

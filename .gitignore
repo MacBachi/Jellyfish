@@ -21,4 +21,6 @@ pcb/*.kicad_prl
 ios/*.xcodeproj
 ios/Local.xcconfig
 ios/build/
+ios/build-sim/
+ios/Generated/
 ios/DerivedData/

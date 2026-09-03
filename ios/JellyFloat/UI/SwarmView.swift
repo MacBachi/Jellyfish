@@ -22,7 +22,12 @@ struct SwarmView: View {
                             .font(.subheadline).foregroundStyle(Theme.inkDim).frame(maxWidth: .infinity, alignment: .leading).glassCard()
                     }
                     ForEach(model.roster) { entry in rosterRow(entry) }
-                    rosterRow(RosterEntry(id: model.settings.jellyID, role: .app, slot: model.slot, ip: "this phone", lastSeen: Date()), isSelf: true)
+                    rosterRow(RosterEntry(id: model.settings.jellyID, role: .app, slot: model.slot, ip: "this phone", lastSeen: Date(),
+                                          firmware: BuildInfo.appVersion, modeCount: BuildInfo.modeCount), isSelf: true)
+                }
+                VStack(spacing: 10) {
+                    SectionTitle(text: "Firmware")
+                    firmwareCard
                 }
                 Spacer(minLength: 24)
             }
@@ -31,25 +36,91 @@ struct SwarmView: View {
         .background(Theme.background)
     }
 
+    // MARK: firmware overview
+
+    private var firmwareCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Newest known").font(.subheadline).foregroundStyle(Theme.inkDim)
+                Spacer()
+                Text(BuildInfo.latestFirmware.text).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+            }
+            HStack {
+                Text("This app").font(.subheadline).foregroundStyle(Theme.inkDim)
+                Spacer()
+                Text("\(BuildInfo.appVersion) · \(BuildInfo.modeCount) modes").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+            }
+            if let newest = model.newestFirmwareInBloom, newest > BuildInfo.latestFirmware {
+                HStack {
+                    Text("Newest in the bloom").font(.subheadline).foregroundStyle(Theme.inkDim)
+                    Spacer()
+                    Text(newest.text).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.magenta)
+                }
+            }
+            Divider().overlay(Color.white.opacity(0.15))
+            Text(model.firmwareSummary).font(.caption).foregroundStyle(Theme.inkDim).fixedSize(horizontal: false, vertical: true)
+            let mismatched = model.jellies.filter { !$0.missingModes.isEmpty }
+            ForEach(mismatched) { j in
+                Text("Jelly \(j.id) lacks \(modeList(j.missingModes)).").font(.caption).foregroundStyle(Theme.amber).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard(padding: 12)
+    }
+
+    private func modeList(_ modes: [JellyMode]) -> String {
+        let names = modes.prefix(4).map(\.name)
+        return names.joined(separator: ", ") + (modes.count > 4 ? " and \(modes.count - 4) more" : "")
+    }
+
+    // MARK: rows
+
     private func rosterRow(_ e: RosterEntry, isSelf: Bool = false) -> some View {
-        HStack(spacing: 14) {
+        let stale = !isSelf && Date().timeIntervalSince(e.lastSeen) > 90
+        return HStack(spacing: 14) {
             Circle()
                 .fill(e.slot >= 0 ? Theme.color(hue: JellyPalette.hue(forSlot: e.slot), saturation: 0.85, value: 0.95) : Color.white.opacity(0.15))
                 .frame(width: 34, height: 34)
                 .shadow(color: e.slot >= 0 ? Theme.color(hue: JellyPalette.hue(forSlot: e.slot)).opacity(0.6) : .clear, radius: 8)
                 .overlay(Text(e.slot >= 0 ? "\(e.slot)" : "?").font(.caption.weight(.bold)).foregroundStyle(.black.opacity(0.7)))
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
-                    Text(isSelf ? "This phone" : "Jelly \(e.id)").font(.headline).foregroundStyle(Theme.ink)
-                    Text(roleName(e.role)).font(.caption2.weight(.semibold)).padding(.horizontal, 6).padding(.vertical, 2)
-                        .background(e.role == .ap ? Theme.magenta.opacity(0.35) : .white.opacity(0.1), in: Capsule()).foregroundStyle(Theme.ink)
+                    Text(isSelf ? "This phone" : (e.role == .app ? "Phone \(e.id)" : "Jelly \(e.id)")).font(.headline).foregroundStyle(Theme.ink)
+                    chip(roleName(e.role), tint: e.role == .ap ? Theme.magenta.opacity(0.35) : .white.opacity(0.1))
                 }
-                Text(isSelf ? (e.slot >= 0 ? "virtual jelly, colour slot \(e.slot)" : "virtual jelly, waiting for a colour slot") : "\(e.ip)  ·  \(e.lastSeen.formatted(date: .omitted, time: .standard))")
+                HStack(spacing: 6) {
+                    versionChip(e, isSelf: isSelf)
+                    if let n = e.modeCount { Text("\(n) modes").font(.caption2).foregroundStyle(Theme.inkDim) }
+                }
+                Text(isSelf ? (e.slot >= 0 ? "virtual jelly, colour slot \(e.slot)" : "virtual jelly, waiting for a colour slot")
+                     : "\(e.ip.isEmpty ? "address unknown" : e.ip)  ·  \(stale ? "last heard " : "")\(e.lastSeen.formatted(date: .omitted, time: .standard))")
                     .font(.caption).foregroundStyle(Theme.inkDim)
             }
             Spacer()
         }
+        .opacity(stale ? 0.6 : 1)
         .glassCard(padding: 12)
+    }
+
+    private func versionChip(_ e: RosterEntry, isSelf: Bool) -> some View {
+        let status = e.firmwareStatus
+        let tint: Color
+        switch status {
+        case .latest: tint = Theme.cyan.opacity(0.3)
+        case .older: tint = Theme.amber.opacity(0.35)
+        case .newer: tint = Theme.magenta.opacity(0.35)
+        case .unknown: tint = .white.opacity(0.1)
+        }
+        let text: String
+        if isSelf { text = BuildInfo.appVersion }
+        else if let v = e.firmwareVersion { text = status == .latest ? v.text : "\(v.text) · \(status.label)" }
+        else { text = e.role == .app ? "app, no version" : "no version · before \(BuildInfo.latestFirmware.text)" }
+        return chip(text, tint: tint)
+    }
+
+    private func chip(_ text: String, tint: Color) -> some View {
+        Text(text).font(.caption2.weight(.semibold)).padding(.horizontal, 6).padding(.vertical, 2)
+            .background(tint, in: Capsule()).foregroundStyle(Theme.ink)
     }
 
     private func roleName(_ r: RosterEntry.Role) -> String {

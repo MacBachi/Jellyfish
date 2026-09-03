@@ -56,10 +56,15 @@ private struct SettingsForm: View {
                     Text("This phone joins the bloom as a jelly of its own: it gets a colour slot and runs the same effects on the shared clock.")
                 }
 
-                Section("About") {
+                Section {
                     LabeledContent("This phone's jelly id", value: settings.jellyID)
-                    LabeledContent("Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")
+                    LabeledContent("App version", value: BuildInfo.appVersion)
+                    LabeledContent("Build", value: "\(BuildInfo.build) · \(BuildInfo.gitRevision)")
+                    LabeledContent("Newest firmware", value: BuildInfo.latestFirmware.text)
+                    LabeledContent("Modes this app knows", value: "\(BuildInfo.modeCount)")
                     Link("JellyFloatOS on GitHub", destination: URL(string: "https://github.com/MacBachi/Jellyfish")!)
+                } header: { Text("About") } footer: {
+                    Text("App and firmware share one version number. The Jellies tab shows what each jelly in the bloom runs.")
                 }
             }
             .scrollContentBackground(.hidden)

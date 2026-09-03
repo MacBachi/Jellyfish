@@ -126,6 +126,10 @@ struct RosterEntry: Identifiable, Equatable {
     var slot: Int
     var ip: String
     var lastSeen: Date
+    /// Firmware version as announced in HELLO; nil from firmware that predates version reporting.
+    var firmware: String? = nil
+    /// How many modes the jelly knows (mode numbers 0..<modeCount); nil when it did not say.
+    var modeCount: Int? = nil
 }
 
 /// One line received from the network, already parsed.
@@ -154,8 +158,12 @@ enum InboundLine: Equatable {
             let mode = JellyMode(rawValue: m) ?? .micField
             return .state(JellyState(mode: mode, brightness: b, hueOffset: h, cyclePeriod: c), apTimeUs: t, apID: args[5])
         case "HELLO":
+            // HELLO <id> <role> <slot> [<ip> [<version> <modes>]]; "?" and 0 stand for "not known".
             guard args.count >= 3, let role = RosterEntry.Role(rawValue: args[1].uppercased()), let s = n(2) else { return .unknown(raw) }
-            return .hello(RosterEntry(id: args[0], role: role, slot: s, ip: args.count > 3 ? args[3] : "", lastSeen: date))
+            let ip = args.count > 3 && args[3] != "?" ? args[3] : ""
+            let firmware = args.count > 4 && args[4] != "?" ? args[4] : nil
+            let modes = n(5).flatMap { $0 > 0 ? $0 : nil }
+            return .hello(RosterEntry(id: args[0], role: role, slot: s, ip: ip, lastSeen: date, firmware: firmware, modeCount: modes))
         case "SLOT":
             guard args.count >= 2, let s = n(1) else { return .unknown(raw) }
             return .slot(id: args[0], slot: s)
@@ -184,5 +192,5 @@ enum OutboundLine {
     static let identify = "IDENT"
     static let rollCall = "HELLO"
     static let beat = "BEAT"
-    static func hello(id: String, slot: Int) -> String { "HELLO \(id) APP \(slot) app" }
+    static func hello(id: String, slot: Int) -> String { "HELLO \(id) APP \(slot) app \(BuildInfo.appVersion) \(BuildInfo.modeCount)" }
 }

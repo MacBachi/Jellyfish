@@ -27,6 +27,6 @@ namespace Net
     // The single entry point for commands: received datagrams, the buttons, later the
     // web page. Applies the line to the state and, with `local` set, also sends it to
     // everyone else. Lines: MODE n | NEXT | PREV | BRIGHT f | HUE f | CYCLE f | BEAT |
-    // IDENT [t] | STATE ... | HELLO [id role slot ip] | SLOT id n
+    // IDENT [t] | STATE ... | HELLO [id role slot ip version modes] | SLOT id n
     void handle_line(const char* line, bool local);
 }

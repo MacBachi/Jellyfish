@@ -19,7 +19,16 @@ final class DemoJelly: JellyTransport {
         onStatus?("demo")
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in self?.step() }
-        emit("HELLO \(apID) AP 0 192.168.4.1")
+        emit(apHello)
+    }
+
+    private var apHello: String { "HELLO \(apID) AP 0 192.168.4.1 \(BuildInfo.appVersion) \(BuildInfo.modeCount)" }
+    /// Three pretend stations: one current, one on an older firmware that knows fewer modes, and
+    /// one from before version reporting, so the Jellies tab has something to show.
+    private var stationHellos: [String] {
+        ["HELLO 1b3c STA 2 192.168.4.17 \(BuildInfo.appVersion) \(BuildInfo.modeCount)",
+         "HELLO c7d1 STA 3 192.168.4.31 0.1.0 \(BuildInfo.modeCount - 1)",
+         "HELLO 9e02 STA 4 192.168.4.22"]
     }
 
     func disconnect() { timer?.invalidate(); timer = nil }
@@ -61,14 +70,19 @@ final class DemoJelly: JellyTransport {
         case "IDENT": emit("IDENT \(apTimeUs + 200_000)")
         case "HELLO":
             if parts.count >= 3, let id = arg(1) {
-                let slot = slotsByID[id] ?? (slotsByID.count + 1)
+                let slot = slotsByID[id] ?? (slotsByID.count + 5)
                 slotsByID[id] = slot
                 emit("SLOT \(id) \(slot)")
+                // like the firmware: answer an app's hello with the whole roster
+                emit(apHello)
+                stationHellos.forEach { emit($0) }
+                emit("HELLO \(id) APP \(slot) app \(parts.count > 5 ? parts[5] : "?") \(parts.count > 6 ? parts[6] : "0")")
             } else {
-                // roll call: the AP and two pretend stations answer
-                emit("HELLO \(apID) AP 0 192.168.4.1")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in self?.emit("HELLO 1b3c STA 2 192.168.4.17") }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.19) { [weak self] in self?.emit("HELLO 9e02 STA 3 192.168.4.22") }
+                // roll call: the AP and the pretend stations answer, a little apart
+                emit(apHello)
+                for (i, line) in stationHellos.enumerated() {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.12 + 0.07 * Double(i)) { [weak self] in self?.emit(line) }
+                }
             }
         default: break
         }

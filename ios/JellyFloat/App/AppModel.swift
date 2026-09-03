@@ -189,8 +189,51 @@ final class AppModel: ObservableObject {
     }
 
     private func touchRoster(_ entry: RosterEntry) {
-        if let i = roster.firstIndex(where: { $0.id == entry.id }) { roster[i] = entry } else { roster.append(entry) }
+        // The AP replays our own HELLO back to us; that carries our slot, nothing more.
+        if entry.role == .app && entry.id == settings.jellyID { slot = entry.slot; return }
+        var e = entry
+        if let i = roster.firstIndex(where: { $0.id == entry.id }) {
+            // A STATE line names the AP without version or address: keep what a HELLO told us.
+            if e.firmware == nil { e.firmware = roster[i].firmware; e.modeCount = roster[i].modeCount }
+            if e.ip.isEmpty { e.ip = roster[i].ip }
+            roster[i] = e
+        } else {
+            roster.append(e)
+        }
         roster.sort { ($0.role == .ap ? -1 : $0.slot) < ($1.role == .ap ? -1 : $1.slot) }
+    }
+
+    // MARK: firmware overview
+
+    /// The jellies proper, without other phones.
+    var jellies: [RosterEntry] { roster.filter { $0.role != .app } }
+
+    /// The newest firmware anyone in the bloom announced, if anyone did.
+    var newestFirmwareInBloom: FirmwareVersion? { jellies.compactMap(\.firmwareVersion).max() }
+
+    /// Jellies that said how many modes they have and lack this one. They still take the
+    /// command; the firmware wraps the number around, see `RosterEntry.fallback(for:)`.
+    func jelliesLacking(_ mode: JellyMode) -> [RosterEntry] { jellies.filter { $0.knows(mode) == false } }
+
+    /// One line on the state of the bloom's firmware, for the Jellies tab.
+    var firmwareSummary: String {
+        let js = jellies
+        if js.isEmpty { return connection.isLive ? "No jelly has introduced itself yet." : "Connect to see what the jellies run." }
+        var groups: [(String, Int)] = []
+        for j in js {
+            let key = j.firmwareVersion?.text ?? "no version"
+            if let i = groups.firstIndex(where: { $0.0 == key }) { groups[i].1 += 1 } else { groups.append((key, 1)) }
+        }
+        let latest = BuildInfo.latestFirmware
+        if groups.count == 1, let only = groups.first {
+            if only.0 == latest.text { return js.count == 1 ? "The jelly runs \(only.0), the same as this app." : "All \(js.count) jellies run \(only.0), the same as this app." }
+            if only.0 == "no version" { return "\(js.count == 1 ? "The jelly reports" : "The jellies report") no version: firmware from before \(latest.text). Modes added since may not exist there." }
+        }
+        let parts = groups.map { "\($0.1) × \($0.0)" }.joined(separator: ", ")
+        var text = "Mixed firmware: \(parts)."
+        if js.contains(where: { $0.firmwareStatus == .newer }) { text += " One jelly is newer than this app; it may have modes the app cannot show." }
+        if js.contains(where: { $0.firmwareStatus == .older || $0.firmwareStatus == .unknown }) { text += " Newer modes fall back to another mode on older jellies; nothing is blocked." }
+        return text
     }
 
     // MARK: virtual jelly

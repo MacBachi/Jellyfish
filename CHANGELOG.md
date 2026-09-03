@@ -14,6 +14,13 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- One version number for firmware and app, kept in `VERSION`. The firmware compiles it in, prints it at
+  boot and announces it with its mode count in every `HELLO`; the app stamps it into its build.
+- The app shows each jelly's firmware version against the newest it knows, flags modes that not every
+  jelly has (on the tile and under the mode name), and says which mode an older jelly shows instead.
+  Mixed versions keep working; nothing is refused.
+- The AP answers an app's `HELLO` with the whole roster and passes jelly `HELLO`s on to apps; stations
+  say hello every 30 s so the roster stays fresh.
 - SOS mode: red Morse "SOS" on the shared clock (mode 19).
 - JellyFloat iOS app in `ios/`: mode tiles, brightness/hue/cycle, roll call and identify, Wi-Fi
   joining with remembered network, and the phone as a virtual jelly rendering the same effects.

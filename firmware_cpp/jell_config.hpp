@@ -128,6 +128,19 @@ public:
     static constexpr const char* WIFI_SSID = JELL_WIFI_SSID;
     static constexpr const char* WIFI_PASSWORD = JELL_WIFI_PASSWORD;
 
+    // Version. The VERSION file at the repository root is the single source for firmware
+    // and app; CMake reads it and passes it in together with the git revision. Every
+    // HELLO announces the version and the number of modes, so an app can show who runs
+    // what and which modes a jelly knows. Nothing is refused on a mismatch.
+#ifndef JELL_VERSION
+#define JELL_VERSION "0.0.0"
+#endif
+#ifndef JELL_GIT_REV
+#define JELL_GIT_REV "unknown"
+#endif
+    static constexpr const char* VERSION = JELL_VERSION;
+    static constexpr const char* GIT_REV = JELL_GIT_REV;
+
     static constexpr uint16_t NET_PORT = 4210;               // UDP, one text line per datagram
 
     // Election: a jelly that finds no network keeps listening for a random time in this
@@ -138,6 +151,8 @@ public:
     static constexpr uint32_t NET_STATE_PERIOD_MS = 1000;    // AP: heartbeat with the full state
     static constexpr uint32_t NET_STATE_MIN_GAP_MS = 50;     // AP: throttle for state-after-change
     static constexpr uint32_t NET_HELLO_RETRY_MS = 5000;     // station: ask for a colour slot until it has one
+    static constexpr uint32_t NET_HELLO_KEEPALIVE_MS = 30000; // station: say hello now and then, so the roster stays fresh
+    static constexpr uint32_t NET_MEMBER_TIMEOUT_MS = 90000;  // AP: members not heard for this long are left out of roster replays
     static constexpr int NET_MAX_JELLIES = 16;               // roster size on the AP
 
     // Apps (phones) cannot receive broadcasts on iOS, so the AP also sends every line
