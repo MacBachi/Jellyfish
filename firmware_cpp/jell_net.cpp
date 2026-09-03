@@ -33,7 +33,9 @@ namespace
     struct RxLine
     {
         char text[LINE_MAX];
-        uint64_t rx_us; // when it arrived, for the time sync
+        uint64_t rx_us;  // when it arrived, for the time sync
+        ip_addr_t from;  // sender, so the AP can answer apps by unicast
+        u16_t from_port;
     };
     RxLine rx_queue[RX_QUEUE_SIZE];
     volatile int rx_head = 0; // next slot to write
@@ -48,6 +50,20 @@ namespace
     udp_pcb* pcb = nullptr;
     dhcp_server_t dhcp;
     uint64_t current_rx_us = 0; // arrival time of the line being handled, 0 for local lines
+    ip_addr_t current_from;     // sender of the line being handled (valid when current_rx_us != 0)
+    u16_t current_from_port = 0;
+
+    // ---- unicast subscribers (AP): apps that asked for copies of everything we broadcast ----
+    struct Subscriber
+    {
+        bool used = false;
+        ip_addr_t ip;
+        u16_t port = 0;
+        uint64_t last_seen_us = 0;
+    };
+    Subscriber subscribers[JellConfig::NET_MAX_SUBSCRIBERS];
+    uint64_t next_level_us = 0;
+    float last_level_sent = -1.0f;
 
     // ---- timers (all local time_us_64) ----
     uint64_t scan_deadline_us = 0;
@@ -113,36 +129,100 @@ namespace
         return ip4addr_ntoa(netif_ip4_addr(&cyw43_state.netif[itf()]));
     }
 
-    // Send one line to everyone on the jelly network. No-op until an interface is up.
+    // Must be called with the lwIP lock held.
+    err_t send_datagram(const char* line, const ip_addr_t* to, u16_t port)
+    {
+        const size_t len = strlen(line);
+        pbuf* p = pbuf_alloc(PBUF_TRANSPORT, (u16_t)len, PBUF_RAM);
+        if (p == nullptr)
+            return ERR_MEM;
+        memcpy(p->payload, line, len);
+        const err_t err = udp_sendto_if(pcb, p, to, port, &cyw43_state.netif[itf()]);
+        pbuf_free(p);
+        return err;
+    }
+
+    // Unicast one line to every current subscriber. Must be called with the lwIP lock held.
+    void send_to_subscribers_locked(const char* line)
+    {
+        for (Subscriber& s : subscribers)
+            if (s.used)
+                send_datagram(line, &s.ip, s.port);
+    }
+
+    // Send one line to everyone on the jelly network: broadcast, plus a unicast copy to
+    // each subscriber. No-op until an interface is up.
     void send_line(const char* line)
     {
         if (!interface_up() || pcb == nullptr)
             return;
 
-        const size_t len = strlen(line);
-
         cyw43_arch_lwip_begin();
-        pbuf* p = pbuf_alloc(PBUF_TRANSPORT, (u16_t)len, PBUF_RAM);
-        if (p != nullptr)
-        {
-            memcpy(p->payload, line, len);
-
-            ip_addr_t bcast;
-            IP4_ADDR(ip_2_ip4(&bcast), 192, 168, 4, 255);
-            const err_t err = udp_sendto_if(pcb, p, &bcast, JellConfig::NET_PORT, &cyw43_state.netif[itf()]);
-            pbuf_free(p);
-
-            if (err != ERR_OK)
-                log("send failed (%d): %s", (int)err, line);
-        }
-        else
-        {
-            log("pbuf_alloc failed, dropped: %s", line);
-        }
+        ip_addr_t bcast;
+        IP4_ADDR(ip_2_ip4(&bcast), 192, 168, 4, 255);
+        const err_t err = send_datagram(line, &bcast, JellConfig::NET_PORT);
+        if (err != ERR_OK)
+            log("send failed (%d): %s", (int)err, line);
+        send_to_subscribers_locked(line);
         cyw43_arch_lwip_end();
 
         if (strncmp(line, "STATE", 5) != 0)
             log("tx %s", line);
+    }
+
+    // Send one line to the subscribers only (no broadcast); for the LEVEL stream.
+    void send_subscribers_only(const char* line)
+    {
+        if (!interface_up() || pcb == nullptr)
+            return;
+        cyw43_arch_lwip_begin();
+        send_to_subscribers_locked(line);
+        cyw43_arch_lwip_end();
+    }
+
+    bool any_subscriber()
+    {
+        for (const Subscriber& s : subscribers)
+            if (s.used)
+                return true;
+        return false;
+    }
+
+    void subscriber_seen(const ip_addr_t* ip, u16_t port)
+    {
+        Subscriber* free_slot = nullptr;
+        for (Subscriber& s : subscribers)
+        {
+            if (s.used && ip_addr_cmp(&s.ip, ip) && s.port == port)
+            {
+                s.last_seen_us = time_us_64();
+                return;
+            }
+            if (!s.used && free_slot == nullptr)
+                free_slot = &s;
+        }
+        if (free_slot == nullptr)
+        {
+            log("subscriber list full, ignoring %s", ipaddr_ntoa(ip));
+            return;
+        }
+        free_slot->used = true;
+        free_slot->ip = *ip;
+        free_slot->port = port;
+        free_slot->last_seen_us = time_us_64();
+        log("new subscriber %s:%u", ipaddr_ntoa(ip), (unsigned)port);
+    }
+
+    void expire_subscribers(uint64_t now)
+    {
+        for (Subscriber& s : subscribers)
+        {
+            if (s.used && now - s.last_seen_us > (uint64_t)JellConfig::NET_SUB_TIMEOUT_MS * 1000)
+            {
+                log("subscriber %s:%u timed out", ipaddr_ntoa(&s.ip), (unsigned)s.port);
+                s.used = false;
+            }
+        }
     }
 
     void send_state()
@@ -168,7 +248,7 @@ namespace
     // ------------------------------------------------------------------ lwIP / cyw43 callbacks
 
     // IRQ context: copy the datagram into the queue, nothing else.
-    void on_udp_recv(void*, udp_pcb*, pbuf* p, const ip_addr_t* from, u16_t)
+    void on_udp_recv(void*, udp_pcb*, pbuf* p, const ip_addr_t* from, u16_t from_port)
     {
         if (p == nullptr)
             return;
@@ -195,6 +275,11 @@ namespace
                     break;
                 }
             slot.rx_us = time_us_64();
+            if (from != nullptr)
+                slot.from = *from;
+            else
+                ip_addr_set_zero(&slot.from);
+            slot.from_port = from_port;
             rx_head = next;
         }
         pbuf_free(p);
@@ -625,7 +710,14 @@ void Net::handle_line(const char* line, bool local)
         if (next_word(args, id, sizeof id) && next_word(args, their_role, sizeof their_role) && next_int(args, slot))
         {
             if (state.is_ap && strcmp(id, my_id) != 0)
-                roster_seen(id, strcmp(their_role, "STA") == 0);
+            {
+                // Stations and apps both get a colour slot; apps additionally get unicast copies
+                // of everything we send, because phones can't receive broadcasts.
+                const bool is_app = strcmp(their_role, "APP") == 0;
+                roster_seen(id, strcmp(their_role, "STA") == 0 || is_app);
+                if (is_app && current_rx_us != 0)
+                    subscriber_seen(&current_from, current_from_port);
+            }
         }
         else
         {
@@ -702,6 +794,8 @@ void Net::poll()
         RxLine copy = rx_queue[rx_tail];
         rx_tail = (rx_tail + 1) % RX_QUEUE_SIZE;
         current_rx_us = copy.rx_us;
+        current_from = copy.from;
+        current_from_port = copy.from_port;
         handle_line(copy.text, false);
         current_rx_us = 0;
     }
@@ -782,6 +876,23 @@ void Net::poll()
         {
             last_local_beats = g_local_beat_count;
             send_line("BEAT");
+        }
+
+        expire_subscribers(now);
+
+        // Microphone level for the apps' virtual jellies, only while someone listens and
+        // only when it changed noticeably.
+        if (any_subscriber() && now >= next_level_us)
+        {
+            next_level_us = now + (uint64_t)JellConfig::NET_LEVEL_PERIOD_MS * 1000;
+            const float level = g_local_level;
+            if (fabsf(level - last_level_sent) >= 0.01f)
+            {
+                last_level_sent = level;
+                char line[LINE_MAX];
+                snprintf(line, sizeof line, "LEVEL %.2f", level);
+                send_subscribers_only(line);
+            }
         }
         break;
     }

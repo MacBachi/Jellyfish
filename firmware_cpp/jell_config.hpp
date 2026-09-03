@@ -138,6 +138,12 @@ public:
     static constexpr uint32_t NET_STATE_MIN_GAP_MS = 50;     // AP: throttle for state-after-change
     static constexpr uint32_t NET_HELLO_RETRY_MS = 5000;     // station: ask for a colour slot until it has one
     static constexpr int NET_MAX_JELLIES = 16;               // roster size on the AP
+
+    // Apps (phones) cannot receive broadcasts on iOS, so the AP also sends every line
+    // as unicast to subscribers: any sender of "HELLO <id> APP ..." for NET_SUB_TIMEOUT_MS.
+    static constexpr int NET_MAX_SUBSCRIBERS = 4;
+    static constexpr uint32_t NET_SUB_TIMEOUT_MS = 15000;
+    static constexpr uint32_t NET_LEVEL_PERIOD_MS = 100;    // AP -> subscribers: "LEVEL <0..1>" for mic modes
 };
 
 // Checked here, after the class is complete, because a constexpr member function

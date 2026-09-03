@@ -22,6 +22,7 @@ namespace {
 // Shared between the cores, see jell_state.hpp. Core 0 (jell_net) writes, core 1 reads.
 SharedState g_state;
 volatile uint32_t g_local_beat_count = 0;
+volatile float g_local_level = 0.0f;
 
 // --- Global State ---
 // Initialize LEDs     
@@ -195,6 +196,7 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         // Every mode captures audio: it keeps the adaptive range calibrated and paces the
         // loop at the microphone's buffer rate. The DMA fills while we render.
         const AudioFrame audio = mic.capture();
+        g_local_level = audio.smoothed_level;
 
         // Master time: the AP's clock, which every station follows via time_offset_us.
         const int64_t master_us = (int64_t)time_us_64() + s.time_offset_us;

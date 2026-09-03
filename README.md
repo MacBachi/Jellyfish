@@ -140,6 +140,7 @@ nc -lu 4210                     # in a second terminal: watch heartbeats, beats 
 | `IDENT` | the AP jelly blinks red three times, all others blue |
 | `HELLO` | roll call: every jelly answers with its id, role, colour slot and IP |
 | `BEAT` | trigger a beat on all jellies (for testing the drops mode) |
+| `HELLO <id> APP 0 <ip>` | register as an app: get a colour slot and unicast copies of everything the AP sends (STATE, BEAT, IDENT, SLOT) plus a `LEVEL 0..1` microphone stream, for 15 s per HELLO. Phones need this because iOS does not let apps receive broadcasts. |
 
 The USB serial console prints the election, role changes, every command sent or received, and the time
 offset a station keeps to the AP's clock.

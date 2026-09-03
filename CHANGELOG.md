@@ -11,6 +11,12 @@ entries start where the fork diverged.
   tree serves rings of any size and strips of any colour order.
 - Colour orders RBG, BRG and BGR in the LED driver.
 
+## Unreleased
+
+### Added
+- App subscribers: `HELLO <id> APP ...` registers a phone for unicast copies of every line the AP
+  sends, plus a `LEVEL` microphone stream, so iOS apps work without the multicast entitlement.
+
 ## 0.1.0 - 2026-09-02
 
 First release under the JellyFloatOS name.
