@@ -96,11 +96,14 @@ cmake --build firmware_cpp/build
 The firmware is `firmware_cpp/build/JellyFloatOS.uf2`. The CI does the same on every push and attaches the
 result as an artifact; a pushed tag such as `v0.2.0` publishes it as a release.
 
-Ring size, network name and password can be set per build without editing the sources:
+Ring size, colour order of the strips, network name and password can be set per build without editing
+the sources:
 
 ```bash
-cmake ... -DJELL_RING_LEDS=39 -DJELL_WIFI_SSID=bloom -DJELL_WIFI_PASSWORD=secret123
+cmake ... -DJELL_RING_LEDS=39 -DJELL_RING_ORDER=RBG -DJELL_TENTACLE_ORDER=GRB -DJELL_WIFI_SSID=bloom -DJELL_WIFI_PASSWORD=secret123
 ```
+
+Find the colour order with the LED channel test mode: it must show red, then green, then blue.
 
 The same three options are inputs of the CI workflow's manual run ("Run workflow" in the Actions tab), which
 attaches the variant as an artifact, e.g. `JellyFloatOS-ring39`. The ring size matters: it sets the angular

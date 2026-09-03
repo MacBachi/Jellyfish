@@ -10,11 +10,16 @@
 #include <cmath>
 
 
+// Byte order a strip expects on the wire. WS2812B is usually GRB, but strips differ; the
+// LED channel test mode (red, green, blue, one second each) shows which one is fitted.
 enum class ColourOrder
 {
     RGB,
+    RBG,
     GRB,
-    GBR
+    GBR,
+    BRG,
+    BGR
 };
 
 // Interpolate between two hues the short way round the colour circle.
@@ -172,6 +177,24 @@ public:
             case ColourOrder::GBR:
                 pixel = ((uint32_t)g_out << 16) |
                     ((uint32_t)b_out << 8) |
+                    (uint32_t)r_out;
+                break;
+
+            case ColourOrder::RBG:
+                pixel = ((uint32_t)r_out << 16) |
+                    ((uint32_t)b_out << 8) |
+                    (uint32_t)g_out;
+                break;
+
+            case ColourOrder::BRG:
+                pixel = ((uint32_t)b_out << 16) |
+                    ((uint32_t)r_out << 8) |
+                    (uint32_t)g_out;
+                break;
+
+            case ColourOrder::BGR:
+                pixel = ((uint32_t)b_out << 16) |
+                    ((uint32_t)g_out << 8) |
                     (uint32_t)r_out;
                 break;
             }

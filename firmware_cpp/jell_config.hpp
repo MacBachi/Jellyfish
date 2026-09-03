@@ -76,9 +76,18 @@ public:
     // PWM "noodle" LEDs on the LED1..LED4 headers (GPIO 12..15), fixed by the board.
     static constexpr int NUMBER_OF_NOODLES = 4;
 
-    static constexpr auto LED_ORDER_RING  = ColourOrder::RGB;
+    // Byte order of the fitted strips (RGB, RBG, GRB, GBR, BRG, BGR). Check with the LED
+    // channel test: it must show red, then green, then blue. Overridable per build, e.g.
+    //   cmake ... -DJELL_RING_ORDER=RBG -DJELL_TENTACLE_ORDER=GRB
+#ifndef JELL_RING_ORDER
+#define JELL_RING_ORDER RGB
+#endif
+#ifndef JELL_TENTACLE_ORDER
+#define JELL_TENTACLE_ORDER RGB
+#endif
+    static constexpr auto LED_ORDER_RING = ColourOrder::JELL_RING_ORDER;
 
-    static constexpr auto LED_ORDER_TENTACLE  = ColourOrder::RGB;
+    static constexpr auto LED_ORDER_TENTACLE = ColourOrder::JELL_TENTACLE_ORDER;
 
     // Compile-time cap on the overall brightness, multiplied into every pixel and noodle.
     static constexpr float BRIGHTNESS_MODIFIER = 1.0f;

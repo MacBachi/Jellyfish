@@ -6,8 +6,10 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
-- Per-build options `JELL_RING_LEDS`, `JELL_WIFI_SSID`, `JELL_WIFI_PASSWORD` as CMake variables and as
-  inputs of the CI workflow's manual run, so one source tree serves rings of any size.
+- Per-build options `JELL_RING_LEDS`, `JELL_RING_ORDER`, `JELL_TENTACLE_ORDER`, `JELL_WIFI_SSID`,
+  `JELL_WIFI_PASSWORD` as CMake variables and as inputs of the CI workflow's manual run, so one source
+  tree serves rings of any size and strips of any colour order.
+- Colour orders RBG, BRG and BGR in the LED driver.
 
 ## 0.1.0 - 2026-09-02
 

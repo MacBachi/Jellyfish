@@ -10,6 +10,14 @@ on:
         description: "LEDs in the ring (empty = default 96)"
         required: false
         default: ""
+      ring_order:
+        description: "Ring colour order: RGB, RBG, GRB, GBR, BRG, BGR (empty = default RGB)"
+        required: false
+        default: ""
+      tentacle_order:
+        description: "Tentacle colour order (empty = default RGB)"
+        required: false
+        default: ""
       wifi_ssid:
         description: "Network name (empty = default)"
         required: false
@@ -35,12 +43,16 @@ jobs:
         id: opts
         env:
           RING: ${{ inputs.ring_leds }}
+          RING_ORDER: ${{ inputs.ring_order }}
+          TENTACLE_ORDER: ${{ inputs.tentacle_order }}
           SSID: ${{ inputs.wifi_ssid }}
           PASSWORD: ${{ inputs.wifi_password }}
         run: |
           args=""
           suffix=""
           [ -n "$RING" ] && args="$args -DJELL_RING_LEDS=$RING" && suffix="$suffix-ring$RING"
+          [ -n "$RING_ORDER" ] && args="$args -DJELL_RING_ORDER=$RING_ORDER" && suffix="$suffix-$RING_ORDER"
+          [ -n "$TENTACLE_ORDER" ] && args="$args -DJELL_TENTACLE_ORDER=$TENTACLE_ORDER" && suffix="$suffix-t$TENTACLE_ORDER"
           [ -n "$SSID" ] && args="$args -DJELL_WIFI_SSID=$SSID" && suffix="$suffix-custom-wifi"
           [ -n "$PASSWORD" ] && args="$args -DJELL_WIFI_PASSWORD=$PASSWORD"
           echo "args=$args" >> "$GITHUB_OUTPUT"
