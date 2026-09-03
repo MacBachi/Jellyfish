@@ -878,7 +878,9 @@ void Net::poll()
             send_line("BEAT");
         }
 
-        expire_subscribers(now);
+        // Fresh timestamp: `now` was taken before the receive queue was drained, and a
+        // subscriber registered in this very poll would otherwise expire on the spot.
+        expire_subscribers(time_us_64());
 
         // Microphone level for the apps' virtual jellies, only while someone listens and
         // only when it changed noticeably.
