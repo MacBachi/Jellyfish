@@ -1,10 +1,9 @@
 import SwiftUI
 
 struct RootView: View {
-    @Environment(AppModel.self) private var model
+    @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        @Bindable var model = model
         TabView {
             HomeView().tabItem { Label("Bloom", systemImage: "sparkles") }
             SwarmView().tabItem { Label("Jellies", systemImage: "circle.hexagongrid") }

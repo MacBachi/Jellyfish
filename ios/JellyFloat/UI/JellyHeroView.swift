@@ -3,7 +3,7 @@ import SwiftUI
 /// The virtual jelly: bell, ring of LEDs, four tentacles, four noodle loops, drawn from the
 /// engine's frame at 30 frames per second.
 struct JellyHeroView: View {
-    @Environment(AppModel.self) private var model
+    @EnvironmentObject private var model: AppModel
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { _ in

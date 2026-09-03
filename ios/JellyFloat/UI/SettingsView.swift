@@ -1,10 +1,18 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Environment(AppModel.self) private var model
+    @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        @Bindable var settings = model.settings
+        SettingsForm(model: model, settings: model.settings)
+    }
+}
+
+private struct SettingsForm: View {
+    @ObservedObject var model: AppModel
+    @ObservedObject var settings: AppSettings
+
+    var body: some View {
         NavigationStack {
             Form {
                 Section {
@@ -41,9 +49,9 @@ struct SettingsView: View {
 
                 Section {
                     Stepper("Ring LEDs: \(settings.virtualRingLEDs)", value: $settings.virtualRingLEDs, in: 12...144, step: 1)
-                        .onChange(of: settings.virtualRingLEDs) { _, _ in model.rebuildEngine() }
+                        .onChange(of: settings.virtualRingLEDs) { _ in model.rebuildEngine() }
                     Toggle("Demo bloom (no hardware)", isOn: $settings.demoMode)
-                        .onChange(of: settings.demoMode) { _, on in if on { model.startDemo() } else { model.stop() } }
+                        .onChange(of: settings.demoMode) { on in if on { model.startDemo() } else { model.stop() } }
                 } header: { Text("Virtual jelly") } footer: {
                     Text("This phone joins the bloom as a jelly of its own: it gets a colour slot and runs the same effects on the shared clock.")
                 }

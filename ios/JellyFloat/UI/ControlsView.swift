@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ControlsView: View {
-    @Environment(AppModel.self) private var model
+    @EnvironmentObject private var model: AppModel
 
     var body: some View {
         VStack(spacing: 18) {

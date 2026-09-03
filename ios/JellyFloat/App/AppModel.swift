@@ -1,12 +1,11 @@
+import Combine
 import Foundation
-import Observation
 import SwiftUI
 
 /// The one place the interface talks to: settings, the connection, what the bloom is doing,
 /// who is in it, and the virtual jelly's engine.
 @MainActor
-@Observable
-final class AppModel {
+final class AppModel: ObservableObject {
     enum Connection: Equatable {
         case idle, joiningWiFi, connecting, connected, demo, failed(String)
 
@@ -24,21 +23,21 @@ final class AppModel {
     }
 
     let settings = AppSettings()
-    private(set) var connection: Connection = .idle
-    private(set) var state = JellyState()
-    private(set) var slot = -1
-    private(set) var apID: String?
-    private(set) var roster: [RosterEntry] = []
-    private(set) var level = 0.0
-    private(set) var beatCount = 0
-    private(set) var lastBeatAt: Date?
-    private(set) var identStartUs: Int64 = 0
-    private(set) var lastHeardAt: Date?
-    private(set) var linkStatus = ""
-    var showJoinPrompt = false
-    var joinError: String?
+    @Published private(set) var connection: Connection = .idle
+    @Published private(set) var state = JellyState()
+    @Published private(set) var slot = -1
+    @Published private(set) var apID: String?
+    @Published private(set) var roster: [RosterEntry] = []
+    @Published private(set) var level = 0.0
+    @Published private(set) var beatCount = 0
+    @Published private(set) var lastBeatAt: Date?
+    @Published private(set) var identStartUs: Int64 = 0
+    @Published private(set) var lastHeardAt: Date?
+    @Published private(set) var linkStatus = ""
+    @Published var showJoinPrompt = false
+    @Published var joinError: String?
 
-    private(set) var engine: JellyEngine
+    @Published private(set) var engine: JellyEngine
     private var timeSync = TimeSync()
     private var transport: JellyTransport?
     private var helloTask: Task<Void, Never>?

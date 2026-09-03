@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @Environment(AppModel.self) private var model
+    @EnvironmentObject private var model: AppModel
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
     var body: some View {
@@ -67,7 +67,7 @@ struct HomeView: View {
 }
 
 struct StatusPill: View {
-    @Environment(AppModel.self) private var model
+    @EnvironmentObject private var model: AppModel
     var body: some View {
         HStack(spacing: 6) {
             Circle().fill(model.connection.isLive ? Theme.cyan : Theme.inkDim).frame(width: 7, height: 7)

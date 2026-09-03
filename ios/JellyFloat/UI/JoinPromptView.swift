@@ -2,10 +2,18 @@ import SwiftUI
 
 /// Shown when the app comes to the foreground: switch to the jelly network?
 struct JoinPromptView: View {
-    @Environment(AppModel.self) private var model
+    @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        @Bindable var settings = model.settings
+        JoinPromptForm(model: model, settings: model.settings)
+    }
+}
+
+private struct JoinPromptForm: View {
+    @ObservedObject var model: AppModel
+    @ObservedObject var settings: AppSettings
+
+    var body: some View {
         VStack(spacing: 22) {
             Image("AppIcon").resizable().scaledToFit().frame(width: 96, height: 96).clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                 .shadow(color: Theme.cyan.opacity(0.4), radius: 20)
