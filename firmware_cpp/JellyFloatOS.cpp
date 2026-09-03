@@ -166,6 +166,10 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         effect_whisper(canvas, audio, time);
         break;
 
+    case JellConfig::DisplayMode::SOS:
+        effect_sos(canvas, time);
+        break;
+
     default:
         // Playlist itself never gets here (effective_mode resolves it); hold black.
         canvas.clear();

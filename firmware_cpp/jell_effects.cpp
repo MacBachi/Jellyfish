@@ -681,3 +681,31 @@ void effect_whisper(Canvas& canvas, const AudioFrame& audio, float time)
 
     canvas.all_noodles_level(0.05f + 0.4f * ema);
 }
+
+void effect_sos(Canvas& canvas, float time)
+{
+    constexpr float UNIT_S = 0.25f; // one Morse unit; a dit is 1, a dah 3
+    // On/off run lengths in units: S (dit dit dit), gap, O (dah dah dah), gap, S, word gap.
+    // Positive = light on, negative = off. Sums to 34 units, 8.5 s per cycle.
+    constexpr int PATTERN[] = {1, -1, 1, -1, 1, -3, 3, -1, 3, -1, 3, -3, 1, -1, 1, -1, 1, -7};
+    constexpr int TOTAL_UNITS = 34;
+
+    float u = fmodf(time, TOTAL_UNITS * UNIT_S) / UNIT_S;
+    if (u < 0.0f)
+        u += TOTAL_UNITS;
+
+    bool on = false;
+    for (int run : PATTERN)
+    {
+        const float len = (float)(run < 0 ? -run : run);
+        if (u < len)
+        {
+            on = run > 0;
+            break;
+        }
+        u -= len;
+    }
+
+    canvas.all_pixels_hsv(0.0f, 1.0f, on ? 1.0f : 0.0f);
+    canvas.all_noodles_level(on ? 1.0f : 0.0f);
+}

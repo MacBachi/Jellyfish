@@ -170,6 +170,7 @@ In button order; the number is what `MODE n` takes.
 | 16 | Ambient deep sea | |
 | 17 | Mic level check | prints levels to the serial console |
 | 18 | LED channel test | red, green, blue, and one noodle at a time |
+| 19 | SOS | the whole jelly flashes SOS in red Morse code, all jellies in step |
 
 ## The app: JellyFloat for iPhone
 

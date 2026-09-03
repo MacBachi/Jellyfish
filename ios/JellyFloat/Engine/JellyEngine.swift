@@ -200,6 +200,7 @@ final class JellyEngine {
         case .ambientDeepSea: ambient(time, noiseScale: 2, hueBase: 220, hueRange: 100, timeScale: 0.8)
         case .micLevelCheck: all(HSV(h: 220, s: 1, v: input.level)); allNoodles(input.level)
         case .ledChannelTest: channelTest(nowUs)
+        case .sos: sos(time)
         case .playlist: clear()
         }
         return output(brightness: input.brightness, hueOffset: input.hueOffset, mix: mix)
@@ -466,6 +467,20 @@ final class JellyEngine {
         for (i, p) in layout.ring.enumerated() { let n = Field.noise(p, scale: 1, time: time * 0.05) - 0.5; setRing(i, hue + 16 * n, 0.9, base + 0.05 * n) }
         for (t, tent) in layout.tentacles.enumerated() { for (j, p) in tent.enumerated() { let n = Field.noise(p, scale: 1, time: time * 0.05) - 0.5; setSpoke(t, j, hue + 16 * n, 0.9, 0.7 * (base + 0.05 * n)) } }
         allNoodles(0.05 + 0.4 * whisperEMA)
+    }
+
+    private func sos(_ time: Double) {
+        let unit = 0.25
+        let pattern = [1, -1, 1, -1, 1, -3, 3, -1, 3, -1, 3, -3, 1, -1, 1, -1, 1, -7]
+        var u = time.truncatingRemainder(dividingBy: 34 * unit) / unit
+        if u < 0 { u += 34 }
+        var on = false
+        for run in pattern {
+            let len = Double(abs(run))
+            if u < len { on = run > 0; break }
+            u -= len
+        }
+        all(HSV(h: 0, s: 1, v: on ? 1 : 0)); allNoodles(on ? 1 : 0)
     }
 
     private func channelTest(_ nowUs: Int64) {

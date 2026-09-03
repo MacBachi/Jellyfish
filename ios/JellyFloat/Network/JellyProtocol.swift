@@ -8,11 +8,12 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
     case palette, paletteCycle
     case ambientRainbow, ambientDeepSea
     case micLevelCheck, ledChannelTest
+    case sos
 
     var id: Int { rawValue }
 
     enum Group: String, CaseIterable, Identifiable {
-        case calm = "Calm", sound = "Sound", colour = "Colour", ambient = "Ambient", test = "Test"
+        case calm = "Calm", sound = "Sound", colour = "Colour", ambient = "Ambient", signal = "Signal", test = "Test"
         var id: String { rawValue }
     }
 
@@ -23,6 +24,7 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
         case .palette, .paletteCycle: return .colour
         case .ambientRainbow, .ambientDeepSea: return .ambient
         case .micLevelCheck, .ledChannelTest: return .test
+        case .sos: return .signal
         }
     }
 
@@ -47,6 +49,7 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
         case .ambientDeepSea: return "Deep sea"
         case .micLevelCheck: return "Mic level"
         case .ledChannelTest: return "Channel test"
+        case .sos: return "SOS"
         }
     }
 
@@ -71,6 +74,7 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
         case .ambientDeepSea: return "Blues and greens, slowly"
         case .micLevelCheck: return "Prints levels to the serial console"
         case .ledChannelTest: return "Red, green, blue, one noodle at a time"
+        case .sos: return "Red Morse code, all jellies in step"
         }
     }
 
@@ -96,6 +100,7 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
         case .ambientDeepSea: return [170, 220, 250]
         case .micLevelCheck: return [220]
         case .ledChannelTest: return [0, 120, 240]
+        case .sos: return [0, 350]
         }
     }
 }

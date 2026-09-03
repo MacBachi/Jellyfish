@@ -14,6 +14,7 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- SOS mode: red Morse "SOS" on the shared clock (mode 19).
 - JellyFloat iOS app in `ios/`: mode tiles, brightness/hue/cycle, roll call and identify, Wi-Fi
   joining with remembered network, and the phone as a virtual jelly rendering the same effects.
 - App subscribers: `HELLO <id> APP ...` registers a phone for unicast copies of every line the AP

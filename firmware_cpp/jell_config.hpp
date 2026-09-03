@@ -31,6 +31,7 @@ public:
         Ambient_Deepsea,
         micLevelCheck,
         LEDChannelTest,
+        SOS,
 
         Count
     };

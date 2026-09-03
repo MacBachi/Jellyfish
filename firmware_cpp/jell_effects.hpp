@@ -58,5 +58,8 @@ void effect_swarm(Canvas& canvas, float time, int slot);
 // Slow microphone response: brightness follows the sound level over seconds,
 // the colour drifts from cool when quiet to warm when lively.
 void effect_whisper(Canvas& canvas, const AudioFrame& audio, float time);
+
+// The whole jelly flashes "SOS" in red Morse code, over and over, on the shared clock.
+void effect_sos(Canvas& canvas, float time);
     
 void effect_ambientNField(Canvas& canvas, float time, float noisescale, float huebase, float huerange, float timescale);
