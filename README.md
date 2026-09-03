@@ -171,6 +171,20 @@ In button order; the number is what `MODE n` takes.
 | 17 | Mic level check | prints levels to the serial console |
 | 18 | LED channel test | red, green, blue, and one noodle at a time |
 
+## The app: JellyFloat for iPhone
+
+`ios/` holds a SwiftUI app that does everything the commands above do, and joins the bloom as a
+**virtual jelly**: the phone gets a colour slot from the AP and runs the same effects on the shared
+clock, drawn as a jellyfish on screen. Mode tiles, brightness, colour shift and cycle, a roll call of
+the jellies with Identify, and the Wi-Fi handling: the app asks to switch to the jelly network when it
+opens (default or a custom one; the name is remembered, the password only if you say so) and iOS
+returns to your usual Wi-Fi about 15 s after you leave the app.
+
+Build it with Xcode 16 or newer: `cd ios && xcodegen generate`, then open `JellyFloat.xcodeproj`, put
+your Team ID into `ios/Local.xcconfig` (see the `.example`) and run on your iPhone. In the simulator the
+app talks to a built-in demo bloom, since simulators cannot join Wi-Fi. The app relies on the firmware's
+`HELLO ... APP` subscription, so it needs firmware from this repository.
+
 ## Repository layout
 
 | Path | Content |
@@ -178,6 +192,7 @@ In button order; the number is what `MODE n` takes.
 | `firmware_cpp/` | the firmware: `JellyFloatOS.cpp` (main, both cores), `jell_net` (WLAN, election, protocol), `jell_effects` (modes), `jell_canvas` / `jell_led` (frame buffer, WS2812 output, crossfade), `jell_audio` (I2S microphone), `jell_state` (core-to-core state), `jell_config.hpp` (everything tunable) |
 | `pcb/` | KiCad project and JLCPCB production files for the Jellyboard |
 | `3D print files/` | base, ribs, pillar, loops, fabric plug |
+| `ios/` | the JellyFloat iPhone app (SwiftUI, XcodeGen project) |
 | `.github/workflows/` | CI: build on every push, release on `v*` tags |
 
 ## Roadmap

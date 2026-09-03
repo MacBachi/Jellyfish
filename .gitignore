@@ -16,3 +16,9 @@ pcb/*.lck
 pcb/*-backups/
 pcb/fp-info-cache
 pcb/*.kicad_prl
+
+# iOS app: the Xcode project is generated from ios/project.yml (xcodegen generate)
+ios/*.xcodeproj
+ios/Local.xcconfig
+ios/build/
+ios/DerivedData/

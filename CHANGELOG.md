@@ -14,6 +14,8 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- JellyFloat iOS app in `ios/`: mode tiles, brightness/hue/cycle, roll call and identify, Wi-Fi
+  joining with remembered network, and the phone as a virtual jelly rendering the same effects.
 - App subscribers: `HELLO <id> APP ...` registers a phone for unicast copies of every line the AP
   sends, plus a `LEVEL` microphone stream, so iOS apps work without the multicast entitlement.
 
