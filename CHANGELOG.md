@@ -3,6 +3,8 @@
 All notable changes to JellyFloatOS. The project continues the Sheffield-by-the-Sea Jellyfish firmware;
 entries start where the fork diverged.
 
+## Unreleased
+
 ## 0.5.0 - 2026-09-03
 
 First release with the JellyFloat iPhone app and the shared version number.
