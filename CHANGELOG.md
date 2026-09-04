@@ -25,7 +25,7 @@ App Store, the project on its own (the GitHub fork relation to the original repo
 - The iPhone app is developed again, alongside the web page; 0.9.0 had set it aside.
 
 ### Removed
-- The release tags inherited from the original repository (`v1.0.0` to `v1.0.5`, `V1.0`, `1.0.1`) belong to that project and are dropped here; locally they live on as `upstream/<tag>`. For the record: 1.0.1 V1.0 v1.0.0 v1.0.2 v1.0.3 v1.0.4 v1.0.5=.
+- The release tags inherited from the original repository (`v1.0.0` to `v1.0.5`, `V1.0`, `1.0.1`) belong to that project and are dropped here; locally they live on as `upstream/<tag>`. For the record: 1.0.1=fbf8cde, V1.0=c9277e3, v1.0.0=fbf8cde, v1.0.2=384fc7f, v1.0.3=f8b9598, v1.0.4=7e49f25, v1.0.5=d2adb6b.
 - README: the power notes now rest on the KiCad file, measured LED currents and the simulation; the
   calm modes peak at 1 to 2.6 A at full brightness, not "2–15 %". A quick-start section for putting
   the current release onto a jelly without installing anything.
