@@ -5,6 +5,10 @@ entries start where the fork diverged.
 
 ## Unreleased
 
+### Added
+- The roster, on the web page and in the app's Jellies tab, shows each jelly's address as a link to that
+  jelly's own web page.
+
 ## 1.0.0 - 2026-09-04
 
 First stable release: firmware and iPhone app under one version number, the app prepared for the

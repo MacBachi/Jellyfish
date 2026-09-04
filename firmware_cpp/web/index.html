@@ -34,6 +34,7 @@ button.primary{background:rgba(255,94,209,.35);border-color:rgba(255,94,209,.5)}
 button.cyan{background:rgba(79,227,255,.18);border-color:rgba(79,227,255,.4)}
 .row{display:flex;gap:12px}
 .row button{flex:1}
+.iplink{color:var(--cyan);text-decoration:none;border-bottom:1px dotted var(--cyan)}
 textarea{width:100%;box-sizing:border-box;font:inherit;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:10px;margin:10px 0;resize:vertical}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
 .ctl{margin:6px 0 14px}
@@ -322,7 +323,9 @@ function renderState(){
     const who = m.self ? 'This jelly' : m.role === 'APP' ? 'Phone ' + m.id : 'Jelly ' + m.id;
     const roleChip = m.role === 'AP' ? '<span class="chip ap">runs the network</span>' : m.role === 'APP' ? '<span class="chip">app</span>' : m.role === 'STA' ? '<span class="chip">jelly</span>' : `<span class="chip">${m.role}</span>`;
     const ver = m.self ? `<span class="chip ok">${st.version}</span>` : m.role === 'APP' && !parseVersion(m.version) ? '<span class="chip">app, no version</span>' : versionChip(m.version);
-    const meta = m.self ? (st.role === 'AP' ? `serving this page at ${st.ip}` : st.ip) : `${m.ip && m.ip !== '?' ? m.ip : 'address unknown'} · ${stale ? 'last heard ' : ''}${m.age < 5 ? 'just now' : m.age + ' s ago'}`;
+    // every jelly serves this page: its address is a link to its own copy
+    const addr = m.ip && m.ip !== '?' ? (m.role === 'APP' ? m.ip : `<a class="iplink" href="http://${m.ip}/">${m.ip}</a>`) : 'address unknown';
+    const meta = m.self ? (st.role === 'AP' ? `serving this page at ${st.ip}` : st.ip) : `${addr} · ${stale ? 'last heard ' : ''}${m.age < 5 ? 'just now' : m.age + ' s ago'}`;
     rows.push(`<div class="card member${stale ? ' stale' : ''}"><div class="slot" style="background:${bg};box-shadow:0 0 8px ${m.slot >= 0 ? hsl(hue,85,58) : 'transparent'}">${m.slot >= 0 ? m.slot : '?'}</div><div><div class="who">${who} ${roleChip}</div><div class="meta">${ver} ${m.modes > 0 ? `<span class="small">${m.modes} modes</span>` : ''}</div><div class="meta">${meta}</div></div></div>`);
   }
   if (st.roster.length === 0) rows.push(`<div class="card empty">${st.role === 'AP' ? 'Nobody has answered yet. Tap roll call.' : 'Only the jelly that runs the network keeps the list.'}</div>`);

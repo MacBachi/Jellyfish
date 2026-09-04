@@ -101,11 +101,22 @@ struct SwarmView: View {
         .glassCard(padding: 12)
     }
 
-    private func detailLine(_ e: RosterEntry, isSelf: Bool, stale: Bool) -> Text {
-        if isSelf { return e.slot >= 0 ? Text("virtual jelly, colour slot \(e.slot)") : Text("virtual jelly, waiting for a colour slot") }
-        let address = e.ip.isEmpty ? String(localized: "address unknown") : e.ip
-        let heard = stale ? String(localized: "last heard ") : ""
-        return Text(verbatim: "\(address)  ·  \(heard)\(e.lastSeen.formatted(date: .omitted, time: .standard))")
+    @ViewBuilder
+    private func detailLine(_ e: RosterEntry, isSelf: Bool, stale: Bool) -> some View {
+        if isSelf {
+            if e.slot >= 0 { Text("virtual jelly, colour slot \(e.slot)") } else { Text("virtual jelly, waiting for a colour slot") }
+        } else {
+            let heard = stale ? String(localized: "last heard ") : ""
+            HStack(spacing: 4) {
+                // Every jelly serves its web page: its address opens it in Safari.
+                if !e.ip.isEmpty, e.role != .app, let url = URL(string: "http://\(e.ip)/") {
+                    Link(e.ip, destination: url).underline(true, pattern: .dot).foregroundStyle(Theme.cyan)
+                } else {
+                    Text(verbatim: e.ip.isEmpty ? String(localized: "address unknown") : e.ip)
+                }
+                Text(verbatim: "·  \(heard)\(e.lastSeen.formatted(date: .omitted, time: .standard))")
+            }
+        }
     }
 
     private func versionChip(_ e: RosterEntry, isSelf: Bool) -> some View {
