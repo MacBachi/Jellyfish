@@ -34,6 +34,8 @@ button.primary{background:rgba(255,94,209,.35);border-color:rgba(255,94,209,.5)}
 button.cyan{background:rgba(79,227,255,.18);border-color:rgba(79,227,255,.4)}
 .row{display:flex;gap:12px}
 .row button{flex:1}
+textarea{width:100%;box-sizing:border-box;font:inherit;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:10px;margin:10px 0;resize:vertical}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
 .ctl{margin:6px 0 14px}
 .ctl:last-child{margin-bottom:0}
 .ctl .lbl{display:flex;justify-content:space-between;font-size:14px;font-weight:500;margin-bottom:6px}
@@ -110,6 +112,9 @@ hr{border:0;border-top:1px solid rgba(255,255,255,.15);margin:10px 0}
 
 <h2>Firmware</h2>
 <section class="card" id="fw"><div class="empty">Waiting for the jelly…</div></section>
+
+<h2>Find My</h2>
+<section class="card" id="findmy"><div class="empty">Waiting for the jelly…</div></section>
 </main>
 
 <script>
@@ -233,9 +238,63 @@ function renderPill(){
     : st.role === 'AP' ? `Jelly ${st.id} · runs the network` : st.role === 'STA' ? `Jelly ${st.id} · in the bloom` : `Jelly ${st.id} · looking for the bloom`;
 }
 
+// ---------------------------------------------------------------- Find My
+let findmyKey = '';   // what the user typed, kept across re-renders
+let findmySig = '';   // re-render the card only when the jelly's state changes
+let findmyMsg = '';
+function renderFindMy(){
+  const f = st && st.findmy;
+  if (!f) return;
+  const sig = [f.state, f.open, f.pending, findmyMsg].join('|');
+  if (sig === findmySig) { const l = $('fmLeft'); if (l) l.textContent = f.left; return; }
+  findmySig = sig;
+  const box = $('findmy');
+  const gen = '<p class="hint">Keys are made in your browser with <code>tools/findmy/keys.html</code> from the repository (the private key stays with you; only the public key goes to the jelly).</p>';
+  if (f.state === 'valid') {
+    box.innerHTML = '<div class="kv"><span>State</span><span>advertising for Find My</span></div>' +
+      '<p class="hint">The key is locked in. Only the factory-reset image (JellyFloatReset.uf2) can clear it.</p>';
+  } else if (f.state === 'disabled') {
+    box.innerHTML = '<div class="kv"><span>State</span><span>permanently disabled</span></div>' +
+      '<p class="hint">This jelly will never advertise for Find My. Only the factory-reset image can undo that.</p>';
+  } else if (f.pending) {
+    box.innerHTML = '<div class="kv"><span>State</span><span>writing…</span></div>';
+  } else if (!f.open) {
+    box.innerHTML = '<div class="kv"><span>State</span><span>not set up</span></div>' +
+      '<p class="hint">To set it up: press either button on the jelly within 60 seconds after switching it on. This card then accepts a key for ten minutes. Without that press the jelly refuses keys, so nobody else on this network can plant one.</p>' + gen;
+  } else {
+    box.innerHTML = '<div class="kv"><span>State</span><span>ready for a key · <span id="fmLeft">' + f.left + '</span> s left</span></div>' +
+      '<textarea id="fmKey" rows="2" placeholder="public key, base64, 40 characters" spellcheck="false"></textarea>' +
+      '<div class="row"><button class="cyan" id="fmSend">Send key to jelly</button><button id="fmOff">Permanently disable Find My</button></div>' +
+      '<p class="hint" id="fmNote">Either choice is final: it cannot be undone, except with the factory-reset firmware.</p>' + gen;
+    $('fmKey').value = findmyKey;
+    $('fmKey').addEventListener('input', e => { findmyKey = e.target.value; });
+    $('fmSend').addEventListener('click', () => {
+      const k = findmyKey.trim();
+      if (k.length < 36) { findmyMsg = 'That is too short for a 28-byte key.'; $('fmNote').textContent = findmyMsg; return; }
+      if (!confirm('Lock this public key into the jelly? This cannot be undone, except with the factory-reset firmware.')) return;
+      postFindMy(k);
+    });
+    $('fmOff').addEventListener('click', () => {
+      if (!confirm('Permanently disable Find My on this jelly? This cannot be undone, except with the factory-reset firmware.')) return;
+      if (!confirm('Really? The jelly will never be findable through Find My.')) return;
+      postFindMy('disable');
+    });
+  }
+  if (findmyMsg && $('fmNote')) $('fmNote').textContent = findmyMsg;
+}
+async function postFindMy(body){
+  try {
+    const r = await fetch('/api/findmy', {method:'POST', body, headers:{'Content-Type':'text/plain'}});
+    const j = await r.json();
+    findmyMsg = j.ok ? 'Accepted, writing…' : ('Refused: ' + j.error);
+  } catch (e) { findmyMsg = 'No answer from the jelly.'; }
+  findmySig = ''; renderFindMy();
+}
+
 function renderState(){
   renderPill();
   if (!st) return;
+  renderFindMy();
   $('modeName').textContent = modeName(st.mode);
   $('modeBlurb').textContent = st.mode < MODES.length ? MODES[st.mode][1] : '';
   $('lack').textContent = lackNote(st.mode);

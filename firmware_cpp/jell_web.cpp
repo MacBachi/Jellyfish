@@ -11,6 +11,7 @@
 
 #include "jell_canvas.hpp"
 #include "jell_net.hpp"
+#include "jell_findmy.hpp"
 
 extern Canvas canvas; // the frame buffer core 1 draws into, see JellyFloatOS.cpp
 
@@ -24,6 +25,7 @@ namespace
     struct PostState
     {
         void* connection = nullptr;
+        bool findmy = false; // POST /api/findmy rather than /api/cmd
         char line[CMD_MAX];
         size_t len = 0;
     };
@@ -73,6 +75,14 @@ extern "C" int fs_open_custom(fs_file* file, const char* name)
         return serve(file, buf, Canvas::FRAME_BYTES);
     }
 
+    if (strcmp(name, "/api/findmy.json") == 0)
+    {
+        char* buf = (char*)malloc(256);
+        if (buf == nullptr) return 0;
+        const size_t n = FindMy::write_result_json(buf, 256);
+        serve(file, buf, n);
+        return 1;
+    }
     if (strcmp(name, "/api/ok.json") == 0)
     {
         static const char ok[] = "{\"ok\":true}";
@@ -112,7 +122,8 @@ extern "C" int fs_read_custom(fs_file*, char*, int)
 extern "C" err_t httpd_post_begin(void* connection, const char* uri, const char*, u16_t, int content_len,
                                   char* response_uri, u16_t response_uri_len, u8_t*)
 {
-    if (strcmp(uri, "/api/cmd") != 0 || content_len < 0 || content_len >= (int)CMD_MAX)
+    const bool findmy = strcmp(uri, "/api/findmy") == 0;
+    if ((!findmy && strcmp(uri, "/api/cmd") != 0) || content_len < 0 || content_len >= (int)CMD_MAX)
     {
         snprintf(response_uri, response_uri_len, "/400.txt");
         return ERR_VAL;
@@ -124,6 +135,7 @@ extern "C" err_t httpd_post_begin(void* connection, const char* uri, const char*
         return ERR_MEM;
     }
     p->connection = connection;
+    p->findmy = findmy;
     p->len = 0;
     return ERR_OK;
 }
@@ -161,6 +173,12 @@ extern "C" void httpd_post_finished(void* connection, char* response_uri, u16_t 
     if (p->line[0] == 0)
     {
         snprintf(response_uri, response_uri_len, "/400.txt");
+        return;
+    }
+    if (p->findmy)
+    {
+        FindMy::provision(p->line); // validated here, written in the next poll()
+        snprintf(response_uri, response_uri_len, "/api/findmy.json");
         return;
     }
     Net::submit_line(p->line); // handled in the next poll(), on the core-0 main loop

@@ -12,6 +12,7 @@
 #include "jell_state.hpp"
 #include "jell_beat.hpp"
 #include "jell_net.hpp"
+#include "jell_findmy.hpp"
 
 namespace {
     constexpr uint BUTTON_PREV = 19;
@@ -170,6 +171,8 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 // This runs ONLY on Core 1
 [[noreturn]] void core1_entry()
 {
+    FindMy::core1_init(); // core 0 may pause this core to write flash
+
     static BeatDetector beat_detector;
     static uint32_t seen_network_beats = 0;
 
@@ -318,6 +321,7 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
     // Radio and role election; the LEDs are already running on core 1 by now.
     Net::init();
+    FindMy::init(); // needs the radio: BLE advertising if a key is stored
 
     bool last_prev = false;
     bool last_next = false;
@@ -338,10 +342,15 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
             Net::handle_line("NEXT", true);
         }
 
+        // Either button shortly after power-up is the physical trigger for Find My setup.
+        if ((prev && !last_prev) || (next && !last_next))
+            FindMy::button_pressed();
+
         last_prev = prev;
         last_next = next;
 
         Net::poll();
+        FindMy::poll();
 
         sleep_ms(LOOP_SLEEP_DURATION_MS);
     }

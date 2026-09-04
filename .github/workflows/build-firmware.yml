@@ -28,44 +28,69 @@ on:
         default: ""
 
 jobs:
+  # Two variants of every build: the default ring, and the user's first jelly with a 39-LED
+  # ring in GRB with RGB tentacles. The default job also produces the Find My reset image.
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: default
+            extra_args: ""
+          - variant: ring39-GRB-tRGB
+            extra_args: "-DJELL_RING_LEDS=39 -DJELL_RING_ORDER=GRB -DJELL_TENTACLE_ORDER=RGB"
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Add Pico SDK import helper
-        run: cp .github/pico_sdk_import.cmake firmware_cpp/pico_sdk_import.cmake
+      - name: Toolchain
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q cmake ninja-build gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib python3
+
+      # The SDK with its submodules: lwIP and the WLAN driver, BTstack for Find My.
+      - name: Pico SDK
+        uses: actions/checkout@v4
+        with:
+          repository: raspberrypi/pico-sdk
+          ref: 2.2.0
+          path: pico-sdk
+          submodules: true
 
       - name: Collect build options
         id: opts
         env:
+          VARIANT: ${{ matrix.variant }}
+          EXTRA: ${{ matrix.extra_args }}
           RING: ${{ inputs.ring_leds }}
           RING_ORDER: ${{ inputs.ring_order }}
           TENTACLE_ORDER: ${{ inputs.tentacle_order }}
           SSID: ${{ inputs.wifi_ssid }}
           PASSWORD: ${{ inputs.wifi_password }}
         run: |
-          args=""
+          args="$EXTRA"
           suffix=""
-          [ -n "$RING" ] && args="$args -DJELL_RING_LEDS=$RING" && suffix="$suffix-ring$RING"
-          [ -n "$RING_ORDER" ] && args="$args -DJELL_RING_ORDER=$RING_ORDER" && suffix="$suffix-$RING_ORDER"
-          [ -n "$TENTACLE_ORDER" ] && args="$args -DJELL_TENTACLE_ORDER=$TENTACLE_ORDER" && suffix="$suffix-t$TENTACLE_ORDER"
-          [ -n "$SSID" ] && args="$args -DJELL_WIFI_SSID=$SSID" && suffix="$suffix-custom-wifi"
-          [ -n "$PASSWORD" ] && args="$args -DJELL_WIFI_PASSWORD=$PASSWORD"
+          [ "$VARIANT" != "default" ] && suffix="-$VARIANT"
+          if [ "$VARIANT" = "default" ]; then
+            # The manual run's inputs shape the default variant only.
+            [ -n "$RING" ] && args="$args -DJELL_RING_LEDS=$RING" && suffix="$suffix-ring$RING"
+            [ -n "$RING_ORDER" ] && args="$args -DJELL_RING_ORDER=$RING_ORDER" && suffix="$suffix-$RING_ORDER"
+            [ -n "$TENTACLE_ORDER" ] && args="$args -DJELL_TENTACLE_ORDER=$TENTACLE_ORDER" && suffix="$suffix-t$TENTACLE_ORDER"
+            [ -n "$SSID" ] && args="$args -DJELL_WIFI_SSID=$SSID" && suffix="$suffix-custom-wifi"
+            [ -n "$PASSWORD" ] && args="$args -DJELL_WIFI_PASSWORD=$PASSWORD"
+          fi
           args="$args -DJELL_GIT_REV=${GITHUB_SHA::7}"
-          echo "version=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_OUTPUT"
           echo "args=$args" >> "$GITHUB_OUTPUT"
           echo "suffix=$suffix" >> "$GITHUB_OUTPUT"
           echo "cmake args: $args"
 
-      - uses: samyarsadat/Pico-Build-Action@v1
-        with:
-          source_dir: firmware_cpp
-          output_dir: build
-          cmake_args: ${{ steps.opts.outputs.args }}
+      - name: Build
+        env:
+          PICO_SDK_PATH: ${{ github.workspace }}/pico-sdk
+        run: |
+          cp .github/pico_sdk_import.cmake firmware_cpp/
+          cmake -S firmware_cpp -B firmware_cpp/build -G Ninja -DPICO_BOARD=pico2_w -DCMAKE_BUILD_TYPE=Release ${{ steps.opts.outputs.args }}
+          cmake --build firmware_cpp/build
 
       - name: Report flash and RAM use
         run: python3 firmware_cpp/tools/elf_size.py firmware_cpp/build/JellyFloatOS.elf | tee -a "$GITHUB_STEP_SUMMARY"
@@ -75,42 +100,17 @@ jobs:
           name: JellyFloatOS${{ steps.opts.outputs.suffix }}
           path: firmware_cpp/build/JellyFloatOS.uf2
 
-  # The user's first jelly has a 39-LED ring in GRB with RGB tentacles; every release
-  # ships that variant next to the default build.
-  build-ring39:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
+      - name: Upload the Find My reset image
+        if: matrix.variant == 'default'
+        uses: actions/upload-artifact@v4
         with:
-          fetch-depth: 0
+          name: JellyFloatReset
+          path: firmware_cpp/build/JellyFloatReset.uf2
 
-      - name: Add Pico SDK import helper
-        run: cp .github/pico_sdk_import.cmake firmware_cpp/pico_sdk_import.cmake
-
-      - name: Collect build options
-        id: opts
-        run: echo "args=-DJELL_RING_LEDS=39 -DJELL_RING_ORDER=GRB -DJELL_TENTACLE_ORDER=RGB -DJELL_GIT_REV=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-
-      - uses: samyarsadat/Pico-Build-Action@v1
-        with:
-          source_dir: firmware_cpp
-          output_dir: build
-          cmake_args: ${{ steps.opts.outputs.args }}
-
-      - name: Report flash and RAM use
-        run: python3 firmware_cpp/tools/elf_size.py firmware_cpp/build/JellyFloatOS.elf | tee -a "$GITHUB_STEP_SUMMARY"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: JellyFloatOS-ring39-GRB-tRGB
-          path: firmware_cpp/build/JellyFloatOS.uf2
-
-  # A release is a deliberate act: push a tag like v0.1.0 and this job publishes the
+  # A release is a deliberate act: push a tag like v1.0.0 and this job publishes the
   # firmware built from exactly that commit.
   release:
-    needs: [build, build-ring39]
+    needs: [build]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
@@ -140,12 +140,19 @@ jobs:
           name: JellyFloatOS-ring39-GRB-tRGB
           path: release-files/ring39
 
+      - name: Download the Find My reset image
+        uses: actions/download-artifact@v4
+        with:
+          name: JellyFloatReset
+          path: release-files/reset
+
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mv release-files/default/JellyFloatOS.uf2 "release-files/JellyFloatOS-$GITHUB_REF_NAME.uf2"
           mv release-files/ring39/JellyFloatOS.uf2 "release-files/JellyFloatOS-$GITHUB_REF_NAME-ring39-GRB-tRGB.uf2"
+          mv release-files/reset/JellyFloatReset.uf2 "release-files/JellyFloatReset-$GITHUB_REF_NAME.uf2"
           if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             # A second run for the same tag (GitHub sometimes sends two events): just refresh the files.
             gh release upload "$GITHUB_REF_NAME" release-files/*.uf2 --repo "$GITHUB_REPOSITORY" --clobber

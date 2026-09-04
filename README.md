@@ -238,9 +238,46 @@ installed, and the page never changes anything persistent: it only sends the run
 How it works (`firmware_cpp/jell_web.cpp`, `firmware_cpp/web/`): lwIP's httpd serves `index.html` from
 flash, `GET /api/state.json` returns this jelly and its roster, `GET /api/frame.bin` the current LED
 colours (R, G, B per ring LED, then per tentacle LED, then one byte per noodle), and `POST /api/cmd`
-takes one command line, handled exactly like a line from the network. The page polls the frame about
+takes one command line, handled exactly like a line from the network; `POST /api/findmy` takes the Find My public key, see below. The page polls the frame about
 twelve times a second and the state once a second over a kept-alive connection. Everything under
 `firmware_cpp/web/` is compiled into the firmware at build time, so a page change is a firmware build.
+
+## Find My
+
+Every jelly can be a tag in Apple's Find My network, the way [OpenHaystack](https://github.com/seemoo-lab/openhaystack)
+does it: it advertises over Bluetooth LE with a P-224 public key, passing iPhones report its position to
+Apple, and whoever holds the private key can decrypt the reports with OpenHaystack, macless-haystack or
+FindMy.py. The private key never reaches the jelly, and the jelly's key can be set exactly once.
+
+**Setting it up**
+
+1. Open `tools/findmy/keys.html` from the repository in a browser (a local file is fine; it needs no server
+   and no internet). "Generate" makes a key pair in the browser with `crypto.getRandomValues`, in the
+   OpenHaystack format. Copy the private key into your Find My tool and keep it safe.
+2. Switch the jelly on and press either of its buttons within 60 seconds. That opens the provisioning
+   window for ten minutes; without the press the jelly refuses every key, so nobody else on the jelly
+   network can plant one.
+3. On the jelly's page (http://192.168.4.1), the Find My card now takes the public key. Paste it and
+   send it. The jelly writes it to flash and starts advertising within a second or two; the card says
+   "advertising for Find My".
+
+That is final: the sector is locked and further keys are refused, with or without a button press. The
+card's other button, "Permanently disable Find My", writes a sentinel instead of a key and locks just the
+same, for jellies that should never be findable. Only the factory-reset image undoes either:
+`JellyFloatReset.uf2` from the release, flashed like the firmware, erases the key sector (the onboard
+LED blinks three times slowly when it is done), after which the normal firmware goes back on and setup
+starts over. It is a separate file on purpose and never part of a firmware update.
+
+**How it works.** `firmware_cpp/jell_findmy.cpp` keeps a 40-byte record (magic, state, key, checksum)
+in the fourth flash sector from the end, outside the program image, which the linker script keeps clear
+of the last four sectors (BTstack's own storage sits in two of them). Firmware updates do not touch it.
+At boot the record decides: erased means not set up and no advertising; a key means advertise in the
+OpenHaystack layout (the address is the key's first six bytes with the top bits set, the payload bytes
+6 to 27, one to two seconds apart, non-connectable) through BTstack on the same CYW43 chip that does the
+WLAN; the sentinel means skip Bluetooth entirely. Writes come in through `POST /api/findmy` on the web
+page, are validated there and performed by the main loop with the other core paused. `state.json` carries
+the state and the window, `tools/findmy/test_keys.py` checks the browser-side maths against the Python
+`cryptography` library that the OpenHaystack scripts use.
 
 ## The app: JellyFloat for iPhone
 
@@ -261,7 +298,8 @@ never connects to the internet.
 
 | Path | Content |
 |---|---|
-| `firmware_cpp/` | the firmware: `JellyFloatOS.cpp` (main, both cores), `jell_net` (WLAN, election, protocol), `jell_web` + `web/` (the web page), `jell_effects` (modes), `jell_canvas` / `jell_led` (frame buffer, WS2812 output, crossfade), `jell_audio` (I2S microphone), `jell_state` (core-to-core state), `jell_config.hpp` (everything tunable), `tools/elf_size.py` (flash and RAM report), `tools/power_sim/` (supply current per mode) |
+| `firmware_cpp/` | the firmware: `JellyFloatOS.cpp` (main, both cores), `jell_net` (WLAN, election, protocol), `jell_web` + `web/` (the web page), `jell_effects` (modes), `jell_canvas` / `jell_led` (frame buffer, WS2812 output, crossfade), `jell_audio` (I2S microphone), `jell_state` (core-to-core state), `jell_config.hpp` (everything tunable), `jell_findmy` (Find My), `reset/` (the factory-reset image), `tools/elf_size.py` (flash and RAM report), `tools/power_sim/` (supply current per mode) |
+| `tools/findmy/` | the key generator page for Find My (plain JavaScript P-224) and its cross-check against Python |
 | `pcb/` | KiCad project and JLCPCB production files for the Jellyboard |
 | `3D print files/` | base, ribs, pillar, loops, fabric plug |
 | `ios/` | the JellyFloat iPhone app (SwiftUI, English and German); `AppStore/` holds the listing texts, screenshots and the submission guide |

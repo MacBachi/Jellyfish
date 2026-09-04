@@ -1,0 +1,33 @@
+// BTstack configuration for JellyFloatOS: a BLE peripheral that only advertises (Find My).
+// No connections, no GATT, no pairing; the numbers are the smallest BTstack accepts.
+#pragma once
+
+#define ENABLE_LE_PERIPHERAL
+#define ENABLE_LOG_ERROR
+#define ENABLE_PRINTF_HEXDUMP
+
+#define HCI_OUTGOING_PRE_BUFFER_SIZE 4
+#define HCI_ACL_PAYLOAD_SIZE (255 + 4)
+#define HCI_ACL_CHUNK_SIZE_ALIGNMENT 4
+
+#define MAX_NR_HCI_CONNECTIONS 1
+#define MAX_NR_L2CAP_CHANNELS 2
+#define MAX_NR_L2CAP_SERVICES 2
+#define MAX_NR_GATT_CLIENTS 1
+#define MAX_NR_SM_LOOKUP_ENTRIES 1
+#define MAX_NR_WHITELIST_ENTRIES 1
+#define MAX_NR_LE_DEVICE_DB_ENTRIES 1
+#define MAX_NR_CONTROLLER_ACL_BUFFERS 3
+#define MAX_NR_CONTROLLER_SCO_PACKETS 3
+#define HCI_HOST_ACL_PACKET_LEN 255
+#define HCI_HOST_ACL_PACKET_NUM 3
+#define HCI_HOST_SCO_PACKET_LEN 120
+#define HCI_HOST_SCO_PACKET_NUM 3
+#define NVM_NUM_DEVICE_DB_ENTRIES 1
+#define NVM_NUM_LINK_KEYS 1
+#define MAX_ATT_DB_SIZE 256
+
+#define HAVE_EMBEDDED_TIME_MS
+#define HAVE_ASSERT
+#define HCI_RESET_RESEND_TIMEOUT_MS 1000
+#define ENABLE_SOFTWARE_AES128

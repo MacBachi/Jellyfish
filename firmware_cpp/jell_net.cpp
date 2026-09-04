@@ -23,6 +23,7 @@ extern "C"
 #include "jell_config.hpp"
 #include "jell_state.hpp"
 #include "jell_web.hpp"
+#include "jell_findmy.hpp"
 
 namespace
 {
@@ -922,6 +923,8 @@ size_t Net::write_status_json(char* buf, size_t n)
     put(",\"ring\":%d,\"tentacles\":%d,\"tentacleLeds\":%d,\"noodles\":%d",
         JellConfig::NUMBER_LEDS_IN_RING, JellConfig::NUMBER_OF_TENTACLES,
         JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE, JellConfig::NUMBER_OF_NOODLES);
+    put(",");
+    if (i < n) i += FindMy::write_json(buf + i, n - i);
     put(",\"roster\":[");
     bool first = true;
     for (int k = 0; k < roster_count && k < JellConfig::NET_MAX_JELLIES; k++)

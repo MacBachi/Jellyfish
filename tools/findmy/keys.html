@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JellyFloat Find My keys</title>
+<style>
+:root{--bg:#070d18;--card:rgba(255,255,255,.05);--line:rgba(255,255,255,.12);--ink:#eaf2ff;--dim:#8aa0bf;--cyan:#4fe3ff;--amber:#ffc259}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:24px 16px}
+h1{font-size:26px;margin:0 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}
+label{display:block;color:var(--dim);font-size:13px;margin-bottom:4px}
+.key{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;word-break:break-all;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:10px;min-height:20px}
+.row{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+button{font:inherit;color:var(--ink);background:rgba(255,255,255,.10);border:1px solid var(--line);border-radius:12px;padding:9px 14px;cursor:pointer}
+button.primary{background:var(--cyan);color:#001018;border-color:transparent;font-weight:600}
+.warn{color:var(--amber)}
+.hint{color:var(--dim);font-size:13px}
+input[type=text]{width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:9px}
+#status{min-height:1.2em}
+</style>
+</head>
+<body>
+<main>
+<h1>Find My keys for a jelly</h1>
+<p class="hint">Makes an OpenHaystack key pair here in your browser. Nothing is sent anywhere: the page has no server and works offline. Keep the private key to yourself; the jelly only ever gets the public one.</p>
+
+<section class="card">
+  <button class="primary" id="gen">Generate a new key pair</button>
+  <p class="hint" id="self"></p>
+</section>
+
+<section class="card">
+  <label>Private key (base64, 28 bytes) <span class="warn">· sensitive, keep it safe: it is what lets you see the jelly's location</span></label>
+  <div class="key" id="priv"></div>
+  <div class="row"><button id="cpPriv">Copy private key</button></div>
+  <p class="hint">Paste it into the OpenHaystack app (or macless-haystack, FindMy.py) as the accessory's private key.</p>
+</section>
+
+<section class="card">
+  <label>Public key = advertisement key (base64, 28 bytes)</label>
+  <div class="key" id="pub"></div>
+  <label style="margin-top:10px">Hashed advertisement key (SHA-256, base64), as OpenHaystack lists it</label>
+  <div class="key" id="hash"></div>
+  <div class="row">
+    <button id="cpPub">Copy public key</button>
+    <button id="send">Send public key to the jelly</button>
+  </div>
+  <p class="hint">"Send" posts it to <code>http://192.168.4.1/api/findmy</code>: you must be on the jelly's Wi-Fi and its provisioning window must be open (a button press within 60 s after power-up). Browsers hide the jelly's answer from this page, so check the Find My card on the jelly's own page afterwards. If sending is blocked (some browsers refuse it from a web-hosted page), copy the key and paste it into that card instead.</p>
+  <p class="hint" id="status"></p>
+</section>
+
+<section class="card">
+  <label>Jelly address (only if it is not the one running the network)</label>
+  <input type="text" id="addr" value="192.168.4.1">
+</section>
+
+<script src="p224.js"></script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+let keys = null;
+const err = P224.selfTest();
+$('self').textContent = err ? 'Self-test FAILED: ' + err + '. Do not use this page.' : 'Self-test passed (P-224 generator, curve order, k=1).';
+if (err) $('gen').disabled = true;
+
+$('gen').addEventListener('click', () => {
+  keys = P224.generate();
+  $('priv').textContent = keys.privateKey;
+  $('pub').textContent = keys.advertisementKey;
+  $('hash').textContent = keys.hashedKey;
+  $('status').textContent = '';
+});
+async function copy(text, label) {
+  try { await navigator.clipboard.writeText(text); $('status').textContent = label + ' copied.'; }
+  catch (e) { $('status').textContent = 'Copy failed; select the text and copy it by hand.'; }
+}
+$('cpPriv').addEventListener('click', () => keys && copy(keys.privateKey, 'Private key'));
+$('cpPub').addEventListener('click', () => keys && copy(keys.advertisementKey, 'Public key'));
+$('send').addEventListener('click', async () => {
+  if (!keys) { $('status').textContent = 'Generate a key pair first.'; return; }
+  if (!confirm('Send the public key to the jelly at ' + $('addr').value + '? The jelly locks it in for good.')) return;
+  try {
+    await fetch('http://' + $('addr').value + '/api/findmy', {method: 'POST', mode: 'no-cors', body: keys.advertisementKey, headers: {'Content-Type': 'text/plain'}});
+    $('status').textContent = 'Sent. Open http://' + $('addr').value + ' and look at the Find My card to see whether the jelly accepted it.';
+  } catch (e) {
+    $('status').textContent = 'Could not reach the jelly: ' + e + '. Copy the public key and paste it into the jelly\'s page.';
+  }
+});
+</script>
+</main>
+</body>
+</html>

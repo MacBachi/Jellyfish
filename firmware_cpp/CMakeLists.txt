@@ -49,6 +49,7 @@ add_executable(JellyFloatOS
         jell_beat.cpp
         jell_net.cpp
         jell_web.cpp
+        jell_findmy.cpp
         dhcpserver.c
 )
 
@@ -102,6 +103,34 @@ target_link_libraries(JellyFloatOS
         pico_unique_id
         pico_rand
         )
+
+# Find My: BLE advertising through BTstack (btstack_config.h in this directory), the key in a
+# flash sector of its own, and a linker script that keeps the program out of the last four
+# sectors: the key's (fourth from the end), BTstack's two, and the last one the SDK leaves free.
+target_link_libraries(JellyFloatOS
+        pico_btstack_ble
+        pico_btstack_cyw43
+        pico_flash
+        hardware_flash
+        )
+if ("${PICO_FLASH_SIZE_BYTES}" STREQUAL "")
+    set(PICO_FLASH_SIZE_BYTES "(4 * 1024 * 1024)")
+endif()
+file(READ "${PICO_SDK_PATH}/src/rp2_common/pico_crt0/rp2350/memmap_default.ld" JELL_LD)
+string(REPLACE "INCLUDE \"pico_flash_region.ld\""
+       "FLASH(rx) : ORIGIN = 0x10000000, LENGTH = (${PICO_FLASH_SIZE_BYTES} - 4 * 4096)" JELL_LD "${JELL_LD}")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/memmap_jelly.ld" "${JELL_LD}")
+pico_set_linker_script(JellyFloatOS "${CMAKE_CURRENT_BINARY_DIR}/memmap_jelly.ld")
+
+# The factory-reset image: erases the Find My sector and nothing else. A separate UF2,
+# never part of a normal update; see reset/JellyFloatReset.cpp.
+add_executable(JellyFloatReset reset/JellyFloatReset.cpp)
+pico_set_program_name(JellyFloatReset "JellyFloatReset")
+pico_set_program_version(JellyFloatReset "${JELL_VERSION}")
+pico_enable_stdio_usb(JellyFloatReset 1)
+target_link_libraries(JellyFloatReset pico_stdlib hardware_flash pico_cyw43_arch_none)
+target_include_directories(JellyFloatReset PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+pico_add_extra_outputs(JellyFloatReset)
 
 # The web page: everything under web/ is compiled into the firmware (pico_fsdata.inc)
 # and served by lwIP's httpd, see jell_web.cpp.

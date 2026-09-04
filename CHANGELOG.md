@@ -11,6 +11,11 @@ First stable release: firmware and iPhone app under one version number, the app 
 App Store, the project on its own (the GitHub fork relation to the original repository is being cut).
 
 ### Added
+- Find My: every jelly can be an OpenHaystack tag. `tools/findmy/keys.html` makes the P-224 key pair in
+  the browser; a button press within 60 s after boot opens a ten-minute provisioning window; the web page
+  writes the public key (or a "never" sentinel) once into a reserved flash sector that updates leave
+  alone; the jelly then advertises over BLE through BTstack. `JellyFloatReset.uf2`, a separate image on
+  every release, erases the sector. The linker script keeps the program out of the last four sectors.
 - `firmware_cpp/tools/power_sim`: builds the effect code for the host and prints the supply current of
   every mode for three measured WS2812B models.
 - The iPhone app speaks German as well as English (string catalogues in `ios/JellyFloat/Resources/`).
