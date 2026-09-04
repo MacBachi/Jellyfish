@@ -1,7 +1,7 @@
 # JellyFloat im App Store einreichen
 
 Alles, was in App Store Connect einzutragen ist, in der Reihenfolge der Formulare. Die Texte liegen
-zum Kopieren in `metadata/en-US/` und `metadata/de-DE/`, die Bildschirmfotos in `screenshots/`.
+zum Kopieren in `metadata/en-GB/` und `metadata/de-DE/`, die Bildschirmfotos in `screenshots/`.
 Die Texte für die Prüfer stehen unten unter "App-Überprüfungsinformationen".
 
 ## Vorher, einmalig
@@ -20,7 +20,7 @@ Die Texte für die Prüfer stehen unten unter "App-Überprüfungsinformationen".
 |---|---|
 | Plattformen | iOS |
 | Name | `JellyFloat` (muss im Store einmalig sein; wenn belegt: `JellyFloat Jellyfish Lights`) |
-| Primäre Sprache | Englisch (USA); Deutsch kommt als zweite Lokalisierung dazu |
+| Primäre Sprache | Englisch (Großbritannien); Deutsch kommt als zweite Lokalisierung dazu. Alle englischen Storefronts, auch die amerikanische, zeigen diesen Text; eine eigene US-Lokalisierung ist nicht nötig. Die Texte sind in britischer Schreibweise, wie die Oberfläche der App. |
 | Bundle-ID | `at.guggug.jellyfloat` |
 | SKU | `jellyfloat-ios` |
 | Benutzerzugriff | Vollzugriff |
@@ -44,7 +44,7 @@ eindeutig; falls du eine Nummernlogik willst: `JF-IOS-001`.
 
 ## Version 1.1.0: Vorbereitung zur Einreichung
 
-Lokalisierungen: **Englisch (USA)** und **Deutsch**, jeweils:
+Lokalisierungen: **Englisch (Großbritannien)** und **Deutsch**, jeweils:
 
 | Feld | Datei |
 |---|---|
