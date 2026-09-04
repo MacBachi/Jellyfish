@@ -1,0 +1,209 @@
+{
+  "" : {
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloat-primary.dia",
+    "emit-module-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloat-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloat-primary-emit-module.dia",
+    "pch" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloat-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloat-primary.swiftdeps"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/App/AppModel.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppModel.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppModel.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppModel.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppModel.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppModel.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppModel.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppModel.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppModel~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/App/BuildInfo.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/BuildInfo.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/BuildInfo.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/BuildInfo.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/BuildInfo.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/BuildInfo.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/BuildInfo.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/BuildInfo.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/BuildInfo~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/App/JellyFloatApp.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloatApp.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloatApp.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloatApp.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloatApp.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloatApp.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloatApp.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloatApp.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyFloatApp~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/Engine/JellyEngine.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyEngine.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyEngine.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyEngine.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyEngine.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyEngine.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyEngine.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyEngine.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyEngine~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/Network/DemoJelly.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/DemoJelly.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/DemoJelly.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/DemoJelly.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/DemoJelly.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/DemoJelly.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/DemoJelly.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/DemoJelly.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/DemoJelly~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/Network/JellyProtocol.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyProtocol.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyProtocol.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyProtocol.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyProtocol.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyProtocol.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyProtocol.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyProtocol.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyProtocol~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/Network/JellyTransport.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyTransport.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyTransport.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyTransport.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyTransport.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyTransport.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyTransport.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyTransport.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyTransport~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/Network/TimeSync.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/TimeSync.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/TimeSync.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/TimeSync.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/TimeSync.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/TimeSync.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/TimeSync.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/TimeSync.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/TimeSync~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/UI/ControlsView.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ControlsView.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ControlsView.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ControlsView.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ControlsView.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ControlsView.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ControlsView.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ControlsView.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ControlsView~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/UI/HomeView.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/HomeView.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/HomeView.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/HomeView.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/HomeView.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/HomeView.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/HomeView.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/HomeView.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/HomeView~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/UI/JellyHeroView.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyHeroView.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyHeroView.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyHeroView.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyHeroView.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyHeroView.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyHeroView.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyHeroView.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JellyHeroView~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/UI/JoinPromptView.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JoinPromptView.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JoinPromptView.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JoinPromptView.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JoinPromptView.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JoinPromptView.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JoinPromptView.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JoinPromptView.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/JoinPromptView~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/UI/ModeTile.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ModeTile.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ModeTile.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ModeTile.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ModeTile.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ModeTile.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ModeTile.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ModeTile.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/ModeTile~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/UI/RootView.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/RootView.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/RootView.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/RootView.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/RootView.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/RootView.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/RootView.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/RootView.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/RootView~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/UI/SettingsView.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SettingsView.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SettingsView.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SettingsView.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SettingsView.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SettingsView.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SettingsView~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/UI/SwarmView.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SwarmView.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SwarmView.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SwarmView.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SwarmView.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SwarmView.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SwarmView.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SwarmView.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/SwarmView~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/UI/Theme.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/Theme.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/Theme.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/Theme.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/Theme.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/Theme.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/Theme.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/Theme.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/Theme~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/WiFi/AppSettings.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppSettings.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppSettings.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppSettings.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppSettings.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppSettings.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppSettings.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppSettings.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/AppSettings~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/JellyFloat/WiFi/NetworkJoiner.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/NetworkJoiner.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/NetworkJoiner.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/NetworkJoiner.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/NetworkJoiner.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/NetworkJoiner.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/NetworkJoiner.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/NetworkJoiner.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/NetworkJoiner~partial.swiftmodule"
+  },
+  "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/mb/Dev/Jellyfish/ios/build-dev/Build/Intermediates.noindex/JellyFloat.build/Debug-iphoneos/JellyFloat.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}
