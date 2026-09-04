@@ -95,7 +95,9 @@ public:
     static constexpr auto DEFAULT_DISPLAY_MODE = DisplayMode::Mic_NField;
 
     // Runtime defaults for the values that can later be changed over the network.
-    static constexpr float DEFAULT_BRIGHTNESS = 1.0f;
+    // 20 %: bright enough for a room, and a jelly on USB power stays well inside what the
+    // socket and the board carry (see README "Power"). BRIGHT raises it at runtime.
+    static constexpr float DEFAULT_BRIGHTNESS = 0.2f;
     static constexpr float DEFAULT_HUE_OFFSET = 0.0f;
 
     // Palette modes: every jelly gets one of these hues (degrees) by its colour slot.

@@ -116,7 +116,7 @@ enum JellyPalette {
 /// What the AP broadcasts in every STATE line.
 struct JellyState: Equatable {
     var mode: JellyMode = .micField
-    var brightness: Double = 1
+    var brightness: Double = 0.2 // the firmware's DEFAULT_BRIGHTNESS
     var hueOffset: Double = 0
     var cyclePeriod: Double = 10
 }

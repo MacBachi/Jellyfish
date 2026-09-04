@@ -87,8 +87,9 @@ quiet room, which matches the table. So a 2.4 A USB supply into the micro-USB is
 and, at half brightness, for everything else. For full brightness in the bright modes, or more than four
 tentacles, feed 5 V to the ring and the tentacles straight from the supply and let the board carry data
 and ground only. A 1000 µF capacitor at the ring's 5 V input and short data leads (the Pico drives 3.3 V
-into 5 V LEDs, which usually works but dislikes long wires) save a lot of debugging. The `BRIGHT`
-command caps the brightness at runtime, `BRIGHTNESS_MODIFIER` in `jell_config.hpp` at build time.
+into 5 V LEDs, which usually works but dislikes long wires) save a lot of debugging. Every jelly starts at
+20 % brightness (`DEFAULT_BRIGHTNESS`); the `BRIGHT` command and the page's slider change it at runtime,
+`BRIGHTNESS_MODIFIER` in `jell_config.hpp` caps it at build time.
 
 ## Getting started
 

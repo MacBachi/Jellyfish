@@ -5,6 +5,10 @@ entries start where the fork diverged.
 
 ## Unreleased
 
+### Changed
+- Jellies start at 20 % brightness instead of 100 %; the page and the app assume the same until the
+  jelly reports.
+
 ### Added
 - The roster, on the web page and in the app's Jellies tab, shows each jelly's address as a link to that
   jelly's own web page.
