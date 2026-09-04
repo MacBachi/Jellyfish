@@ -5,6 +5,10 @@ entries start where the fork diverged.
 
 ## Unreleased
 
+### Fixed
+- The app declares all four interface orientations. App Store Connect refuses a build that names
+  only portrait (error 90474).
+
 ## 1.1.0 - 2026-09-04
 
 Find My verified end to end on jelly 0451: key from the browser, set from the phone, reports fetched
