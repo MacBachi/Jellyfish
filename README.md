@@ -262,6 +262,18 @@ FindMy.py. The private key never reaches the jelly, and the jelly's key can be s
    send it. The jelly writes it to flash and starts advertising within a second or two; the card says
    "advertising for Find My".
 
+4. Reading the reports needs an Apple ID (a spare one; Apple sometimes locks accounts that use this
+   private API) and a way to look like an Apple device. `tools/findmy/locate.py` does that with
+   [FindMy.py](https://github.com/malmeloo/FindMy.py) on the Mac: no server, no Docker, the `anisette`
+   library imitates the device inside the process. First run: `python3 -m venv venv && venv/bin/pip
+   install findmy`, then `venv/bin/python -W ignore locate.py --keys keys.json`; it asks for the Apple
+   ID, the password and the second-factor code once and keeps the session in `account.json`. It prints
+   every report of the last week and an Apple Maps link for the latest. Verified end to end on jelly
+   0451 on 4 September 2026: key set from the phone, first reports three minutes later.
+
+OpenHaystack's own macOS app needs a Mail plugin that current macOS no longer loads, and the mobile
+clients need a server; the script is the lightest way that still works.
+
 That is final: the sector is locked and further keys are refused, with or without a button press. The
 card's other button, "Permanently disable Find My", writes a sentinel instead of a key and locks just the
 same, for jellies that should never be findable. Only the factory-reset image undoes either:
@@ -300,7 +312,7 @@ never connects to the internet.
 | Path | Content |
 |---|---|
 | `firmware_cpp/` | the firmware: `JellyFloatOS.cpp` (main, both cores), `jell_net` (WLAN, election, protocol), `jell_web` + `web/` (the web page), `jell_effects` (modes), `jell_canvas` / `jell_led` (frame buffer, WS2812 output, crossfade), `jell_audio` (I2S microphone), `jell_state` (core-to-core state), `jell_config.hpp` (everything tunable), `jell_findmy` (Find My), `reset/` (the factory-reset image), `tools/elf_size.py` (flash and RAM report), `tools/power_sim/` (supply current per mode) |
-| `tools/findmy/` | the key generator page for Find My (plain JavaScript P-224) and its cross-check against Python |
+| `tools/findmy/` | Find My: the key generator page (plain JavaScript P-224), its cross-check against Python, and `locate.py` to read the reports |
 | `pcb/` | KiCad project and JLCPCB production files for the Jellyboard |
 | `3D print files/` | base, ribs, pillar, loops, fabric plug |
 | `ios/` | the JellyFloat iPhone app (SwiftUI, English and German); `AppStore/` holds the listing texts, screenshots and the submission guide |

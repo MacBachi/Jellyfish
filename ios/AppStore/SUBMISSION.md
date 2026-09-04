@@ -30,7 +30,7 @@ einmalig sein, darf Buchstaben, Ziffern, Bindestrich, Unterstrich und Punkt enth
 später nicht mehr ändern. Apple nutzt sie in den Verkaufsberichten. `jellyfloat-ios` ist kurz und
 eindeutig; falls du eine Nummernlogik willst: `JF-IOS-001`.
 
-## Version 1.0.0: App-Informationen
+## Version 1.1.0: App-Informationen
 
 | Feld | Eintrag |
 |---|---|
@@ -42,7 +42,7 @@ eindeutig; falls du eine Nummernlogik willst: `JF-IOS-001`.
 | Altersfreigabe | alle Fragen "Nein/Keine" → 4+ |
 | Lizenzvereinbarung | Standard-EULA von Apple |
 
-## Version 1.0.0: Vorbereitung zur Einreichung
+## Version 1.1.0: Vorbereitung zur Einreichung
 
 Lokalisierungen: **Englisch (USA)** und **Deutsch**, jeweils:
 
@@ -60,7 +60,7 @@ iPad-Fotos sind nicht nötig, die App ist nur für iPhone gebaut (`TARGETED_DEVI
 
 | Feld | Eintrag |
 |---|---|
-| Version | `1.0.0` (kommt aus `VERSION`; der Build trägt sie automatisch) |
+| Version | `1.1.0` (kommt aus `VERSION`; der Build trägt sie automatisch) |
 | Copyright | `2026 <dein Name>` |
 | Veröffentlichung | Manuell, nach der Freigabe |
 | Preis | Kostenlos, alle Länder |

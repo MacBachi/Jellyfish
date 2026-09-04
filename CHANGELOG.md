@@ -5,6 +5,11 @@ entries start where the fork diverged.
 
 ## Unreleased
 
+## 1.1.0 - 2026-09-04
+
+Find My verified end to end on jelly 0451: key from the browser, set from the phone, reports fetched
+three minutes later. Reading the reports has a script now.
+
 ### Changed
 - Jellies start at 20 % brightness instead of 100 %; the page and the app assume the same until the
   jelly reports.
@@ -12,6 +17,7 @@ entries start where the fork diverged.
 ### Added
 - The roster, on the web page and in the app's Jellies tab, shows each jelly's address as a link to that
   jelly's own web page.
+- `tools/findmy/locate.py`: fetches and prints the Find My reports for a key with FindMy.py, no server.
 
 ## 1.0.0 - 2026-09-04
 
