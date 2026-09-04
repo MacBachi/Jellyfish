@@ -53,6 +53,8 @@ public:
         for (int i = 0; i < numLEDs; i++)
             snap_h[i] = snap_s[i] = snap_v[i] = 0.0f;
 
+        rgb_out = new uint8_t[(size_t)numLEDs * 3]();
+
         posX = new float[numLEDs];
         posY = new float[numLEDs];
         posZ = new float[numLEDs];
@@ -81,6 +83,7 @@ public:
         delete[] snap_h;
         delete[] snap_s;
         delete[] snap_v;
+        delete[] rgb_out;
         delete[] posX;
         delete[] posY;
         delete[] posZ;
@@ -157,6 +160,12 @@ public:
             // Convert the "Live" HSV state to RGB just for the hardware
             hsv_to_rgb(h + hue_offset, s, v * brightness, r_out, g_out, b_out);
 
+            // Keep a copy of what went out, in RGB regardless of the strip's wire order,
+            // for the web page's picture of the jelly.
+            rgb_out[i * 3] = r_out;
+            rgb_out[i * 3 + 1] = g_out;
+            rgb_out[i * 3 + 2] = b_out;
+
             uint32_t pixel;
 
             switch (colour_order)
@@ -203,6 +212,10 @@ public:
         }
         sleep_us(100);
     }
+
+    // The colours sent with the last paint_string(), 3 bytes (R, G, B) per LED.
+    const uint8_t* last_rgb() const { return rgb_out; }
+    int count() const { return numLEDs; }
 
     // coordinate mapping method
     void map_pixel(int index, float x, float y, float z)
@@ -303,6 +316,7 @@ private:
 
     float *h_buf, *s_buf, *v_buf;
     float *snap_h, *snap_s, *snap_v; // frozen picture for crossfades
+    uint8_t* rgb_out;                // what the last paint_string() sent, as RGB
 
     // Coordinate buffers
     float* posX;

@@ -67,6 +67,9 @@ jobs:
           output_dir: build
           cmake_args: ${{ steps.opts.outputs.args }}
 
+      - name: Report flash and RAM use
+        run: python3 firmware_cpp/tools/elf_size.py firmware_cpp/build/JellyFloatOS.elf | tee -a "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/upload-artifact@v4
         with:
           name: JellyFloatOS${{ steps.opts.outputs.suffix }}
@@ -95,6 +98,9 @@ jobs:
           source_dir: firmware_cpp
           output_dir: build
           cmake_args: ${{ steps.opts.outputs.args }}
+
+      - name: Report flash and RAM use
+        run: python3 firmware_cpp/tools/elf_size.py firmware_cpp/build/JellyFloatOS.elf | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         with:

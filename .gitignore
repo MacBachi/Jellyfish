@@ -4,7 +4,7 @@
 .vscode/
 
 # Firmware build output (the CI publishes binaries as artifacts and releases)
-firmware_cpp/build/
+firmware_cpp/build*/
 firmware_cpp/cmake-build-*/
 firmware_cpp/pico_sdk_import.cmake
 *.uf2

@@ -64,6 +64,14 @@ public:
 
         Point3 noodle_position(int noodle);
 
+        // The picture on the hardware right now, for the web page: R, G, B per ring LED,
+        // then per tentacle LED (tentacle by tentacle), then one brightness byte per noodle.
+        // show() publishes it on core 1; copy_frame() may be called from core 0 at any time.
+        static constexpr int FRAME_BYTES =
+            3 * (JellConfig::NUMBER_LEDS_IN_RING + JellConfig::NUMBER_OF_TENTACLES * JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE)
+            + JellConfig::NUMBER_OF_NOODLES;
+        void copy_frame(uint8_t* dst) const;
+
         void all_pixels_hsv(
             float h,
             float s,
@@ -85,4 +93,11 @@ public:
 
         float noodle_levels_[JellConfig::NUMBER_OF_NOODLES] = {};
         float noodle_snapshot_[JellConfig::NUMBER_OF_NOODLES] = {};
+
+        // Published frame. The sequence counter is odd while core 1 is writing; a reader
+        // that sees it change during its copy takes the frame again.
+        uint8_t noodle_out_[JellConfig::NUMBER_OF_NOODLES] = {};
+        uint8_t frame_[FRAME_BYTES] = {};
+        volatile uint32_t frame_seq_ = 0;
+        void publish_frame();
 };

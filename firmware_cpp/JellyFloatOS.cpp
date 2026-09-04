@@ -74,19 +74,6 @@ bool render_ident(const JellState& s, int64_t master_us)
     return true;
 }
 
-// The mode actually rendered this frame. The playlist resolves to one of its entries
-// from the master time, in integer microseconds so every jelly picks the same one.
-JellConfig::DisplayMode effective_mode(const JellState& s, int64_t master_us)
-{
-    if (s.mode != JellConfig::DisplayMode::Playlist)
-        return s.mode;
-
-    constexpr int64_t step_us = (int64_t)(JellConfig::PLAYLIST_STEP_S * 1e6f);
-    constexpr int n = JellConfig::PLAYLIST_SIZE;
-    const int index = (int)(((master_us / step_us) % n + n) % n);
-    return JellConfig::PLAYLIST[index];
-}
-
 // Draw one frame of `mode` into the canvas. Nothing is sent to the LEDs here.
 void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFrame& audio, float time, bool beat)
 {
@@ -206,7 +193,7 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         const int64_t master_us = (int64_t)time_us_64() + s.time_offset_us;
         const float time = (float)master_us * 1e-6f;
 
-        const JellConfig::DisplayMode mode = effective_mode(s, master_us);
+        const JellConfig::DisplayMode mode = effective_mode(s, master_us); // jell_state.hpp
 
         if (render_ident(s, master_us))
         {

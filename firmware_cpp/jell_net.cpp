@@ -22,20 +22,22 @@ extern "C"
 }
 #include "jell_config.hpp"
 #include "jell_state.hpp"
+#include "jell_web.hpp"
 
 namespace
 {
     constexpr uint32_t COUNTRY = CYW43_COUNTRY_WORLDWIDE;
-    constexpr size_t LINE_MAX = 64;
+    constexpr size_t NET_LINE_MAX = 64;
     constexpr int RX_QUEUE_SIZE = 8;
 
     // ---- receive queue: filled by the lwIP callback (IRQ context), drained by poll() ----
     struct RxLine
     {
-        char text[LINE_MAX];
-        uint64_t rx_us;  // when it arrived, for the time sync
+        char text[NET_LINE_MAX];
+        uint64_t rx_us;  // when it arrived, for the time sync; 0 for a local line
         ip_addr_t from;  // sender, so the AP can answer apps by unicast
         u16_t from_port;
+        bool local;      // from the web page: handled like a button press, announced to the bloom
     };
     RxLine rx_queue[RX_QUEUE_SIZE];
     volatile int rx_head = 0; // next slot to write
@@ -241,7 +243,7 @@ namespace
 
     void send_state()
     {
-        char line[LINE_MAX];
+        char line[NET_LINE_MAX];
         snprintf(line, sizeof line, "STATE %d %.2f %.0f %.1f %llu %s",
                  (int)state.mode, state.brightness, state.hue_offset, state.cycle_period_s,
                  (unsigned long long)time_us_64(), my_id);
@@ -261,7 +263,7 @@ namespace
 
     void send_hello()
     {
-        char line[LINE_MAX];
+        char line[NET_LINE_MAX];
         format_hello(line, sizeof line, my_id, state.is_ap ? "AP" : "STA", state.slot, my_ip(),
                      JellConfig::VERSION, (int)JellConfig::DisplayMode::Count);
         send_line(line);
@@ -270,7 +272,7 @@ namespace
     // Tell one app who is here: ourselves, then every member heard from recently.
     void replay_roster_to(const ip_addr_t* ip, u16_t port)
     {
-        char line[LINE_MAX];
+        char line[NET_LINE_MAX];
         format_hello(line, sizeof line, my_id, "AP", state.slot, my_ip(),
                      JellConfig::VERSION, (int)JellConfig::DisplayMode::Count);
         send_to(line, ip, port);
@@ -307,7 +309,7 @@ namespace
         if (next != rx_tail)
         {
             RxLine& slot = rx_queue[rx_head];
-            const u16_t n = pbuf_copy_partial(p, slot.text, LINE_MAX - 1, 0);
+            const u16_t n = pbuf_copy_partial(p, slot.text, NET_LINE_MAX - 1, 0);
             slot.text[n] = 0;
             for (char* c = slot.text; *c; ++c)
                 if (*c == '\r' || *c == '\n')
@@ -321,9 +323,27 @@ namespace
             else
                 ip_addr_set_zero(&slot.from);
             slot.from_port = from_port;
+            slot.local = false;
             rx_head = next;
         }
         pbuf_free(p);
+    }
+
+    // Append one JSON-escaped string (ids, versions and addresses only hold plain ASCII,
+    // so this just guards the quotes and backslashes). Returns characters written.
+    int json_string(char* out, size_t n, const char* s)
+    {
+        size_t i = 0;
+        if (i < n) out[i++] = '"';
+        for (; *s && i + 2 < n; ++s)
+        {
+            if (*s == '"' || *s == '\\')
+                out[i++] = '\\';
+            out[i++] = (*s >= 32 && *s < 127) ? *s : '?';
+        }
+        if (i < n) out[i++] = '"';
+        if (i < n) out[i] = 0;
+        return (int)i;
     }
 
     int on_scan_result(void*, const cyw43_ev_scan_result_t* result)
@@ -472,7 +492,7 @@ namespace
 
         if (is_station || is_app)
         {
-            char line[LINE_MAX];
+            char line[NET_LINE_MAX];
             snprintf(line, sizeof line, "SLOT %s %d", id, m->slot);
             send_line(line);
         }
@@ -540,7 +560,7 @@ namespace
         }
         if (announce)
         {
-            char line[LINE_MAX];
+            char line[NET_LINE_MAX];
             snprintf(line, sizeof line, "MODE %d", mode);
             send_line(line);
         }
@@ -654,7 +674,7 @@ void Net::handle_line(const char* line, bool local)
     if (!local && strcmp(verb, "STATE") != 0)
         log("rx %s", line);
 
-    char out[LINE_MAX];
+    char out[NET_LINE_MAX];
 
     if (strcmp(verb, "MODE") == 0)
     {
@@ -787,6 +807,9 @@ void Net::handle_line(const char* line, bool local)
         {
             // Bare HELLO: a roll call. Answer after an id-derived delay so replies don't collide.
             hello_reply_due_us = time_us_64() + (uint64_t)(id_hash % 200) * 1000 + 1;
+            // From the web page: nobody else heard it yet, so ask the bloom ourselves.
+            if (local)
+                send_line("HELLO");
         }
     }
     else if (strcmp(verb, "SLOT") == 0)
@@ -844,7 +867,77 @@ void Net::init()
         log("udp_new failed");
 
     log("this jelly is %s", my_id);
+    Web::init();
     set_scanning();
+}
+
+void Net::submit_line(const char* line)
+{
+    // Same queue as the datagrams: both producers run in the lwIP context, one at a time.
+    const int next = (rx_head + 1) % RX_QUEUE_SIZE;
+    if (next == rx_tail)
+    {
+        log("queue full, dropping web command %s", line);
+        return;
+    }
+    RxLine& slot = rx_queue[rx_head];
+    strncpy(slot.text, line, NET_LINE_MAX - 1);
+    slot.text[NET_LINE_MAX - 1] = 0;
+    slot.rx_us = 0;
+    ip_addr_set_zero(&slot.from);
+    slot.from_port = 0;
+    slot.local = true;
+    rx_head = next;
+}
+
+size_t Net::write_status_json(char* buf, size_t n)
+{
+    // Read from the lwIP context while poll() may be writing: every field is small and a
+    // stale value is shown for a tenth of a second at most, so no lock is taken.
+    const uint64_t now = time_us_64();
+    const int64_t master_us = (int64_t)now + state.time_offset_us;
+    const char* role_name = ::role == Net::Role::AccessPoint ? "AP"
+                          : ::role == Net::Role::Station ? "STA"
+                          : ::role == Net::Role::Joining ? "joining" : "scanning";
+    size_t i = 0;
+    auto put = [&](const char* fmt, auto... args)
+    {
+        if (i >= n) return;
+        const int w = snprintf(buf + i, n - i, fmt, args...);
+        if (w > 0) i += (size_t)w < n - i ? (size_t)w : n - i - 1;
+    };
+    auto str = [&](const char* s)
+    {
+        if (i < n) i += (size_t)json_string(buf + i, n - i, s);
+    };
+
+    put("{\"id\":"); str(my_id);
+    put(",\"role\":\"%s\",\"ip\":\"%s\",\"version\":", role_name, my_ip()); str(JellConfig::VERSION);
+    put(",\"rev\":"); str(JellConfig::GIT_REV);
+    put(",\"modes\":%d,\"mode\":%d,\"shown\":%d,\"bright\":%.2f,\"hue\":%.0f,\"cycle\":%.1f,\"slot\":%d",
+        (int)JellConfig::DisplayMode::Count, (int)state.mode, (int)effective_mode(state, master_us),
+        state.brightness, state.hue_offset, state.cycle_period_s, state.slot);
+    put(",\"level\":%.2f,\"ident\":%s,\"uptime\":%lu", g_local_level,
+        state.ident_start_master_us != 0 ? "true" : "false", (unsigned long)(now / 1000000));
+    put(",\"ring\":%d,\"tentacles\":%d,\"tentacleLeds\":%d,\"noodles\":%d",
+        JellConfig::NUMBER_LEDS_IN_RING, JellConfig::NUMBER_OF_TENTACLES,
+        JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE, JellConfig::NUMBER_OF_NOODLES);
+    put(",\"roster\":[");
+    bool first = true;
+    for (int k = 0; k < roster_count && k < JellConfig::NET_MAX_JELLIES; k++)
+    {
+        const Member& m = roster[k];
+        const uint64_t age_us = now > m.last_seen_us ? now - m.last_seen_us : 0;
+        if (age_us > (uint64_t)JellConfig::NET_MEMBER_TIMEOUT_MS * 1000)
+            continue;
+        put(first ? "{\"id\":" : ",{\"id\":"); str(m.id);
+        put(",\"role\":\"%s\",\"slot\":%d,\"ip\":", m.is_app ? "APP" : "STA", m.slot); str(m.ip);
+        put(",\"version\":"); str(m.version);
+        put(",\"modes\":%d,\"age\":%lu}", m.modes, (unsigned long)(age_us / 1000000));
+        first = false;
+    }
+    put("]}");
+    return i;
 }
 
 void Net::poll()
@@ -862,7 +955,7 @@ void Net::poll()
         current_rx_us = copy.rx_us;
         current_from = copy.from;
         current_from_port = copy.from_port;
-        handle_line(copy.text, false);
+        handle_line(copy.text, copy.local);
         current_rx_us = 0;
     }
 
@@ -960,7 +1053,7 @@ void Net::poll()
             if (fabsf(level - last_level_sent) >= 0.01f)
             {
                 last_level_sent = level;
-                char line[LINE_MAX];
+                char line[NET_LINE_MAX];
                 snprintf(line, sizeof line, "LEVEL %.2f", level);
                 send_subscribers_only(line);
             }

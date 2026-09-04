@@ -48,6 +48,7 @@ add_executable(JellyFloatOS
         jell_state.hpp
         jell_beat.cpp
         jell_net.cpp
+        jell_web.cpp
         dhcpserver.c
 )
 
@@ -97,9 +98,15 @@ target_include_directories(JellyFloatOS PRIVATE
 # cyw43_arch_init (core 0). lwipopts.h in this directory configures lwIP.
 target_link_libraries(JellyFloatOS
         pico_cyw43_arch_lwip_threadsafe_background
+        pico_lwip_http
         pico_unique_id
         pico_rand
         )
+
+# The web page: everything under web/ is compiled into the firmware (pico_fsdata.inc)
+# and served by lwIP's httpd, see jell_web.cpp.
+file(GLOB JELL_WEB_FILES ${CMAKE_CURRENT_LIST_DIR}/web/*)
+pico_set_lwip_httpd_content(JellyFloatOS PRIVATE ${JELL_WEB_FILES})
 
 # Per-build overrides for hardware and network settings, so one source tree serves
 # every jelly:   cmake ... -DJELL_RING_LEDS=39 -DJELL_WIFI_SSID=bloom -DJELL_WIFI_PASSWORD=secret123

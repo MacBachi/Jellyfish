@@ -3,7 +3,7 @@
 
 // Minimal lwIP configuration for JellyOS: raw API only, no sockets, no threads.
 // Based on pico-examples pico_w/wifi/lwipopts_examples_common.h, trimmed to what a
-// handful of UDP datagrams per second (and later one small HTTP page) need.
+// handful of UDP datagrams per second and the web page's HTTP requests need.
 
 #define NO_SYS 1
 #define LWIP_SOCKET 0
@@ -11,12 +11,13 @@
 
 #define MEM_LIBC_MALLOC 0 // required by the threadsafe_background arch
 #define MEM_ALIGNMENT 4
-#define MEM_SIZE 4000
+#define MEM_SIZE 8000
 #define MEMP_NUM_UDP_PCB 4
-#define MEMP_NUM_TCP_PCB 4
-#define MEMP_NUM_TCP_SEG 16
-#define MEMP_NUM_SYS_TIMEOUT 8
-#define PBUF_POOL_SIZE 8
+#define MEMP_NUM_TCP_PCB 8          // a phone's browser opens a few connections at once
+#define MEMP_NUM_TCP_PCB_LISTEN 2
+#define MEMP_NUM_TCP_SEG 32
+#define MEMP_NUM_SYS_TIMEOUT 12
+#define PBUF_POOL_SIZE 16
 
 #define LWIP_ARP 1
 #define LWIP_ETHERNET 1
@@ -43,5 +44,17 @@
 
 #define LWIP_STATS 0
 #define LWIP_DEBUG 0
+
+// The web page (jell_web.cpp): files from flash (web/, compiled in by CMake), three
+// generated files, one POST endpoint, keep-alive so the page's polling reuses a connection.
+#define HTTPD_FSDATA_FILE "pico_fsdata.inc"
+#define LWIP_HTTPD_CUSTOM_FILES 1
+#define LWIP_HTTPD_DYNAMIC_HEADERS 1
+#define LWIP_HTTPD_SUPPORT_POST 1
+#define LWIP_HTTPD_SUPPORT_11_KEEPALIVE 1
+#define LWIP_HTTPD_SSI 0
+#define LWIP_HTTPD_CGI 0
+#define LWIP_HTTPD_MAX_REQUEST_URI_LEN 63
+#define HTTPD_MAX_RETRIES 8
 
 #endif

@@ -20,6 +20,20 @@ struct JellState
     int64_t ident_start_master_us = 0;   // 0 = not identifying, else the master time the blinking started
 };
 
+// The mode actually rendered for a state at a master time. The playlist resolves to one
+// of its entries from the master time, in integer microseconds so every jelly (and the
+// web page's caption) picks the same one.
+inline JellConfig::DisplayMode effective_mode(const JellState& s, int64_t master_us)
+{
+    if (s.mode != JellConfig::DisplayMode::Playlist)
+        return s.mode;
+
+    constexpr int64_t step_us = (int64_t)(JellConfig::PLAYLIST_STEP_S * 1e6f);
+    constexpr int n = JellConfig::PLAYLIST_SIZE;
+    const int index = (int)(((master_us / step_us) % n + n) % n);
+    return JellConfig::PLAYLIST[index];
+}
+
 // Single-writer seqlock. write() is only ever called from core 0, read() from core 1.
 // The sequence counter is odd while a write is in progress; a reader retries until it
 // has copied the struct under an even, unchanged counter.

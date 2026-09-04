@@ -81,8 +81,8 @@ You need CMake, Ninja, the ARM GNU toolchain and the Pico SDK 2.x **with submodu
 driver and lwIP):
 
 ```bash
-brew install cmake ninja arm-none-eabi-gcc arm-none-eabi-binutils
-git clone -b 2.1.1 --recurse-submodules https://github.com/raspberrypi/pico-sdk ~/pico-sdk
+brew install cmake ninja && brew install --cask gcc-arm-embedded
+git clone -b 2.2.0 --recurse-submodules https://github.com/raspberrypi/pico-sdk ~/pico-sdk
 ```
 
 Then, from the repository root:
@@ -95,7 +95,9 @@ cmake --build firmware_cpp/build
 
 The firmware is `firmware_cpp/build/JellyFloatOS.uf2`. The CI does the same on every push and attaches the
 result as an artifact; a pushed tag such as `v0.5.0` publishes it as a release, with the
-default firmware and the 39-LED GRB/RGB variant attached.
+default firmware and the 39-LED GRB/RGB variant attached. `python3 firmware_cpp/tools/elf_size.py
+firmware_cpp/build/JellyFloatOS.elf` prints how much flash and RAM a build takes; the CI puts the same
+numbers in its job summary.
 
 ### Versions
 
@@ -187,38 +189,36 @@ In button order; the number is what `MODE n` takes.
 | 18 | LED channel test | red, green, blue, and one noodle at a time |
 | 19 | SOS | the whole jelly flashes SOS in red Morse code, all jellies in step |
 
-## The app: JellyFloat for iPhone
+## The web page
 
-`ios/` holds a SwiftUI app that does everything the commands above do, and joins the bloom as a
-**virtual jelly**: the phone gets a colour slot from the AP and runs the same effects on the shared
-clock, drawn as a jellyfish on screen. Mode tiles, brightness, colour shift and cycle, a roll call of
-the jellies with Identify, and the Wi-Fi handling: the app asks to switch to the jelly network when it
-opens (default or a custom one; the name is remembered, the password only if you say so) and iOS
-returns to your usual Wi-Fi about 15 s after you leave the app.
+Every jelly serves a control page on port 80; the one that runs the network is at
+**http://192.168.4.1** once your phone or laptop has joined the 🪼 network. The page shows the jelly
+itself: the colours on its ring, tentacles and noodles as they are right now, drawn as a jellyfish, and
+under it the mode tiles, brightness, colour shift and cycle, Identify and roll call, the roster with
+every jelly's firmware version, and which modes a jelly with older firmware lacks. Nothing needs to be
+installed, and the page never changes anything persistent: it only sends the runtime commands above.
 
-Build it with Xcode 16 or newer: `cd ios && xcodegen generate`, then open `JellyFloat.xcodeproj`, put
-your Team ID into `ios/Local.xcconfig` (see the `.example`) and run on your iPhone. In the simulator the
-app talks to a built-in demo bloom, since simulators cannot join Wi-Fi. The app relies on the firmware's
-`HELLO ... APP` subscription, so it needs firmware from this repository. The Jellies tab lists every
-jelly with its firmware version against the newest one the app knows, and marks modes that not every
-jelly has.
+How it works (`firmware_cpp/jell_web.cpp`, `firmware_cpp/web/`): lwIP's httpd serves `index.html` from
+flash, `GET /api/state.json` returns this jelly and its roster, `GET /api/frame.bin` the current LED
+colours (R, G, B per ring LED, then per tentacle LED, then one byte per noodle), and `POST /api/cmd`
+takes one command line, handled exactly like a line from the network. The page polls the frame about
+twelve times a second and the state once a second over a kept-alive connection. Everything under
+`firmware_cpp/web/` is compiled into the firmware at build time, so a page change is a firmware build.
 
 ## Repository layout
 
 | Path | Content |
 |---|---|
-| `firmware_cpp/` | the firmware: `JellyFloatOS.cpp` (main, both cores), `jell_net` (WLAN, election, protocol), `jell_effects` (modes), `jell_canvas` / `jell_led` (frame buffer, WS2812 output, crossfade), `jell_audio` (I2S microphone), `jell_state` (core-to-core state), `jell_config.hpp` (everything tunable) |
+| `firmware_cpp/` | the firmware: `JellyFloatOS.cpp` (main, both cores), `jell_net` (WLAN, election, protocol), `jell_web` + `web/` (the web page), `jell_effects` (modes), `jell_canvas` / `jell_led` (frame buffer, WS2812 output, crossfade), `jell_audio` (I2S microphone), `jell_state` (core-to-core state), `jell_config.hpp` (everything tunable), `tools/elf_size.py` (flash and RAM report) |
 | `pcb/` | KiCad project and JLCPCB production files for the Jellyboard |
 | `3D print files/` | base, ribs, pillar, loops, fabric plug |
-| `ios/` | the JellyFloat iPhone app (SwiftUI, XcodeGen project) |
+| `ios/` | the earlier JellyFloat iPhone app (SwiftUI); superseded by the web page, kept for reference |
 | `VERSION` | the one version number for firmware and app |
 | `.github/workflows/` | CI: build on every push, release on `v*` tags |
 
 ## Roadmap
 
 - Hardware test of the WLAN sync and the calm modes on a real bloom, tuning of beat thresholds and brightness floors.
-- A small web page served by the AP jelly for phones. It will only issue the runtime commands above, never
-  persistent configuration changes.
 - A software current limit for USB-powered builds.
 - More tentacles per jelly and re-election details for larger blooms.
 

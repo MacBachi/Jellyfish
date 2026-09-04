@@ -5,6 +5,17 @@ entries start where the fork diverged.
 
 ## Unreleased
 
+### Added
+- A web page on every jelly (port 80, `http://192.168.4.1` on the one that runs the network): the
+  jelly's own LEDs drawn live as a jellyfish, mode tiles, brightness, colour shift and cycle, Identify,
+  roll call, the roster with firmware versions and missing modes. It only sends runtime commands.
+  `GET /api/state.json`, `GET /api/frame.bin` and `POST /api/cmd` behind it.
+- `firmware_cpp/tools/elf_size.py` reports flash and RAM use; the CI adds it to the job summary.
+
+### Changed
+- lwIP gets a little more room (8 KB heap, 16 packet buffers, 8 TCP connections) for the page.
+- The iPhone app in `ios/` is superseded by the web page and no longer developed.
+
 ## 0.5.0 - 2026-09-03
 
 First release with the JellyFloat iPhone app and the shared version number.

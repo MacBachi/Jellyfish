@@ -1,7 +1,9 @@
 #include "jell_canvas.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 
+#include "hardware/sync.h" // __dmb
 #include "jell_config.hpp"
 
 Canvas::Canvas(
@@ -67,6 +69,41 @@ void Canvas::show(float mix)
     {
         const float level = noodle_snapshot_[n] + (noodle_levels_[n] - noodle_snapshot_[n]) * mix;
         noodles[n].set_level(level * brightness_);
+        noodle_out_[n] = (uint8_t)(std::clamp(level * brightness_, 0.0f, 1.0f) * 255.0f);
+    }
+
+    publish_frame();
+}
+
+void Canvas::publish_frame()
+{
+    frame_seq_ = frame_seq_ + 1; // odd: writing
+    __dmb();
+    uint8_t* p = frame_;
+    memcpy(p, ring.last_rgb(), ring.count() * 3);
+    p += ring.count() * 3;
+    for (int i = 0; i < JellConfig::NUMBER_OF_TENTACLES; i++)
+    {
+        memcpy(p, spokes[i].last_rgb(), spokes[i].count() * 3);
+        p += spokes[i].count() * 3;
+    }
+    memcpy(p, noodle_out_, JellConfig::NUMBER_OF_NOODLES);
+    __dmb();
+    frame_seq_ = frame_seq_ + 1; // even: complete
+}
+
+void Canvas::copy_frame(uint8_t* dst) const
+{
+    // A frame is written every ~15 ms and copied in a few microseconds, so one retry is
+    // plenty; after that a torn frame is still a picture, just of two adjacent moments.
+    for (int attempt = 0; attempt < 3; attempt++)
+    {
+        const uint32_t before = frame_seq_;
+        __dmb();
+        memcpy(dst, frame_, FRAME_BYTES);
+        __dmb();
+        if ((before & 1u) == 0 && frame_seq_ == before)
+            return;
     }
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 
 // WLAN for a bloom of jellies. One jelly is the access point, the others join it; laptop
 // or phone join the same network. Everything - jelly-to-jelly sync and remote control -
@@ -24,9 +25,17 @@ namespace Net
 
     Role role();
 
-    // The single entry point for commands: received datagrams, the buttons, later the
-    // web page. Applies the line to the state and, with `local` set, also sends it to
+    // The single entry point for commands: received datagrams, the buttons, the web
+    // page. Applies the line to the state and, with `local` set, also sends it to
     // everyone else. Lines: MODE n | NEXT | PREV | BRIGHT f | HUE f | CYCLE f | BEAT |
     // IDENT [t] | STATE ... | HELLO [id role slot ip version modes] | SLOT id n
     void handle_line(const char* line, bool local);
+
+    // Queue a command from the web page. Safe to call from the lwIP context; the line is
+    // handled like a button press (local, announced to the bloom) in the next poll().
+    void submit_line(const char* line);
+
+    // This jelly, its settings and, on the AP, its roster as JSON for the web page.
+    // Returns the number of characters written (without the terminator).
+    size_t write_status_json(char* buf, size_t n);
 }

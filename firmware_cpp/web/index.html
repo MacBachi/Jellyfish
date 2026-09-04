@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#031c34">
+<title>JellyFloat</title>
+<style>
+:root{--cyan:#4fe3ff;--magenta:#ff5ed1;--amber:#ffc259;--ink:rgba(255,255,255,.92);--dim:rgba(255,255,255,.55);--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.10)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:#080818}
+body{margin:0;min-height:100vh;color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(#031c34,#080818 70%) fixed}
+main{max-width:640px;margin:0 auto;padding:8px 16px 40px}
+header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 0 6px}
+h1{margin:0;font-size:30px;font-weight:600;letter-spacing:-.3px}
+h2{margin:22px 0 10px;font-size:12px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
+.pill{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;font-weight:500;white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.pill.on i{background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px}
+.hero{position:relative;height:340px;margin:6px 0 14px}
+canvas{display:block;width:100%;height:100%}
+.cap{position:absolute;right:8px;bottom:8px;text-align:right;font-size:11px;color:var(--dim)}
+.now{display:flex;align-items:center;gap:14px;padding:14px 12px;text-align:center}
+.now>div{flex:1;min-width:0}
+.now .name{font-size:19px;font-weight:600}
+.now .blurb{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now .lack{font-size:11px;color:var(--amber);margin-top:4px}
+.now .lack:empty{display:none}
+button{font:inherit;color:var(--ink);background:rgba(255,255,255,.10);border:1px solid var(--line);border-radius:14px;padding:10px 14px;cursor:pointer}
+button:active{background:rgba(255,255,255,.18)}
+button.step{width:46px;height:46px;padding:0;font-size:17px;color:var(--cyan);border-radius:50%}
+button.primary{background:rgba(255,94,209,.35);border-color:rgba(255,94,209,.5)}
+button.cyan{background:rgba(79,227,255,.18);border-color:rgba(79,227,255,.4)}
+.row{display:flex;gap:12px}
+.row button{flex:1}
+.ctl{margin:6px 0 14px}
+.ctl:last-child{margin-bottom:0}
+.ctl .lbl{display:flex;justify-content:space-between;font-size:14px;font-weight:500;margin-bottom:6px}
+.ctl .lbl span{color:var(--dim);font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:rgba(255,255,255,.18)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-10px;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:rgba(255,255,255,.18)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radius:50%;background:#fff}
+#bright::-webkit-slider-runnable-track{background:linear-gradient(90deg,rgba(255,255,255,.18),var(--cyan))}
+#hue::-webkit-slider-runnable-track,#hue::-moz-range-track{background:linear-gradient(90deg,hsl(0 80% 55%),hsl(60 80% 55%),hsl(120 80% 55%),hsl(180 80% 55%),hsl(240 80% 55%),hsl(300 80% 55%),hsl(360 80% 55%))}
+.stepper{display:flex;align-items:center;justify-content:space-between}
+.stepper div{display:flex;align-items:center;gap:10px}
+.stepper span{color:var(--dim);font-variant-numeric:tabular-nums}
+.stepper button{width:40px;height:34px;padding:0;font-size:18px;line-height:1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(min-width:560px){.grid{grid-template-columns:1fr 1fr 1fr}}
+.tile{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:108px;padding:14px;border-radius:20px;border:1px solid var(--line);text-align:left;transition:box-shadow .25s,border-color .25s}
+.tile.sel{border:1.5px solid rgba(79,227,255,.9);box-shadow:0 0 14px rgba(79,227,255,.35)}
+.tile .dots{position:absolute;top:12px;left:14px;display:flex;gap:6px}
+.tile .dots i{width:9px;height:9px;border-radius:50%}
+.tile .flag{position:absolute;top:10px;right:12px;font-size:11px;font-weight:600}
+.tile .flag.warn{color:var(--amber)}
+.tile .flag.play{color:var(--cyan)}
+.tile b{display:block;font-size:16px;font-weight:600}
+.tile small{display:block;font-size:12px;color:var(--dim);line-height:1.3;margin-top:3px}
+.hint{font-size:12px;color:var(--dim);margin:10px 0 0}
+.member{display:flex;align-items:center;gap:14px;padding:12px}
+.member.stale{opacity:.6}
+.slot{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:rgba(0,0,0,.7)}
+.member .who{font-weight:600;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.chip{display:inline-block;padding:2px 6px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(255,255,255,.1)}
+.chip.ap{background:rgba(255,94,209,.35)}
+.chip.ok{background:rgba(79,227,255,.3)}
+.chip.old{background:rgba(255,194,89,.35)}
+.chip.new{background:rgba(255,94,209,.35)}
+.meta{font-size:12px;color:var(--dim);margin-top:3px}
+.kv{display:flex;justify-content:space-between;font-size:14px;margin:4px 0}
+.kv span:first-child{color:var(--dim)}
+.kv span:last-child{font-weight:600}
+hr{border:0;border-top:1px solid rgba(255,255,255,.15);margin:10px 0}
+.small{font-size:12px;color:var(--dim)}
+.amber{color:var(--amber)}
+.empty{font-size:14px;color:var(--dim)}
+</style>
+</head>
+<body>
+<main>
+<header><h1>JellyFloat</h1><div class="pill" id="pill"><i></i><span id="pillText">Connecting…</span></div></header>
+
+<section class="hero"><canvas id="jelly"></canvas><div class="cap" id="cap"></div></section>
+
+<section class="card now">
+  <button class="step" id="prev" aria-label="previous mode">&#9664;</button>
+  <div><div class="name" id="modeName">…</div><div class="blurb" id="modeBlurb"></div><div class="lack" id="lack"></div></div>
+  <button class="step" id="next" aria-label="next mode">&#9654;</button>
+</section>
+
+<section class="card">
+  <div class="ctl"><div class="lbl"><label for="bright">Brightness</label><span id="brightVal">100 %</span></div><input type="range" id="bright" min="0" max="100" value="100"></div>
+  <div class="ctl"><div class="lbl"><label for="hue">Colour shift</label><span id="hueVal">0°</span></div><input type="range" id="hue" min="0" max="359" value="0"></div>
+  <div class="ctl stepper"><label>Colour cycle</label><div><button id="cycMinus" aria-label="slower">&minus;</button><span id="cycVal">every 10 s</span><button id="cycPlus" aria-label="faster">+</button></div></div>
+</section>
+
+<div id="groups"></div>
+
+<h2>Bloom</h2>
+<section class="card">
+  <div class="row"><button class="primary" id="ident">Identify</button><button class="cyan" id="roll">Roll call</button></div>
+  <p class="hint">Identify makes the jelly that runs the network blink red three times; every other jelly blinks blue in step.</p>
+</section>
+<h2>Jellies</h2>
+<div id="roster"><div class="card empty">Waiting for the jelly…</div></div>
+
+<h2>Firmware</h2>
+<section class="card" id="fw"><div class="empty">Waiting for the jelly…</div></section>
+</main>
+
+<script>
+'use strict';
+// The modes, in the firmware's order: the index is what MODE n sends.
+const MODES = [
+  ['Breathe','A slow pulse from the bell down the tentacles','Calm',[200,215]],
+  ['Glimmer','Near dark, with sparks that glow and fade','Calm',[175,190]],
+  ['Aurora','Bands of green, teal and violet drifting by','Calm',[130,190,260]],
+  ['Current','A gentle wave travelling up the tentacles','Calm',[185,200]],
+  ['Lantern','Warm amber with a hint of candle flicker','Calm',[32,18]],
+  ['Moonlight','Very dim, cool, hardly moving','Calm',[215,220]],
+  ['Drizzle','Single slow drops with trails','Calm',[205,195]],
+  ['Fireflies','Lone lights rising and falling','Calm',[78,60]],
+  ['Swarm','A pulse visiting one jelly after the other','Calm',[0,120,220]],
+  ['Whisper',"Follows the room's sound, slowly",'Calm',[200,120,40]],
+  ['Playlist','Wanders through the calm modes, all jellies together','Calm',[200,40,300]],
+  ['Sound field','The original sound-reactive field','Sound',[220,300]],
+  ['Drops','Drops on every beat','Sound',[220,190]],
+  ['Palette','One colour per jelly','Colour',[0,60,180,270]],
+  ['Palette cycle','Colours rotate through the bloom','Colour',[30,120,220,310]],
+  ['Rainbow','Every colour, slowly','Ambient',[0,90,180,270]],
+  ['Deep sea','Blues and greens, slowly','Ambient',[170,220,250]],
+  ['Mic level','Prints levels to the serial console','Test',[220]],
+  ['Channel test','Red, green, blue, one noodle at a time','Test',[0,120,240]],
+  ['SOS','Red Morse code, all jellies in step','Signal',[0,350]],
+];
+const GROUPS = ['Calm','Sound','Colour','Ambient','Signal','Test'];
+const PALETTE = [0,30,60,120,180,220,270,310];
+const PLAYLIST = 10;
+
+const $ = id => document.getElementById(id);
+let st = null, frame = null, online = false, localUntil = 0;
+const timers = {};
+
+function modeName(i){ return i < MODES.length ? MODES[i][0] : 'Mode ' + i; }
+function hsl(h,s,l){ return `hsl(${((h%360)+360)%360} ${s}% ${l}%)`; }
+
+// ---------------------------------------------------------------- commands
+function cmd(line){
+  localUntil = Date.now() + 800;
+  return fetch('/api/cmd', {method:'POST', body:line, headers:{'Content-Type':'text/plain'}}).catch(()=>{});
+}
+function throttled(key, line){
+  localUntil = Date.now() + 800;
+  const t = timers[key];
+  if (t) { t.line = line; return; }
+  cmd(line);
+  timers[key] = {line:null};
+  setTimeout(() => { const pending = timers[key].line; delete timers[key]; if (pending !== null) throttled(key, pending); }, 60);
+}
+function select(i){ if (st) { st.mode = i; if (i !== PLAYLIST) st.shown = i; } renderState(); cmd('MODE ' + i); }
+function step(d){ const n = st ? st.modes : MODES.length; const cur = st ? st.mode : 0; select(((cur + d) % n + n) % n); }
+
+$('prev').onclick = () => step(-1);
+$('next').onclick = () => step(1);
+$('bright').oninput = e => { const v = +e.target.value; $('brightVal').textContent = v + ' %'; if (st) st.bright = v/100; throttled('BRIGHT', 'BRIGHT ' + (v/100).toFixed(2)); };
+$('hue').oninput = e => { const v = +e.target.value; $('hueVal').textContent = v + '°'; if (st) st.hue = v; throttled('HUE', 'HUE ' + v); };
+function cycle(d){ if (!st) return; const c = st.cycle; const stepSize = (d < 0 ? c <= 20 : c < 20) ? 1 : 10; const v = Math.min(120, Math.max(2, c + d*stepSize)); st.cycle = v; $('cycVal').textContent = 'every ' + Math.round(v) + ' s'; throttled('CYCLE', 'CYCLE ' + v.toFixed(1)); }
+$('cycMinus').onclick = () => cycle(-1);
+$('cycPlus').onclick = () => cycle(1);
+$('ident').onclick = () => cmd('IDENT');
+$('roll').onclick = () => cmd('HELLO');
+
+// ---------------------------------------------------------------- mode tiles
+const tiles = [];
+(function buildTiles(){
+  const root = $('groups');
+  for (const g of GROUPS) {
+    const h = document.createElement('h2'); h.textContent = g; root.appendChild(h);
+    const grid = document.createElement('div'); grid.className = 'grid'; root.appendChild(grid);
+    MODES.forEach((m, i) => {
+      if (m[2] !== g) return;
+      const b = document.createElement('button'); b.className = 'tile';
+      const hues = m[3];
+      b.style.background = `linear-gradient(135deg,${hues.map(h => hsl(h,70,50) + '2a').join(',')})`;
+      b.innerHTML = `<div class="dots">${hues.map(h => `<i style="background:${hsl(h,85,60)};box-shadow:0 0 5px ${hsl(h,85,60)}"></i>`).join('')}</div><span class="flag"></span><b>${m[0]}</b><small>${m[1]}</small>`;
+      b.onclick = () => select(i);
+      grid.appendChild(b); tiles[i] = b;
+    });
+  }
+})();
+
+// ---------------------------------------------------------------- versions
+function parseVersion(t){
+  if (!t || t === '?') return null;
+  const [core, pre] = t.split('-'); const nums = core.split('.').map(Number);
+  if (nums.some(isNaN)) return null;
+  return {text:t, nums, pre: pre || null};
+}
+function cmpVersion(a, b){
+  const n = Math.max(a.nums.length, b.nums.length);
+  for (let i = 0; i < n; i++) { const x = a.nums[i] || 0, y = b.nums[i] || 0; if (x !== y) return x < y ? -1 : 1; }
+  if (a.pre === b.pre) return 0;
+  if (a.pre && !b.pre) return -1;
+  if (!a.pre && b.pre) return 1;
+  return a.pre < b.pre ? -1 : 1;
+}
+function versionChip(text){
+  const mine = parseVersion(st.version), v = parseVersion(text);
+  if (!v) return `<span class="chip">no version · before ${st.version}</span>`;
+  const c = cmpVersion(v, mine);
+  if (c === 0) return `<span class="chip ok">${v.text}</span>`;
+  return c < 0 ? `<span class="chip old">${v.text} · older</span>` : `<span class="chip new">${v.text} · newer than this jelly</span>`;
+}
+
+// ---------------------------------------------------------------- state
+function jellies(){ return st ? st.roster.filter(m => m.role === 'STA') : []; }
+function lacking(i){ return jellies().filter(m => m.modes > 0 && i >= m.modes); }
+function lackNote(i){
+  const l = lacking(i); if (!l.length) return '';
+  const names = l.slice(0,3).map(m => 'Jelly ' + m.id).join(', ') + (l.length > 3 ? ` and ${l.length-3} more` : '');
+  const fb = i % l[0].modes, same = l.every(m => i % m.modes === fb);
+  const one = l.length === 1;
+  return `${names} ${one ? "doesn't" : "don't"} know ${modeName(i)} and ${one ? 'shows' : 'show'} ${same ? modeName(fb) : 'another mode'} instead.`;
+}
+
+function renderPill(){
+  const p = $('pill'); p.classList.toggle('on', online);
+  $('pillText').textContent = !online ? 'No connection' : !st ? 'Connecting…'
+    : st.role === 'AP' ? `Jelly ${st.id} · runs the network` : st.role === 'STA' ? `Jelly ${st.id} · in the bloom` : `Jelly ${st.id} · looking for the bloom`;
+}
+
+function renderState(){
+  renderPill();
+  if (!st) return;
+  $('modeName').textContent = modeName(st.mode);
+  $('modeBlurb').textContent = st.mode < MODES.length ? MODES[st.mode][1] : '';
+  $('lack').textContent = lackNote(st.mode);
+  $('cap').innerHTML = `jelly ${st.id}${st.slot >= 0 ? ' · slot ' + st.slot : ''}` + (st.mode === PLAYLIST ? `<br>playlist · ${modeName(st.shown)}` : '');
+  if (Date.now() > localUntil) {
+    $('bright').value = Math.round(st.bright * 100); $('brightVal').textContent = Math.round(st.bright * 100) + ' %';
+    $('hue').value = Math.round(st.hue); $('hueVal').textContent = Math.round(st.hue) + '°';
+    $('cycVal').textContent = 'every ' + Math.round(st.cycle) + ' s';
+  }
+  tiles.forEach((b, i) => {
+    b.classList.toggle('sel', st.mode === i);
+    const missing = lacking(i).length, playing = st.mode === PLAYLIST && st.shown === i;
+    const f = b.querySelector('.flag');
+    f.className = 'flag ' + (missing ? 'warn' : playing ? 'play' : '');
+    f.innerHTML = missing ? `&#9888; ${missing}` : playing ? '&#9654;' : '';
+  });
+
+  // roster: this jelly first, then everyone the network knows
+  const rows = [];
+  const self = {id: st.id, role: st.role, slot: st.slot, ip: st.ip, version: st.version, modes: st.modes, age: 0, self: true};
+  for (const m of [self, ...st.roster]) {
+    const stale = m.age > 90;
+    const hue = PALETTE[Math.max(m.slot,0) % PALETTE.length];
+    const bg = m.slot >= 0 ? hsl(hue,85,58) : 'rgba(255,255,255,.15)';
+    const who = m.self ? 'This jelly' : m.role === 'APP' ? 'Phone ' + m.id : 'Jelly ' + m.id;
+    const roleChip = m.role === 'AP' ? '<span class="chip ap">runs the network</span>' : m.role === 'APP' ? '<span class="chip">app</span>' : m.role === 'STA' ? '<span class="chip">jelly</span>' : `<span class="chip">${m.role}</span>`;
+    const ver = m.self ? `<span class="chip ok">${st.version}</span>` : m.role === 'APP' && !parseVersion(m.version) ? '<span class="chip">app, no version</span>' : versionChip(m.version);
+    const meta = m.self ? (st.role === 'AP' ? `serving this page at ${st.ip}` : st.ip) : `${m.ip && m.ip !== '?' ? m.ip : 'address unknown'} · ${stale ? 'last heard ' : ''}${m.age < 5 ? 'just now' : m.age + ' s ago'}`;
+    rows.push(`<div class="card member${stale ? ' stale' : ''}"><div class="slot" style="background:${bg};box-shadow:0 0 8px ${m.slot >= 0 ? hsl(hue,85,58) : 'transparent'}">${m.slot >= 0 ? m.slot : '?'}</div><div><div class="who">${who} ${roleChip}</div><div class="meta">${ver} ${m.modes > 0 ? `<span class="small">${m.modes} modes</span>` : ''}</div><div class="meta">${meta}</div></div></div>`);
+  }
+  if (st.roster.length === 0) rows.push(`<div class="card empty">${st.role === 'AP' ? 'Nobody has answered yet. Tap roll call.' : 'Only the jelly that runs the network keeps the list.'}</div>`);
+  $('roster').innerHTML = rows.join('');
+
+  // firmware overview
+  const js = jellies(), mine = parseVersion(st.version);
+  let newest = mine; for (const m of js) { const v = parseVersion(m.version); if (v && cmpVersion(v, newest) > 0) newest = v; }
+  const groups = {}; for (const m of js) { const k = parseVersion(m.version) ? m.version : 'no version'; groups[k] = (groups[k] || 0) + 1; }
+  let summary;
+  if (!js.length) summary = st.role === 'AP' ? 'No other jelly has answered yet.' : 'Only the jelly that runs the network sees the others.';
+  else if (Object.keys(groups).length === 1 && groups[st.version]) summary = `All ${js.length + 1} jellies run ${st.version}.`;
+  else summary = 'This jelly runs ' + st.version + '; ' + Object.entries(groups).map(([v,n]) => `${n} ${n === 1 ? 'jelly runs' : 'jellies run'} ${v}`).join(', ') + '.';
+  const missingNotes = js.filter(m => m.modes > 0 && m.modes < st.modes).map(m => { const miss = []; for (let i = m.modes; i < st.modes; i++) miss.push(modeName(i)); return `<div class="small amber">Jelly ${m.id} lacks ${miss.slice(0,4).join(', ')}${miss.length > 4 ? ` and ${miss.length-4} more` : ''}.</div>`; }).join('');
+  $('fw').innerHTML = `<div class="kv"><span>This jelly</span><span>${st.version} · ${st.rev}</span></div><div class="kv"><span>Modes</span><span>${st.modes}</span></div>`
+    + (newest !== mine ? `<div class="kv"><span>Newest in the bloom</span><span style="color:var(--magenta)">${newest.text}</span></div>` : '')
+    + `<div class="kv"><span>Up for</span><span>${uptime(st.uptime)}</span></div><hr><div class="small">${summary}</div>${missingNotes}`;
+}
+function uptime(s){ const h = Math.floor(s/3600), m = Math.floor(s%3600/60); return h ? `${h} h ${m} min` : m ? `${m} min` : `${s} s`; }
+
+// ---------------------------------------------------------------- the picture of the jelly
+const cv = $('jelly'), ctx = cv.getContext('2d');
+function rgbToHsv(r,g,b){ r/=255; g/=255; b/=255; const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min; let h=0; if (d>0){ if (max===r) h=((g-b)/d)%6; else if (max===g) h=(b-r)/d+2; else h=(r-g)/d+4; h*=60; if (h<0) h+=360; } return {h, s: max? d/max : 0, v: max}; }
+function led(x, y, r, g, b, size, glow){
+  const {h, s, v} = rgbToHsv(r,g,b);
+  if (v < 0.02) { ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.beginPath(); ctx.arc(x,y,1,0,7); ctx.fill(); return; }
+  const gr = glow * (0.6 + v);
+  const grad = ctx.createRadialGradient(x,y,0,x,y,gr);
+  grad.addColorStop(0, `hsla(${h},${s*100}%,${50+20*v}%,${0.6*v})`); grad.addColorStop(1, `hsla(${h},${s*100}%,50%,0)`);
+  ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x,y,gr,0,7); ctx.fill();
+  ctx.fillStyle = `hsl(${h},${s*80}%,${45+50*v}%)`; ctx.beginPath(); ctx.arc(x,y,size,0,7); ctx.fill();
+}
+function bezier(p0,p1,p2,p3,t){ const u=1-t; return [u*u*u*p0[0]+3*u*u*t*p1[0]+3*u*t*t*p2[0]+t*t*t*p3[0], u*u*u*p0[1]+3*u*u*t*p1[1]+3*u*t*t*p2[1]+t*t*t*p3[1]]; }
+
+function draw(){
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)) { cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  const ringN = st ? st.ring : 39, tN = st ? st.tentacles : 7, tL = st ? st.tentacleLeds : 16, nN = st ? st.noodles : 4;
+  const f = frame && frame.length >= 3*(ringN + tN*tL) + nN ? frame : null;
+  const px = (i) => f ? [f[i*3], f[i*3+1], f[i*3+2]] : [0,0,0];
+  const cx = w/2, bellW = w*0.62, bellH = h*0.30, bellTop = h*0.10, ringY = bellTop + bellH*0.78, ringRx = bellW*0.46, ringRy = bellH*0.16;
+
+  // the bell takes the ring's colour
+  let sumV = 0, best = 0, bestH = 200;
+  for (let i = 0; i < ringN; i++) { const [r,g,b] = px(i); const c = rgbToHsv(r,g,b); sumV += c.v; if (c.v > best) { best = c.v; bestH = c.h; } }
+  const avgV = ringN ? sumV/ringN : 0;
+  const tint = (a, l) => `hsla(${bestH},55%,${l}%,${a})`;
+  const glow = ctx.createRadialGradient(cx, bellTop + bellH*0.6, bellW*0.1, cx, bellTop + bellH*0.6, bellW*0.75);
+  glow.addColorStop(0, tint(0.35 + 0.4*avgV, 35 + 40*avgV)); glow.addColorStop(1, tint(0, 30));
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, w, h);
+  const bell = new Path2D(); const x0 = cx - bellW/2, x1 = cx + bellW/2, y0 = bellTop, y1 = bellTop + bellH;
+  bell.moveTo(x0, y1); bell.bezierCurveTo(x0, y0 + bellH*0.15, x0 + bellW*0.25, y0, cx, y0); bell.bezierCurveTo(x1 - bellW*0.25, y0, x1, y0 + bellH*0.15, x1, y1); bell.quadraticCurveTo(cx, y1 + bellH*0.28, x0, y1);
+  const bg = ctx.createLinearGradient(0, y0, 0, y1); bg.addColorStop(0, tint(0.55, 35 + 40*avgV)); bg.addColorStop(1, tint(0.12, 30 + 40*avgV));
+  ctx.fillStyle = bg; ctx.fill(bell); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1.2; ctx.stroke(bell);
+
+  // noodle loops on the bell
+  const base = 3*(ringN + tN*tL);
+  for (let n = 0; n < nN; n++) {
+    const level = f ? f[base + n]/255 : 0, a = n*Math.PI/2 + Math.PI/4;
+    const nx = cx + Math.cos(a)*bellW*0.22, ny = bellTop + bellH*0.45 + Math.sin(a)*bellH*0.18;
+    ctx.beginPath(); ctx.arc(nx, ny, bellW*0.07, Math.PI*200/180, Math.PI*340/180);
+    ctx.lineWidth = 5; ctx.strokeStyle = `rgba(255,94,209,${0.9*level})`; ctx.shadowBlur = 8; ctx.shadowColor = 'rgba(255,94,209,.9)'; ctx.stroke(); ctx.shadowBlur = 0;
+    ctx.lineWidth = 2; ctx.strokeStyle = `hsl(324 50% ${40 + 40*level}%)`; ctx.stroke();
+  }
+
+  // the ring, an ellipse seen from slightly above
+  for (let i = 0; i < ringN; i++) {
+    const a = 2*Math.PI*i/ringN + Math.PI/2; const [r,g,b] = px(i);
+    led(cx + Math.cos(a)*ringRx, ringY + Math.sin(a)*ringRy, r,g,b, 3.2, 9);
+  }
+
+  // tentacles, hanging with a gentle sway
+  const t0 = performance.now()/1000, spread = 0.72;
+  for (let t = 0; t < tN; t++) {
+    const ax = cx + (tN > 1 ? (-spread/2 + spread*t/(tN-1)) : 0) * bellW, ay = ringY + ringRy*0.6, len = h - ay - 24;
+    const sway = Math.sin(t0*0.6 + t*1.3) * bellW*0.06;
+    const p0 = [ax, ay], p1 = [ax + sway, ay + len*0.4], p2 = [ax - sway*0.6, ay + len*0.75], p3 = [ax + sway*0.4, ay + len];
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.bezierCurveTo(p1[0],p1[1],p2[0],p2[1],p3[0],p3[1]); ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 1.2; ctx.stroke();
+    for (let j = 0; j < tL; j++) { const [x,y] = bezier(p0,p1,p2,p3,(j+0.6)/tL); const [r,g,b] = px(ringN + t*tL + j); led(x,y,r,g,b,2.6,7); }
+  }
+}
+
+// ---------------------------------------------------------------- polling
+async function pollState(){
+  try { const r = await fetch('/api/state.json', {cache:'no-store'}); if (!r.ok) throw 0; st = await r.json(); online = true; }
+  catch (e) { online = false; }
+  renderState();
+  setTimeout(pollState, online ? 1000 : 2000);
+}
+async function pollFrame(){
+  let wait = document.hidden ? 1000 : 80; // a page in the background needs no live picture
+  try { const r = await fetch('/api/frame.bin', {cache:'no-store'}); if (!r.ok) throw 0; frame = new Uint8Array(await r.arrayBuffer()); draw(); }
+  catch (e) { wait = 1000; }
+  setTimeout(pollFrame, wait);
+}
+window.addEventListener('resize', draw);
+draw();
+pollState();
+pollFrame();
+</script>
+</body>
+</html>
