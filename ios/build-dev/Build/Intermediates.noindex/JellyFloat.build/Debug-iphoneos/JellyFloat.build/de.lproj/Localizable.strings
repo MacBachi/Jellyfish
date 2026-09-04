@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key> Newer modes fall back to another mode on older jellies; nothing is blocked.</key>
+	<string> Neuere Modi fallen auf älteren Quallen auf einen anderen Modus zurück; nichts wird blockiert.</string>
+	<key> One jelly is newer than this app; it may have modes the app cannot show.</key>
+	<string> Eine Qualle ist neuer als diese App; sie hat vielleicht Modi, die die App nicht zeigen kann.</string>
+	<key> and %lld more</key>
+	<string> und %lld weitere</string>
+	<key>%@  default</key>
+	<string>%@  Standard</string>
+	<key>%@ doesn't know %@ and shows %@ instead.</key>
+	<string>%1$@ kennt %2$@ nicht und zeigt stattdessen %3$@.</string>
+	<key>%@ doesn't know %@ and shows another mode instead.</key>
+	<string>%1$@ kennt %2$@ nicht und zeigt stattdessen einen anderen Modus.</string>
+	<key>%@ don't know %@ and show %@ instead.</key>
+	<string>%1$@ kennen %2$@ nicht und zeigen stattdessen %3$@.</string>
+	<key>%@ don't know %@ and show another mode instead.</key>
+	<string>%1$@ kennen %2$@ nicht und zeigen stattdessen einen anderen Modus.</string>
+	<key>%@ · %lld modes</key>
+	<string>%@ · %lld Modi</string>
+	<key>%lld modes</key>
+	<string>%lld Modi</string>
+	<key>A gentle wave travelling up the tentacles</key>
+	<string>Eine sanfte Welle wandert die Tentakel hinauf</string>
+	<key>A pulse visiting one jelly after the other</key>
+	<string>Ein Puls besucht eine Qualle nach der anderen</string>
+	<key>A slow pulse from the bell down the tentacles</key>
+	<string>Ein langsamer Puls vom Schirm die Tentakel hinab</string>
+	<key>About</key>
+	<string>Über</string>
+	<key>All %lld jellies run %@, the same as this app.</key>
+	<string>Alle %lld Quallen laufen mit %@, genau wie diese App.</string>
+	<key>Ambient</key>
+	<string>Ambiente</string>
+	<key>App and firmware share one version number. The Jellies tab shows what each jelly in the bloom runs.</key>
+	<string>App und Firmware teilen sich eine Versionsnummer. Der Tab Quallen zeigt, was jede Qualle im Schwarm ausführt.</string>
+	<key>App version</key>
+	<string>App-Version</string>
+	<key>Ask every time</key>
+	<string>Jedes Mal fragen</string>
+	<key>Ask first</key>
+	<string>Vorher fragen</string>
+	<key>Aurora</key>
+	<string>Aurora</string>
+	<key>Bands of green, teal and violet drifting by</key>
+	<string>Bänder aus Grün, Türkis und Violett ziehen vorbei</string>
+	<key>Bloom</key>
+	<string>Schwarm</string>
+	<key>Blues and greens, slowly</key>
+	<string>Blau- und Grüntöne, langsam</string>
+	<key>Breathe</key>
+	<string>Atmen</string>
+	<key>Brightness</key>
+	<string>Helligkeit</string>
+	<key>Build</key>
+	<string>Build</string>
+	<key>Calm</key>
+	<string>Ruhig</string>
+	<key>Channel test</key>
+	<string>Kanaltest</string>
+	<key>Colour</key>
+	<string>Farbe</string>
+	<key>Colour cycle</key>
+	<string>Farbwechsel</string>
+	<key>Colour shift</key>
+	<string>Farbverschiebung</string>
+	<key>Colours rotate through the bloom</key>
+	<string>Die Farben wandern durch den Schwarm</string>
+	<key>Connect to see what the jellies run.</key>
+	<string>Verbinde dich, um zu sehen, was die Quallen ausführen.</string>
+	<key>Connect to see who is in the bloom.</key>
+	<string>Verbinde dich, um zu sehen, wer im Schwarm ist.</string>
+	<key>Connect without joining</key>
+	<string>Verbinden ohne Beitritt</string>
+	<key>Connection · %@</key>
+	<string>Verbindung · %@</string>
+	<key>Current</key>
+	<string>Strömung</string>
+	<key>Custom</key>
+	<string>Eigenes</string>
+	<key>Deep sea</key>
+	<string>Tiefsee</string>
+	<key>Default  %@</key>
+	<string>Standard  %@</string>
+	<key>Demo bloom</key>
+	<string>Demo-Schwarm</string>
+	<key>Demo bloom (no hardware)</key>
+	<string>Demo-Schwarm (ohne Hardware)</string>
+	<key>Disconnect</key>
+	<string>Trennen</string>
+	<key>Drizzle</key>
+	<string>Nieseln</string>
+	<key>Drops</key>
+	<string>Tropfen</string>
+	<key>Drops on every beat</key>
+	<string>Tropfen bei jedem Beat</string>
+	<key>Every colour, slowly</key>
+	<string>Alle Farben, langsam</string>
+	<key>Every jelly with the default firmware opens this network.</key>
+	<string>Jede Qualle mit der Standard-Firmware eröffnet dieses Netz.</string>
+	<key>Fireflies</key>
+	<string>Glühwürmchen</string>
+	<key>Firmware</key>
+	<string>Firmware</string>
+	<key>Follows the room's sound, slowly</key>
+	<string>Folgt langsam dem Klang im Raum</string>
+	<key>Glimmer</key>
+	<string>Glimmen</string>
+	<key>I'm already on it</key>
+	<string>Ich bin schon drin</string>
+	<key>Identify</key>
+	<string>Identifizieren</string>
+	<key>Identify makes the jelly that runs the network blink red three times; every other jelly blinks blue in step.</key>
+	<string>Identifizieren lässt die Qualle, die das Netz betreibt, dreimal rot blinken; alle anderen blinken im Takt blau.</string>
+	<key>In the bloom</key>
+	<string>Im Schwarm</string>
+	<key>Jellies</key>
+	<string>Quallen</string>
+	<key>Jelly %@</key>
+	<string>Qualle %@</string>
+	<key>Jelly %@ lacks %@.</key>
+	<string>Qualle %@ fehlt: %@.</string>
+	<key>Jelly network</key>
+	<string>Quallen-Netz</string>
+	<key>JellyFloatOS on GitHub</key>
+	<string>JellyFloatOS auf GitHub</string>
+	<key>Join %@</key>
+	<string>%@ beitreten</string>
+	<key>Join now</key>
+	<string>Jetzt beitreten</string>
+	<key>Join the jelly network?</key>
+	<string>Dem Quallen-Netz beitreten?</string>
+	<key>Join when the app opens</key>
+	<string>Beim Öffnen der App beitreten</string>
+	<key>Joining Wi-Fi is not available in the simulator.</key>
+	<string>WLAN-Beitritt ist im Simulator nicht möglich.</string>
+	<key>Joining the jelly network</key>
+	<string>Tritt dem Quallen-Netz bei</string>
+	<key>Lantern</key>
+	<string>Laterne</string>
+	<key>Link: %@</key>
+	<string>Link: %@</string>
+	<key>Lone lights rising and falling</key>
+	<string>Einzelne Lichter, die aufsteigen und sinken</string>
+	<key>Looking for the bloom</key>
+	<string>Sucht den Schwarm</string>
+	<key>Mic level</key>
+	<string>Mikropegel</string>
+	<key>Mixed firmware: %@.</key>
+	<string>Gemischte Firmware: %@.</string>
+	<key>Modes this app knows</key>
+	<string>Modi, die diese App kennt</string>
+	<key>Moonlight</key>
+	<string>Mondlicht</string>
+	<key>Near dark, with sparks that glow and fade</key>
+	<string>Fast dunkel, mit Funken, die aufglühen und vergehen</string>
+	<key>Network</key>
+	<string>Netz</string>
+	<key>Network name</key>
+	<string>Netzname</string>
+	<key>Newest firmware</key>
+	<string>Neueste Firmware</string>
+	<key>Newest in the bloom</key>
+	<string>Neueste im Schwarm</string>
+	<key>Newest known</key>
+	<string>Neueste bekannte</string>
+	<key>No jelly has introduced itself yet.</key>
+	<string>Noch hat sich keine Qualle gemeldet.</string>
+	<key>No jellyfish yet? Try the demo bloom</key>
+	<string>Noch keine Quallen? Demo-Schwarm ausprobieren</string>
+	<key>Nobody has answered yet. Tap roll call.</key>
+	<string>Noch hat niemand geantwortet. Tippe auf Aufruf.</string>
+	<key>Not connected</key>
+	<string>Nicht verbunden</string>
+	<key>Not now</key>
+	<string>Jetzt nicht</string>
+	<key>One colour per jelly</key>
+	<string>Eine Farbe pro Qualle</string>
+	<key>Palette</key>
+	<string>Palette</string>
+	<key>Palette cycle</key>
+	<string>Palettenwechsel</string>
+	<key>Password</key>
+	<string>Passwort</string>
+	<key>Phone %@</key>
+	<string>Telefon %@</string>
+	<key>Playlist</key>
+	<string>Playlist</string>
+	<key>Prints levels to the serial console</key>
+	<string>Gibt Pegel auf der seriellen Konsole aus</string>
+	<key>Rainbow</key>
+	<string>Regenbogen</string>
+	<key>Red Morse code, all jellies in step</key>
+	<string>Rotes Morsezeichen, alle Quallen im Takt</string>
+	<key>Red, green, blue, one noodle at a time</key>
+	<string>Rot, Grün, Blau, eine Noodle nach der anderen</string>
+	<key>Remember network name</key>
+	<string>Netznamen merken</string>
+	<key>Remember password</key>
+	<string>Passwort merken</string>
+	<key>Remember password too</key>
+	<string>Auch das Passwort merken</string>
+	<key>Ring LEDs: %lld</key>
+	<string>Ring-LEDs: %lld</string>
+	<key>Roll call</key>
+	<string>Aufruf</string>
+	<key>SOS</key>
+	<string>SOS</string>
+	<key>Settings</key>
+	<string>Einstellungen</string>
+	<key>Signal</key>
+	<string>Signal</string>
+	<key>Single slow drops with trails</key>
+	<string>Einzelne langsame Tropfen mit Schweif</string>
+	<key>Sound</key>
+	<string>Klang</string>
+	<key>Sound field</key>
+	<string>Klangfeld</string>
+	<key>Stay on the jelly network in the background</key>
+	<string>Im Hintergrund im Quallen-Netz bleiben</string>
+	<key>Swarm</key>
+	<string>Reigen</string>
+	<key>Switching</key>
+	<string>Wechsel</string>
+	<key>Test</key>
+	<string>Test</string>
+	<key>The app must be in the foreground to join.</key>
+	<string>Die App muss im Vordergrund sein, um beizutreten.</string>
+	<key>The jellies report no version: firmware from before %@. Modes added since may not exist there.</key>
+	<string>Die Quallen melden keine Version: Firmware von vor %@. Seither hinzugekommene Modi gibt es dort vielleicht nicht.</string>
+	<key>The jelly reports no version: firmware from before %@. Modes added since may not exist there.</key>
+	<string>Die Qualle meldet keine Version: Firmware von vor %@. Seither hinzugekommene Modi gibt es dort vielleicht nicht.</string>
+	<key>The jelly runs %@, the same as this app.</key>
+	<string>Die Qualle läuft mit %@, genau wie diese App.</string>
+	<key>The name is kept on this phone; the password only if you say so, in the Keychain.</key>
+	<string>Der Name bleibt auf diesem Telefon; das Passwort nur, wenn du es willst, im Schlüsselbund.</string>
+	<key>The original sound-reactive field</key>
+	<string>Das ursprüngliche klangreaktive Feld</string>
+	<key>The password must be 8 to 63 characters.</key>
+	<string>Das Passwort muss 8 bis 63 Zeichen lang sein.</string>
+	<key>This app</key>
+	<string>Diese App</string>
+	<key>This phone</key>
+	<string>Dieses Telefon</string>
+	<key>This phone joins the bloom as a jelly of its own: it gets a colour slot and runs the same effects on the shared clock.</key>
+	<string>Dieses Telefon macht im Schwarm als eigene Qualle mit: Es bekommt einen Farb-Slot und zeigt dieselben Effekte im gemeinsamen Takt.</string>
+	<key>This phone's jelly id</key>
+	<string>Quallen-Kennung dieses Telefons</string>
+	<key>Very dim, cool, hardly moving</key>
+	<string>Sehr gedämpft, kühl, kaum Bewegung</string>
+	<key>Virtual jelly</key>
+	<string>Virtuelle Qualle</string>
+	<key>Wanders through the calm modes, all jellies together</key>
+	<string>Wandert durch die ruhigen Modi, alle Quallen gemeinsam</string>
+	<key>Warm amber with a hint of candle flicker</key>
+	<string>Warmes Bernstein mit einem Hauch Kerzenflackern</string>
+	<key>Whisper</key>
+	<string>Flüstern</string>
+	<key>Your phone switches Wi-Fi to talk to the bloom. iOS will ask once more.</key>
+	<string>Dein Telefon wechselt das WLAN, um mit dem Schwarm zu sprechen. iOS fragt noch einmal nach.</string>
+	<key>address unknown</key>
+	<string>Adresse unbekannt</string>
+	<key>app</key>
+	<string>App</string>
+	<key>app, no version</key>
+	<string>App, keine Version</string>
+	<key>every %lld s</key>
+	<string>alle %lld s</string>
+	<key>iOS rejected the network name. Try an ASCII name via the firmware's JELL_WIFI_SSID option.</key>
+	<string>iOS hat den Netznamen abgelehnt. Versuche einen ASCII-Namen über die Firmware-Option JELL_WIFI_SSID.</string>
+	<key>iOS shows its own dialog before joining. When "stay" is off, iOS returns to your usual Wi-Fi about 15 seconds after you leave the app.</key>
+	<string>iOS zeigt vor dem Beitritt seinen eigenen Dialog. Ist "bleiben" aus, kehrt iOS etwa 15 Sekunden nach dem Verlassen der App zu deinem üblichen WLAN zurück.</string>
+	<key>jelly</key>
+	<string>Qualle</string>
+	<key>last heard </key>
+	<string>zuletzt gehört </string>
+	<key>newer than this app</key>
+	<string>neuer als diese App</string>
+	<key>no version</key>
+	<string>keine Version</string>
+	<key>no version · before %@</key>
+	<string>keine Version · vor %@</string>
+	<key>not on %lld jellies</key>
+	<string>nicht auf %lld Quallen</string>
+	<key>older</key>
+	<string>älter</string>
+	<key>playlist · %@</key>
+	<string>Playlist · %@</string>
+	<key>runs the network</key>
+	<string>betreibt das Netz</string>
+	<key>this phone</key>
+	<string>dieses Telefon</string>
+	<key>up to date</key>
+	<string>aktuell</string>
+	<key>virtual jelly</key>
+	<string>virtuelle Qualle</string>
+	<key>virtual jelly · slot %lld</key>
+	<string>virtuelle Qualle · Slot %lld</string>
+	<key>virtual jelly, colour slot %lld</key>
+	<string>virtuelle Qualle, Farb-Slot %lld</string>
+	<key>virtual jelly, waiting for a colour slot</key>
+	<string>virtuelle Qualle, wartet auf einen Farb-Slot</string>
+</dict>
+</plist>

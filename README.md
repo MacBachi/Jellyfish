@@ -301,7 +301,8 @@ registers with `HELLO <id> APP` and gets unicast copies of everything, so it nee
 entitlement. English and German. A demo bloom inside the app shows everything without hardware.
 
 Build: `cd ios && xcodegen generate && open JellyFloat.xcodeproj` (Xcode 16 or newer, `brew install
-xcodegen`; put your Team ID into `ios/Local.xcconfig` for device builds). `ios/scripts/archive.sh`
+xcodegen`; put your Team ID into `ios/Local.xcconfig` for device builds). `ios/scripts/install-device.sh`
+puts a development build straight onto the iPhone plugged into the Mac; `ios/scripts/archive.sh`
 archives and uploads to App Store Connect. `ios/AppStore/SUBMISSION.md` walks through every field of
 the App Store listing, with the texts in both languages under `ios/AppStore/metadata/` and the notes
 for App Review; `PRIVACY.md` is the privacy policy the listing links to. The app collects nothing and
