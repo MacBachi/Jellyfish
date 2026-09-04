@@ -3,7 +3,9 @@
 All notable changes to JellyFloatOS. The project continues the Sheffield-by-the-Sea Jellyfish firmware;
 entries start where the fork diverged.
 
-## Unreleased
+## 0.9.0 - 2026-09-04
+
+The web page replaces the iPhone app; verified on jelly 0451.
 
 ### Added
 - A web page on every jelly (port 80, `http://192.168.4.1` on the one that runs the network): the
