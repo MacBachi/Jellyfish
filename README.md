@@ -26,8 +26,8 @@ Firmware for a bloom of audio-reactive, WLAN-synchronised LED jellyfish on the R
   jelly switches all of them.
 - **Per-jelly colours.** The access point hands out colour slots, so palette modes give every jelly its own
   colour and the Swarm mode walks a pulse from one to the next.
-- **Remote control without an app.** Plain text lines over UDP from any device on the jelly network, e.g.
-  with `nc`. A phone web page is planned.
+- **Remote control without an app.** A web page served by the jelly itself, or plain text lines over UDP
+  from any device on the jelly network, e.g. with `nc`.
 - **One firmware for every build.** All seven tentacle headers on the board are driven; headers without a
   strip simply send into nothing.
 
