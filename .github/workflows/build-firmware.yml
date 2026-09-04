@@ -146,7 +146,12 @@ jobs:
         run: |
           mv release-files/default/JellyFloatOS.uf2 "release-files/JellyFloatOS-$GITHUB_REF_NAME.uf2"
           mv release-files/ring39/JellyFloatOS.uf2 "release-files/JellyFloatOS-$GITHUB_REF_NAME-ring39-GRB-tRGB.uf2"
-          gh release create "$GITHUB_REF_NAME" release-files/*.uf2 \
-            --repo "$GITHUB_REPOSITORY" \
-            --title "JellyFloatOS $GITHUB_REF_NAME" \
-            --generate-notes
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            # A second run for the same tag (GitHub sometimes sends two events): just refresh the files.
+            gh release upload "$GITHUB_REF_NAME" release-files/*.uf2 --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" release-files/*.uf2 \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "JellyFloatOS $GITHUB_REF_NAME" \
+              --generate-notes
+          fi

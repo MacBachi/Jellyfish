@@ -17,13 +17,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>__VERSION__</string>
+	<string>__MARKETING_VERSION__</string>
 	<key>CFBundleVersion</key>
 	<string>__BUILD__</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>JellyGitRevision</key>
 	<string>__GITREV__</string>
+	<key>JellyVersion</key>
+	<string>__VERSION__</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>JellyFloat talks to your jellyfish over the local Wi-Fi network.</string>
 	<key>UILaunchScreen</key>

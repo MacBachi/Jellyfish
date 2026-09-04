@@ -15,7 +15,7 @@ enum JoinOutcome: Equatable {
 enum NetworkJoiner {
     static func join(ssid: String, password: String, joinOnce: Bool) async -> JoinOutcome {
         #if targetEnvironment(simulator)
-        return .unavailable("Joining Wi-Fi is not available in the simulator.")
+        return .unavailable(String(localized: "Joining Wi-Fi is not available in the simulator."))
         #else
         let config = password.isEmpty
             ? NEHotspotConfiguration(ssid: ssid)
@@ -28,9 +28,9 @@ enum NetworkJoiner {
             switch NEHotspotConfigurationError(rawValue: error.code) {
             case .alreadyAssociated: return .alreadyConnected
             case .userDenied: return .denied
-            case .invalidSSID: return .failed("iOS rejected the network name. Try an ASCII name via the firmware's JELL_WIFI_SSID option.")
-            case .invalidWPAPassphrase: return .failed("The password must be 8 to 63 characters.")
-            case .applicationIsNotInForeground: return .failed("The app must be in the foreground to join.")
+            case .invalidSSID: return .failed(String(localized: "iOS rejected the network name. Try an ASCII name via the firmware's JELL_WIFI_SSID option."))
+            case .invalidWPAPassphrase: return .failed(String(localized: "The password must be 8 to 63 characters."))
+            case .applicationIsNotInForeground: return .failed(String(localized: "The app must be in the foreground to join."))
             default: return .failed(error.localizedDescription)
             }
         } catch {

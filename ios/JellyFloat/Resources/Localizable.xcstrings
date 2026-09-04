@@ -1,0 +1,1506 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    " Newer modes fall back to another mode on older jellies; nothing is blocked.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " Neuere Modi fallen auf älteren Quallen auf einen anderen Modus zurück; nichts wird blockiert."
+          }
+        }
+      }
+    },
+    " One jelly is newer than this app; it may have modes the app cannot show.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " Eine Qualle ist neuer als diese App; sie hat vielleicht Modi, die die App nicht zeigen kann."
+          }
+        }
+      }
+    },
+    " and %lld more": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " und %lld weitere"
+          }
+        }
+      }
+    },
+    "%@  default": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@  Standard"
+          }
+        }
+      }
+    },
+    "%@ doesn't know %@ and shows %@ instead.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ kennt %2$@ nicht und zeigt stattdessen %3$@."
+          }
+        }
+      }
+    },
+    "%@ doesn't know %@ and shows another mode instead.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ kennt %2$@ nicht und zeigt stattdessen einen anderen Modus."
+          }
+        }
+      }
+    },
+    "%@ don't know %@ and show %@ instead.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ kennen %2$@ nicht und zeigen stattdessen %3$@."
+          }
+        }
+      }
+    },
+    "%@ don't know %@ and show another mode instead.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ kennen %2$@ nicht und zeigen stattdessen einen anderen Modus."
+          }
+        }
+      }
+    },
+    "%@ · %lld modes": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld Modi"
+          }
+        }
+      }
+    },
+    "%lld modes": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Modi"
+          }
+        }
+      }
+    },
+    "A gentle wave travelling up the tentacles": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine sanfte Welle wandert die Tentakel hinauf"
+          }
+        }
+      }
+    },
+    "A pulse visiting one jelly after the other": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Puls besucht eine Qualle nach der anderen"
+          }
+        }
+      }
+    },
+    "A slow pulse from the bell down the tentacles": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein langsamer Puls vom Schirm die Tentakel hinab"
+          }
+        }
+      }
+    },
+    "About": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Über"
+          }
+        }
+      }
+    },
+    "All %lld jellies run %@, the same as this app.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle %lld Quallen laufen mit %@, genau wie diese App."
+          }
+        }
+      }
+    },
+    "Ambient": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambiente"
+          }
+        }
+      }
+    },
+    "App and firmware share one version number. The Jellies tab shows what each jelly in the bloom runs.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App und Firmware teilen sich eine Versionsnummer. Der Tab Quallen zeigt, was jede Qualle im Schwarm ausführt."
+          }
+        }
+      }
+    },
+    "App version": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App-Version"
+          }
+        }
+      }
+    },
+    "Ask every time": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jedes Mal fragen"
+          }
+        }
+      }
+    },
+    "Ask first": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vorher fragen"
+          }
+        }
+      }
+    },
+    "Aurora": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aurora"
+          }
+        }
+      }
+    },
+    "Bands of green, teal and violet drifting by": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bänder aus Grün, Türkis und Violett ziehen vorbei"
+          }
+        }
+      }
+    },
+    "Bloom": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schwarm"
+          }
+        }
+      }
+    },
+    "Blues and greens, slowly": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blau- und Grüntöne, langsam"
+          }
+        }
+      }
+    },
+    "Breathe": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atmen"
+          }
+        }
+      }
+    },
+    "Brightness": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helligkeit"
+          }
+        }
+      }
+    },
+    "Build": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Build"
+          }
+        }
+      }
+    },
+    "Calm": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruhig"
+          }
+        }
+      }
+    },
+    "Channel test": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kanaltest"
+          }
+        }
+      }
+    },
+    "Colour": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Farbe"
+          }
+        }
+      }
+    },
+    "Colour cycle": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Farbwechsel"
+          }
+        }
+      }
+    },
+    "Colour shift": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Farbverschiebung"
+          }
+        }
+      }
+    },
+    "Colours rotate through the bloom": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Farben wandern durch den Schwarm"
+          }
+        }
+      }
+    },
+    "Connect to see what the jellies run.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verbinde dich, um zu sehen, was die Quallen ausführen."
+          }
+        }
+      }
+    },
+    "Connect to see who is in the bloom.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verbinde dich, um zu sehen, wer im Schwarm ist."
+          }
+        }
+      }
+    },
+    "Connect without joining": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verbinden ohne Beitritt"
+          }
+        }
+      }
+    },
+    "Connection · %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verbindung · %@"
+          }
+        }
+      }
+    },
+    "Current": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strömung"
+          }
+        }
+      }
+    },
+    "Custom": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eigenes"
+          }
+        }
+      }
+    },
+    "Deep sea": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiefsee"
+          }
+        }
+      }
+    },
+    "Default  %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard  %@"
+          }
+        }
+      }
+    },
+    "Demo bloom": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo-Schwarm"
+          }
+        }
+      }
+    },
+    "Demo bloom (no hardware)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo-Schwarm (ohne Hardware)"
+          }
+        }
+      }
+    },
+    "Disconnect": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trennen"
+          }
+        }
+      }
+    },
+    "Drizzle": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nieseln"
+          }
+        }
+      }
+    },
+    "Drops": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tropfen"
+          }
+        }
+      }
+    },
+    "Drops on every beat": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tropfen bei jedem Beat"
+          }
+        }
+      }
+    },
+    "Every colour, slowly": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Farben, langsam"
+          }
+        }
+      }
+    },
+    "Every jelly with the default firmware opens this network.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jede Qualle mit der Standard-Firmware eröffnet dieses Netz."
+          }
+        }
+      }
+    },
+    "Fireflies": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glühwürmchen"
+          }
+        }
+      }
+    },
+    "Firmware": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware"
+          }
+        }
+      }
+    },
+    "Follows the room's sound, slowly": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folgt langsam dem Klang im Raum"
+          }
+        }
+      }
+    },
+    "Glimmer": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glimmen"
+          }
+        }
+      }
+    },
+    "I'm already on it": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ich bin schon drin"
+          }
+        }
+      }
+    },
+    "Identify": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identifizieren"
+          }
+        }
+      }
+    },
+    "Identify makes the jelly that runs the network blink red three times; every other jelly blinks blue in step.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identifizieren lässt die Qualle, die das Netz betreibt, dreimal rot blinken; alle anderen blinken im Takt blau."
+          }
+        }
+      }
+    },
+    "In the bloom": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Im Schwarm"
+          }
+        }
+      }
+    },
+    "Jellies": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quallen"
+          }
+        }
+      }
+    },
+    "Jelly %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qualle %@"
+          }
+        }
+      }
+    },
+    "Jelly %@ lacks %@.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qualle %@ fehlt: %@."
+          }
+        }
+      }
+    },
+    "Jelly network": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quallen-Netz"
+          }
+        }
+      }
+    },
+    "JellyFloatOS on GitHub": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JellyFloatOS auf GitHub"
+          }
+        }
+      }
+    },
+    "Join %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ beitreten"
+          }
+        }
+      }
+    },
+    "Join now": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jetzt beitreten"
+          }
+        }
+      }
+    },
+    "Join the jelly network?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dem Quallen-Netz beitreten?"
+          }
+        }
+      }
+    },
+    "Join when the app opens": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beim Öffnen der App beitreten"
+          }
+        }
+      }
+    },
+    "Joining Wi-Fi is not available in the simulator.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WLAN-Beitritt ist im Simulator nicht möglich."
+          }
+        }
+      }
+    },
+    "Joining the jelly network": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tritt dem Quallen-Netz bei"
+          }
+        }
+      }
+    },
+    "Lantern": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laterne"
+          }
+        }
+      }
+    },
+    "Link: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link: %@"
+          }
+        }
+      }
+    },
+    "Lone lights rising and falling": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einzelne Lichter, die aufsteigen und sinken"
+          }
+        }
+      }
+    },
+    "Looking for the bloom": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sucht den Schwarm"
+          }
+        }
+      }
+    },
+    "Mic level": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mikropegel"
+          }
+        }
+      }
+    },
+    "Mixed firmware: %@.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gemischte Firmware: %@."
+          }
+        }
+      }
+    },
+    "Modes this app knows": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modi, die diese App kennt"
+          }
+        }
+      }
+    },
+    "Moonlight": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mondlicht"
+          }
+        }
+      }
+    },
+    "Near dark, with sparks that glow and fade": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fast dunkel, mit Funken, die aufglühen und vergehen"
+          }
+        }
+      }
+    },
+    "Network": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Netz"
+          }
+        }
+      }
+    },
+    "Network name": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Netzname"
+          }
+        }
+      }
+    },
+    "Newest firmware": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neueste Firmware"
+          }
+        }
+      }
+    },
+    "Newest in the bloom": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neueste im Schwarm"
+          }
+        }
+      }
+    },
+    "Newest known": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neueste bekannte"
+          }
+        }
+      }
+    },
+    "No jelly has introduced itself yet.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch hat sich keine Qualle gemeldet."
+          }
+        }
+      }
+    },
+    "No jellyfish yet? Try the demo bloom": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch keine Quallen? Demo-Schwarm ausprobieren"
+          }
+        }
+      }
+    },
+    "Nobody has answered yet. Tap roll call.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch hat niemand geantwortet. Tippe auf Aufruf."
+          }
+        }
+      }
+    },
+    "Not connected": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht verbunden"
+          }
+        }
+      }
+    },
+    "Not now": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jetzt nicht"
+          }
+        }
+      }
+    },
+    "One colour per jelly": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine Farbe pro Qualle"
+          }
+        }
+      }
+    },
+    "Palette": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palette"
+          }
+        }
+      }
+    },
+    "Palette cycle": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palettenwechsel"
+          }
+        }
+      }
+    },
+    "Password": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passwort"
+          }
+        }
+      }
+    },
+    "Phone %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telefon %@"
+          }
+        }
+      }
+    },
+    "Playlist": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Playlist"
+          }
+        }
+      }
+    },
+    "Prints levels to the serial console": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gibt Pegel auf der seriellen Konsole aus"
+          }
+        }
+      }
+    },
+    "Rainbow": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenbogen"
+          }
+        }
+      }
+    },
+    "Red Morse code, all jellies in step": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotes Morsezeichen, alle Quallen im Takt"
+          }
+        }
+      }
+    },
+    "Red, green, blue, one noodle at a time": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rot, Grün, Blau, eine Noodle nach der anderen"
+          }
+        }
+      }
+    },
+    "Remember network name": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Netznamen merken"
+          }
+        }
+      }
+    },
+    "Remember password": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passwort merken"
+          }
+        }
+      }
+    },
+    "Remember password too": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auch das Passwort merken"
+          }
+        }
+      }
+    },
+    "Ring LEDs: %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ring-LEDs: %lld"
+          }
+        }
+      }
+    },
+    "Roll call": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aufruf"
+          }
+        }
+      }
+    },
+    "SOS": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOS"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einstellungen"
+          }
+        }
+      }
+    },
+    "Signal": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signal"
+          }
+        }
+      }
+    },
+    "Single slow drops with trails": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einzelne langsame Tropfen mit Schweif"
+          }
+        }
+      }
+    },
+    "Sound": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klang"
+          }
+        }
+      }
+    },
+    "Sound field": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klangfeld"
+          }
+        }
+      }
+    },
+    "Stay on the jelly network in the background": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Im Hintergrund im Quallen-Netz bleiben"
+          }
+        }
+      }
+    },
+    "Swarm": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reigen"
+          }
+        }
+      }
+    },
+    "Switching": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wechsel"
+          }
+        }
+      }
+    },
+    "Test": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test"
+          }
+        }
+      }
+    },
+    "The app must be in the foreground to join.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die App muss im Vordergrund sein, um beizutreten."
+          }
+        }
+      }
+    },
+    "The jellies report no version: firmware from before %@. Modes added since may not exist there.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Quallen melden keine Version: Firmware von vor %@. Seither hinzugekommene Modi gibt es dort vielleicht nicht."
+          }
+        }
+      }
+    },
+    "The jelly reports no version: firmware from before %@. Modes added since may not exist there.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Qualle meldet keine Version: Firmware von vor %@. Seither hinzugekommene Modi gibt es dort vielleicht nicht."
+          }
+        }
+      }
+    },
+    "The jelly runs %@, the same as this app.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Qualle läuft mit %@, genau wie diese App."
+          }
+        }
+      }
+    },
+    "The name is kept on this phone; the password only if you say so, in the Keychain.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Name bleibt auf diesem Telefon; das Passwort nur, wenn du es willst, im Schlüsselbund."
+          }
+        }
+      }
+    },
+    "The original sound-reactive field": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ursprüngliche klangreaktive Feld"
+          }
+        }
+      }
+    },
+    "The password must be 8 to 63 characters.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Passwort muss 8 bis 63 Zeichen lang sein."
+          }
+        }
+      }
+    },
+    "This app": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese App"
+          }
+        }
+      }
+    },
+    "This phone": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Telefon"
+          }
+        }
+      }
+    },
+    "This phone joins the bloom as a jelly of its own: it gets a colour slot and runs the same effects on the shared clock.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Telefon macht im Schwarm als eigene Qualle mit: Es bekommt einen Farb-Slot und zeigt dieselben Effekte im gemeinsamen Takt."
+          }
+        }
+      }
+    },
+    "This phone's jelly id": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quallen-Kennung dieses Telefons"
+          }
+        }
+      }
+    },
+    "Very dim, cool, hardly moving": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sehr gedämpft, kühl, kaum Bewegung"
+          }
+        }
+      }
+    },
+    "Virtual jelly": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Virtuelle Qualle"
+          }
+        }
+      }
+    },
+    "Wanders through the calm modes, all jellies together": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wandert durch die ruhigen Modi, alle Quallen gemeinsam"
+          }
+        }
+      }
+    },
+    "Warm amber with a hint of candle flicker": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warmes Bernstein mit einem Hauch Kerzenflackern"
+          }
+        }
+      }
+    },
+    "Whisper": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flüstern"
+          }
+        }
+      }
+    },
+    "Your phone switches Wi-Fi to talk to the bloom. iOS will ask once more.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Telefon wechselt das WLAN, um mit dem Schwarm zu sprechen. iOS fragt noch einmal nach."
+          }
+        }
+      }
+    },
+    "address unknown": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adresse unbekannt"
+          }
+        }
+      }
+    },
+    "app": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App"
+          }
+        }
+      }
+    },
+    "app, no version": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App, keine Version"
+          }
+        }
+      }
+    },
+    "every %lld s": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "alle %lld s"
+          }
+        }
+      }
+    },
+    "iOS rejected the network name. Try an ASCII name via the firmware's JELL_WIFI_SSID option.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS hat den Netznamen abgelehnt. Versuche einen ASCII-Namen über die Firmware-Option JELL_WIFI_SSID."
+          }
+        }
+      }
+    },
+    "iOS shows its own dialog before joining. When \"stay\" is off, iOS returns to your usual Wi-Fi about 15 seconds after you leave the app.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS zeigt vor dem Beitritt seinen eigenen Dialog. Ist \"bleiben\" aus, kehrt iOS etwa 15 Sekunden nach dem Verlassen der App zu deinem üblichen WLAN zurück."
+          }
+        }
+      }
+    },
+    "jelly": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qualle"
+          }
+        }
+      }
+    },
+    "last heard ": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "zuletzt gehört "
+          }
+        }
+      }
+    },
+    "newer than this app": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "neuer als diese App"
+          }
+        }
+      }
+    },
+    "no version": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "keine Version"
+          }
+        }
+      }
+    },
+    "no version · before %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "keine Version · vor %@"
+          }
+        }
+      }
+    },
+    "not on %lld jellies": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nicht auf %lld Quallen"
+          }
+        }
+      }
+    },
+    "older": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "älter"
+          }
+        }
+      }
+    },
+    "playlist · %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Playlist · %@"
+          }
+        }
+      }
+    },
+    "runs the network": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "betreibt das Netz"
+          }
+        }
+      }
+    },
+    "this phone": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dieses Telefon"
+          }
+        }
+      }
+    },
+    "up to date": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "aktuell"
+          }
+        }
+      }
+    },
+    "virtual jelly": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "virtuelle Qualle"
+          }
+        }
+      }
+    },
+    "virtual jelly · slot %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "virtuelle Qualle · Slot %lld"
+          }
+        }
+      }
+    },
+    "virtual jelly, colour slot %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "virtuelle Qualle, Farb-Slot %lld"
+          }
+        }
+      }
+    },
+    "virtual jelly, waiting for a colour slot": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "virtuelle Qualle, wartet auf einen Farb-Slot"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

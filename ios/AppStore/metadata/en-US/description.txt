@@ -1,0 +1,17 @@
+JellyFloat is the remote control for a bloom of LED jellyfish: hand-built lamps on a Raspberry Pi Pico 2 W that run the open-source JellyFloatOS firmware. The jellies find each other over their own Wi-Fi network and stay in step; the app joins that network and puts the whole bloom on your screen.
+
+WHAT YOU CAN DO
+• Pick one of twenty modes, from slow, dim moods (Breathe, Glimmer, Aurora, Lantern, Moonlight, Fireflies) to sound-reactive ones that follow the room, colour palettes that give every jelly its own colour, and a playlist that wanders through the calm modes.
+• Set brightness, shift the colours, and choose how fast the palette rotates. Every jelly follows at once.
+• See who is in the bloom: each jelly with its colour, address and firmware version, and a note when an older jelly lacks a mode.
+• Identify: the jelly that runs the network blinks red, all others blue, so you know which is which.
+• The phone joins as a jelly of its own: a virtual jellyfish on screen runs the same effects on the shared clock.
+
+NO HARDWARE YET?
+Switch on the demo bloom in Settings or from the first screen. It runs a pretend network of jellies inside the app, so you can try everything.
+
+HOW IT WORKS
+The app asks iOS to switch to the jellyfish Wi-Fi (the system asks you first) and then talks to the jellies with plain text lines over UDP. Nothing leaves your local network. There is no account, no cloud and no tracking; the app never connects to the internet.
+
+BUILD YOUR OWN
+Firmware, circuit board, 3D files and this app are open source at github.com/MacBachi/Jellyfish. The jellyfish design comes from the Sheffield-by-the-Sea crew's project for Electromagnetic Field.

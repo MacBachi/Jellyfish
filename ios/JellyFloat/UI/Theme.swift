@@ -35,9 +35,9 @@ extension View {
 }
 
 struct SectionTitle: View {
-    let text: String
+    let text: LocalizedStringKey
     var body: some View {
-        Text(text.uppercased())
+        Text(text).textCase(.uppercase)
             .font(.caption.weight(.semibold))
             .tracking(1.4)
             .foregroundStyle(Theme.inkDim)

@@ -15,14 +15,14 @@ private struct JoinPromptForm: View {
 
     var body: some View {
         VStack(spacing: 22) {
-            Image("AppIcon").resizable().scaledToFit().frame(width: 96, height: 96).clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                .shadow(color: Theme.cyan.opacity(0.4), radius: 20)
+            Text(verbatim: "🪼").font(.system(size: 64)).shadow(color: Theme.cyan.opacity(0.5), radius: 20)
             VStack(spacing: 6) {
                 Text("Join the jelly network?").font(.title2.weight(.semibold)).foregroundStyle(Theme.ink)
                 Text("Your phone switches Wi-Fi to talk to the bloom. iOS will ask once more.").font(.subheadline).foregroundStyle(Theme.inkDim).multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Picker("Network", selection: $settings.useCustomNetwork) {
-                Text(AppSettings.defaultSSID + "  default").tag(false)
+                Text("\(AppSettings.defaultSSID)  default").tag(false)
                 Text("Custom").tag(true)
             }
             .pickerStyle(.segmented)
@@ -41,6 +41,8 @@ private struct JoinPromptForm: View {
                 Button { model.connectWithoutJoining() } label: { Text("I'm already on it").frame(maxWidth: .infinity) }
                     .buttonStyle(.bordered).tint(Theme.cyan)
                 Button("Not now") { model.showJoinPrompt = false }.foregroundStyle(Theme.inkDim)
+                Button("No jellyfish yet? Try the demo bloom") { settings.demoMode = true; model.showJoinPrompt = false; model.startDemo() }
+                    .font(.footnote).foregroundStyle(Theme.inkDim)
             }
             Toggle("Ask every time", isOn: $settings.askBeforeJoining).font(.caption).foregroundStyle(Theme.inkDim)
         }

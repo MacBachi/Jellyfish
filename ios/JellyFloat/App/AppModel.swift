@@ -11,11 +11,11 @@ final class AppModel: ObservableObject {
 
         var label: String {
             switch self {
-            case .idle: return "Not connected"
-            case .joiningWiFi: return "Joining the jelly network"
-            case .connecting: return "Looking for the bloom"
-            case .connected: return "In the bloom"
-            case .demo: return "Demo bloom"
+            case .idle: return String(localized: "Not connected")
+            case .joiningWiFi: return String(localized: "Joining the jelly network")
+            case .connecting: return String(localized: "Looking for the bloom")
+            case .connected: return String(localized: "In the bloom")
+            case .demo: return String(localized: "Demo bloom")
             case .failed(let why): return why
             }
         }
@@ -218,21 +218,24 @@ final class AppModel: ObservableObject {
     /// One line on the state of the bloom's firmware, for the Jellies tab.
     var firmwareSummary: String {
         let js = jellies
-        if js.isEmpty { return connection.isLive ? "No jelly has introduced itself yet." : "Connect to see what the jellies run." }
+        if js.isEmpty { return connection.isLive ? String(localized: "No jelly has introduced itself yet.") : String(localized: "Connect to see what the jellies run.") }
         var groups: [(String, Int)] = []
         for j in js {
-            let key = j.firmwareVersion?.text ?? "no version"
+            let key = j.firmwareVersion?.text ?? String(localized: "no version")
             if let i = groups.firstIndex(where: { $0.0 == key }) { groups[i].1 += 1 } else { groups.append((key, 1)) }
         }
         let latest = BuildInfo.latestFirmware
         if groups.count == 1, let only = groups.first {
-            if only.0 == latest.text { return js.count == 1 ? "The jelly runs \(only.0), the same as this app." : "All \(js.count) jellies run \(only.0), the same as this app." }
-            if only.0 == "no version" { return "\(js.count == 1 ? "The jelly reports" : "The jellies report") no version: firmware from before \(latest.text). Modes added since may not exist there." }
+            if only.0 == latest.text { return js.count == 1 ? String(localized: "The jelly runs \(only.0), the same as this app.") : String(localized: "All \(js.count) jellies run \(only.0), the same as this app.") }
+            if only.0 == String(localized: "no version") {
+                return js.count == 1 ? String(localized: "The jelly reports no version: firmware from before \(latest.text). Modes added since may not exist there.")
+                                     : String(localized: "The jellies report no version: firmware from before \(latest.text). Modes added since may not exist there.")
+            }
         }
         let parts = groups.map { "\($0.1) × \($0.0)" }.joined(separator: ", ")
-        var text = "Mixed firmware: \(parts)."
-        if js.contains(where: { $0.firmwareStatus == .newer }) { text += " One jelly is newer than this app; it may have modes the app cannot show." }
-        if js.contains(where: { $0.firmwareStatus == .older || $0.firmwareStatus == .unknown }) { text += " Newer modes fall back to another mode on older jellies; nothing is blocked." }
+        var text = String(localized: "Mixed firmware: \(parts).")
+        if js.contains(where: { $0.firmwareStatus == .newer }) { text += String(localized: " One jelly is newer than this app; it may have modes the app cannot show.") }
+        if js.contains(where: { $0.firmwareStatus == .older || $0.firmwareStatus == .unknown }) { text += String(localized: " Newer modes fall back to another mode on older jellies; nothing is blocked.") }
         return text
     }
 

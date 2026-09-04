@@ -15,7 +15,7 @@ struct HomeView: View {
                 ControlsView()
                 ForEach(JellyMode.Group.allCases) { group in
                     VStack(spacing: 10) {
-                        SectionTitle(text: group.rawValue)
+                        SectionTitle(text: LocalizedStringKey(group.rawValue))
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(JellyMode.allCases.filter { $0.group == group }) { mode in
                                 Button { model.select(mode) } label: {
@@ -45,7 +45,7 @@ struct HomeView: View {
 
     private var heroCaption: some View {
         VStack(alignment: .trailing, spacing: 2) {
-            Text(model.slot >= 0 ? "virtual jelly · slot \(model.slot)" : "virtual jelly")
+            if model.slot >= 0 { Text("virtual jelly · slot \(model.slot)") } else { Text("virtual jelly") }
             if model.state.mode == .playlist { Text("playlist · \(model.effectiveMode.name)") }
         }
         .font(.caption2).foregroundStyle(Theme.inkDim).padding(8)
@@ -76,12 +76,16 @@ struct HomeView: View {
     /// "Jelly 1b3c doesn't know SOS and shows Breathe instead."
     private func lackingNote(for mode: JellyMode) -> String {
         let lacking = model.jelliesLacking(mode)
-        let names = lacking.prefix(3).map { "Jelly \($0.id)" }.joined(separator: ", ") + (lacking.count > 3 ? " and \(lacking.count - 3) more" : "")
-        let verb = lacking.count == 1 ? "doesn't" : "don't"
-        if let fb = lacking.first?.fallback(for: mode), lacking.allSatisfy({ $0.fallback(for: mode) == fb }) {
-            return "\(names) \(verb) know \(mode.name) and \(lacking.count == 1 ? "shows" : "show") \(fb.name) instead."
+        var names = lacking.prefix(3).map { String(localized: "Jelly \($0.id)") }.joined(separator: ", ")
+        if lacking.count > 3 { names += String(localized: " and \(lacking.count - 3) more") }
+        let fb = lacking.first?.fallback(for: mode)
+        let sameFallback = fb != nil && lacking.allSatisfy { $0.fallback(for: mode) == fb }
+        if lacking.count == 1 {
+            return sameFallback ? String(localized: "\(names) doesn't know \(mode.name) and shows \(fb!.name) instead.")
+                                : String(localized: "\(names) doesn't know \(mode.name) and shows another mode instead.")
         }
-        return "\(names) \(verb) know \(mode.name) and \(lacking.count == 1 ? "shows" : "show") another mode instead."
+        return sameFallback ? String(localized: "\(names) don't know \(mode.name) and show \(fb!.name) instead.")
+                            : String(localized: "\(names) don't know \(mode.name) and show another mode instead.")
     }
 }
 

@@ -7,10 +7,12 @@ set -eu
 here="${SRCROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 root="$(cd "$here/.." && pwd)"
 version="$(tr -d '[:space:]' < "$root/VERSION")"
+# App Store Connect accepts only digits and dots here: "1.0.1-dev" becomes "1.0.1".
+marketing="${version%%-*}"
 rev="$(git -C "$root" rev-parse --short HEAD 2>/dev/null || echo unknown)"
 build="$(git -C "$root" rev-list --count HEAD 2>/dev/null || echo 1)"
 mkdir -p "$here/Generated"
-sed -e "s/__VERSION__/$version/" -e "s/__BUILD__/$build/" -e "s/__GITREV__/$rev/" \
+sed -e "s/__MARKETING_VERSION__/$marketing/" -e "s/__VERSION__/$version/" -e "s/__BUILD__/$build/" -e "s/__GITREV__/$rev/" \
     "$here/Info.template.plist" > "$here/Generated/Info.plist.tmp"
 mv "$here/Generated/Info.plist.tmp" "$here/Generated/Info.plist"
 echo "JellyFloat $version ($rev), build $build"

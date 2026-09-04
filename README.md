@@ -26,8 +26,8 @@ Firmware for a bloom of audio-reactive, WLAN-synchronised LED jellyfish on the R
   jelly switches all of them.
 - **Per-jelly colours.** The access point hands out colour slots, so palette modes give every jelly its own
   colour and the Swarm mode walks a pulse from one to the next.
-- **Remote control without an app.** A web page served by the jelly itself, or plain text lines over UDP
-  from any device on the jelly network, e.g. with `nc`.
+- **Remote control three ways.** A web page served by the jelly itself, the JellyFloat iPhone app, or
+  plain text lines over UDP from any device on the jelly network, e.g. with `nc`.
 - **One firmware for every build.** All seven tentacle headers on the board are driven; headers without a
   strip simply send into nothing.
 
@@ -130,7 +130,7 @@ cmake --build firmware_cpp/build
 ```
 
 The firmware is `firmware_cpp/build/JellyFloatOS.uf2`. The CI does the same on every push and attaches the
-result as an artifact; a pushed tag such as `v0.9.0` publishes it as a release, with the
+result as an artifact; a pushed tag such as `v1.0.0` publishes it as a release, with the
 default firmware and the 39-LED GRB/RGB variant attached. `python3 firmware_cpp/tools/elf_size.py
 firmware_cpp/build/JellyFloatOS.elf` prints how much flash and RAM a build takes; the CI puts the same
 numbers in its job summary. `make -C firmware_cpp/tools/power_sim run` builds the effect code for the
@@ -140,7 +140,7 @@ host and prints the supply current of every mode, see "Power" above.
 
 The `VERSION` file at the repository root is the one version number for firmware and app: CMake compiles
 it into the firmware, and the app's build stamps it into its Info.plist. Between releases it reads like
-`0.9.1-dev`; a release sets it to the plain number and pushes the matching tag (the release job refuses a
+`1.0.1-dev`; a release sets it to the plain number and pushes the matching tag (the release job refuses a
 tag that does not match). Every jelly announces its version and its number of modes in its `HELLO`, prints
 them on the serial console at boot, and the app shows what each jelly runs, what the newest version is and
 where they differ.
@@ -242,6 +242,21 @@ takes one command line, handled exactly like a line from the network. The page p
 twelve times a second and the state once a second over a kept-alive connection. Everything under
 `firmware_cpp/web/` is compiled into the firmware at build time, so a page change is a firmware build.
 
+## The app: JellyFloat for iPhone
+
+The same controls as the web page, plus the phone as a jelly of its own: a virtual jellyfish on screen
+runs the same effects on the shared clock, and the Jellies tab shows every jelly with its firmware
+version. The app joins the 🪼 network through iOS' own dialog and speaks the UDP protocol above; it
+registers with `HELLO <id> APP` and gets unicast copies of everything, so it needs no multicast
+entitlement. English and German. A demo bloom inside the app shows everything without hardware.
+
+Build: `cd ios && xcodegen generate && open JellyFloat.xcodeproj` (Xcode 16 or newer, `brew install
+xcodegen`; put your Team ID into `ios/Local.xcconfig` for device builds). `ios/scripts/archive.sh`
+archives and uploads to App Store Connect. `ios/AppStore/SUBMISSION.md` walks through every field of
+the App Store listing, with the texts in both languages under `ios/AppStore/metadata/` and the notes
+for App Review; `PRIVACY.md` is the privacy policy the listing links to. The app collects nothing and
+never connects to the internet.
+
 ## Repository layout
 
 | Path | Content |
@@ -249,7 +264,8 @@ twelve times a second and the state once a second over a kept-alive connection. 
 | `firmware_cpp/` | the firmware: `JellyFloatOS.cpp` (main, both cores), `jell_net` (WLAN, election, protocol), `jell_web` + `web/` (the web page), `jell_effects` (modes), `jell_canvas` / `jell_led` (frame buffer, WS2812 output, crossfade), `jell_audio` (I2S microphone), `jell_state` (core-to-core state), `jell_config.hpp` (everything tunable), `tools/elf_size.py` (flash and RAM report), `tools/power_sim/` (supply current per mode) |
 | `pcb/` | KiCad project and JLCPCB production files for the Jellyboard |
 | `3D print files/` | base, ribs, pillar, loops, fabric plug |
-| `ios/` | the earlier JellyFloat iPhone app (SwiftUI); superseded by the web page, kept for reference |
+| `ios/` | the JellyFloat iPhone app (SwiftUI, English and German); `AppStore/` holds the listing texts, screenshots and the submission guide |
+| `PRIVACY.md` | privacy policy for the app, German and English |
 | `VERSION` | the one version number for firmware and app |
 | `.github/workflows/` | CI: build on every push, release on `v*` tags |
 

@@ -15,6 +15,8 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
     enum Group: String, CaseIterable, Identifiable {
         case calm = "Calm", sound = "Sound", colour = "Colour", ambient = "Ambient", signal = "Signal", test = "Test"
         var id: String { rawValue }
+        /// The group's name in the user's language; the raw value is the English key.
+        var title: String { String(localized: String.LocalizationValue(rawValue)) }
     }
 
     var group: Group {
@@ -30,51 +32,51 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
 
     var name: String {
         switch self {
-        case .breathe: return "Breathe"
-        case .glimmer: return "Glimmer"
-        case .aurora: return "Aurora"
-        case .current: return "Current"
-        case .lantern: return "Lantern"
-        case .moonlight: return "Moonlight"
-        case .drizzle: return "Drizzle"
-        case .fireflies: return "Fireflies"
-        case .swarm: return "Swarm"
-        case .whisper: return "Whisper"
-        case .playlist: return "Playlist"
-        case .micField: return "Sound field"
-        case .drops: return "Drops"
-        case .palette: return "Palette"
-        case .paletteCycle: return "Palette cycle"
-        case .ambientRainbow: return "Rainbow"
-        case .ambientDeepSea: return "Deep sea"
-        case .micLevelCheck: return "Mic level"
-        case .ledChannelTest: return "Channel test"
-        case .sos: return "SOS"
+        case .breathe: return String(localized: "Breathe")
+        case .glimmer: return String(localized: "Glimmer")
+        case .aurora: return String(localized: "Aurora")
+        case .current: return String(localized: "Current")
+        case .lantern: return String(localized: "Lantern")
+        case .moonlight: return String(localized: "Moonlight")
+        case .drizzle: return String(localized: "Drizzle")
+        case .fireflies: return String(localized: "Fireflies")
+        case .swarm: return String(localized: "Swarm")
+        case .whisper: return String(localized: "Whisper")
+        case .playlist: return String(localized: "Playlist")
+        case .micField: return String(localized: "Sound field")
+        case .drops: return String(localized: "Drops")
+        case .palette: return String(localized: "Palette")
+        case .paletteCycle: return String(localized: "Palette cycle")
+        case .ambientRainbow: return String(localized: "Rainbow")
+        case .ambientDeepSea: return String(localized: "Deep sea")
+        case .micLevelCheck: return String(localized: "Mic level")
+        case .ledChannelTest: return String(localized: "Channel test")
+        case .sos: return String(localized: "SOS")
         }
     }
 
     var blurb: String {
         switch self {
-        case .breathe: return "A slow pulse from the bell down the tentacles"
-        case .glimmer: return "Near dark, with sparks that glow and fade"
-        case .aurora: return "Bands of green, teal and violet drifting by"
-        case .current: return "A gentle wave travelling up the tentacles"
-        case .lantern: return "Warm amber with a hint of candle flicker"
-        case .moonlight: return "Very dim, cool, hardly moving"
-        case .drizzle: return "Single slow drops with trails"
-        case .fireflies: return "Lone lights rising and falling"
-        case .swarm: return "A pulse visiting one jelly after the other"
-        case .whisper: return "Follows the room's sound, slowly"
-        case .playlist: return "Wanders through the calm modes, all jellies together"
-        case .micField: return "The original sound-reactive field"
-        case .drops: return "Drops on every beat"
-        case .palette: return "One colour per jelly"
-        case .paletteCycle: return "Colours rotate through the bloom"
-        case .ambientRainbow: return "Every colour, slowly"
-        case .ambientDeepSea: return "Blues and greens, slowly"
-        case .micLevelCheck: return "Prints levels to the serial console"
-        case .ledChannelTest: return "Red, green, blue, one noodle at a time"
-        case .sos: return "Red Morse code, all jellies in step"
+        case .breathe: return String(localized: "A slow pulse from the bell down the tentacles")
+        case .glimmer: return String(localized: "Near dark, with sparks that glow and fade")
+        case .aurora: return String(localized: "Bands of green, teal and violet drifting by")
+        case .current: return String(localized: "A gentle wave travelling up the tentacles")
+        case .lantern: return String(localized: "Warm amber with a hint of candle flicker")
+        case .moonlight: return String(localized: "Very dim, cool, hardly moving")
+        case .drizzle: return String(localized: "Single slow drops with trails")
+        case .fireflies: return String(localized: "Lone lights rising and falling")
+        case .swarm: return String(localized: "A pulse visiting one jelly after the other")
+        case .whisper: return String(localized: "Follows the room's sound, slowly")
+        case .playlist: return String(localized: "Wanders through the calm modes, all jellies together")
+        case .micField: return String(localized: "The original sound-reactive field")
+        case .drops: return String(localized: "Drops on every beat")
+        case .palette: return String(localized: "One colour per jelly")
+        case .paletteCycle: return String(localized: "Colours rotate through the bloom")
+        case .ambientRainbow: return String(localized: "Every colour, slowly")
+        case .ambientDeepSea: return String(localized: "Blues and greens, slowly")
+        case .micLevelCheck: return String(localized: "Prints levels to the serial console")
+        case .ledChannelTest: return String(localized: "Red, green, blue, one noodle at a time")
+        case .sos: return String(localized: "Red Morse code, all jellies in step")
         }
     }
 

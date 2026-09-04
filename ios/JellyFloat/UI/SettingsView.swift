@@ -27,7 +27,7 @@ private struct SettingsForm: View {
                         Toggle("Remember password", isOn: $settings.rememberPassword).disabled(!settings.rememberNetwork)
                     }
                 } header: { Text("Jelly network") } footer: {
-                    Text(settings.useCustomNetwork ? "The name is kept on this phone; the password only if you say so, in the Keychain." : "Every jelly with the default firmware opens this network.")
+                    if settings.useCustomNetwork { Text("The name is kept on this phone; the password only if you say so, in the Keychain.") } else { Text("Every jelly with the default firmware opens this network.") }
                 }
 
                 Section {
@@ -44,7 +44,7 @@ private struct SettingsForm: View {
                     Button("Disconnect", role: .destructive) { model.stop() }
                     if let error = model.joinError { Text(error).font(.caption).foregroundStyle(.red) }
                 } header: { Text("Connection · \(model.connection.label)") } footer: {
-                    Text(model.linkStatus.isEmpty ? "" : "Link: \(model.linkStatus)")
+                    if !model.linkStatus.isEmpty { Text("Link: \(model.linkStatus)") }
                 }
 
                 Section {

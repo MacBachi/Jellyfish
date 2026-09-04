@@ -1,0 +1,1 @@
+jellyfish,LED,lights,neopixel,WS2812,pico,bloom,ambient,lamp,maker,mood light,DIY

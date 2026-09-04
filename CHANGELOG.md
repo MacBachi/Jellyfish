@@ -5,11 +5,24 @@ entries start where the fork diverged.
 
 ## Unreleased
 
+## 1.0.0 - 2026-09-04
+
+First stable release: firmware and iPhone app under one version number, the app prepared for the
+App Store, the project on its own (the GitHub fork relation to the original repository is being cut).
+
 ### Added
 - `firmware_cpp/tools/power_sim`: builds the effect code for the host and prints the supply current of
   every mode for three measured WS2812B models.
+- The iPhone app speaks German as well as English (string catalogues in `ios/JellyFloat/Resources/`).
+- The join prompt offers the demo bloom to people without hardware, and to App Review.
+- App Store material: `ios/AppStore/` with the listing texts in both languages, screenshots, the
+  submission guide and the reviewer notes; `PRIVACY.md`; `ios/scripts/archive.sh` archives and uploads.
 
 ### Changed
+- The app's `CFBundleShortVersionString` is the numeric part of `VERSION` (App Store Connect rejects
+  `1.0.1-dev`); the full string moves to `JellyVersion`, which the app shows and compares.
+- The release job tolerates a second CI run for the same tag and refreshes the files instead of failing.
+- The iPhone app is developed again, alongside the web page; 0.9.0 had set it aside.
 - README: the power notes now rest on the KiCad file, measured LED currents and the simulation; the
   calm modes peak at 1 to 2.6 A at full brightness, not "2–15 %". A quick-start section for putting
   the current release onto a jelly without installing anything.

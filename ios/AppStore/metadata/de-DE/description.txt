@@ -1,0 +1,17 @@
+JellyFloat ist die Fernbedienung für einen Schwarm LED-Quallen: selbst gebaute Lampen mit einem Raspberry Pi Pico 2 W, auf denen die quelloffene Firmware JellyFloatOS läuft. Die Quallen finden sich über ein eigenes WLAN und bleiben im Gleichtakt; die App tritt diesem Netz bei und holt den ganzen Schwarm auf den Bildschirm.
+
+WAS DU TUN KANNST
+• Einen von zwanzig Modi wählen: langsame, gedämpfte Stimmungen (Atmen, Glimmen, Aurora, Laterne, Mondlicht, Glühwürmchen), klangreaktive Modi, die dem Raum folgen, Farbpaletten mit einer eigenen Farbe pro Qualle, und eine Playlist, die durch die ruhigen Modi wandert.
+• Helligkeit setzen, die Farben verschieben und bestimmen, wie schnell die Palette rotiert. Alle Quallen folgen sofort.
+• Sehen, wer im Schwarm ist: jede Qualle mit Farbe, Adresse und Firmware-Version, und ein Hinweis, wenn einer älteren Qualle ein Modus fehlt.
+• Identifizieren: die Qualle, die das Netz betreibt, blinkt rot, alle anderen blau. So weißt du, welche welche ist.
+• Das Telefon macht als eigene Qualle mit: eine virtuelle Qualle auf dem Bildschirm zeigt dieselben Effekte im gemeinsamen Takt.
+
+NOCH KEINE HARDWARE?
+Schalte den Demo-Schwarm ein, in den Einstellungen oder gleich auf dem ersten Bildschirm. Er betreibt ein vorgetäuschtes Quallennetz in der App, damit du alles ausprobieren kannst.
+
+SO FUNKTIONIERT ES
+Die App bittet iOS, ins Quallen-WLAN zu wechseln (das System fragt dich vorher), und spricht dann mit den Quallen in einfachen Textzeilen über UDP. Nichts verlässt dein lokales Netz. Es gibt kein Konto, keine Cloud und kein Tracking; die App geht nie ins Internet.
+
+SELBST BAUEN
+Firmware, Platine, 3D-Dateien und diese App sind quelloffen unter github.com/MacBachi/Jellyfish. Der Quallen-Entwurf stammt aus dem Projekt der Sheffield-by-the-Sea-Crew für das Electromagnetic Field.

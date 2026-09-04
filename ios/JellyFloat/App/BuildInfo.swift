@@ -1,11 +1,11 @@
 import Foundation
 
-/// What this build is. The values come from Info.plist, which scripts/stamp-version.sh fills
+/// What this build is. The values come from Info.plist, which scripts/gen-build-info.sh fills
 /// from the repository's VERSION file and git at build time; firmware built from the same
 /// repository state carries the same version.
 enum BuildInfo {
     private static let info = Bundle.main.infoDictionary ?? [:]
-    static let appVersion = info["CFBundleShortVersionString"] as? String ?? "0.0.0"
+    static let appVersion = info["JellyVersion"] as? String ?? info["CFBundleShortVersionString"] as? String ?? "0.0.0"
     static let build = info["CFBundleVersion"] as? String ?? "0"
     static let gitRevision = info["JellyGitRevision"] as? String ?? "unknown"
 
@@ -58,10 +58,10 @@ enum FirmwareStatus: Equatable {
 
     var label: String {
         switch self {
-        case .latest: return "up to date"
-        case .older: return "older"
-        case .newer: return "newer than this app"
-        case .unknown: return "no version"
+        case .latest: return String(localized: "up to date")
+        case .older: return String(localized: "older")
+        case .newer: return String(localized: "newer than this app")
+        case .unknown: return String(localized: "no version")
         }
     }
 }

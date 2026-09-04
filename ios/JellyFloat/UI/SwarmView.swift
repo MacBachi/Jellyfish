@@ -18,11 +18,11 @@ struct SwarmView: View {
                 VStack(spacing: 10) {
                     SectionTitle(text: "Jellies")
                     if model.roster.isEmpty {
-                        Text(model.connection.isLive ? "Nobody has answered yet. Tap roll call." : "Connect to see who is in the bloom.")
+                        (model.connection.isLive ? Text("Nobody has answered yet. Tap roll call.") : Text("Connect to see who is in the bloom."))
                             .font(.subheadline).foregroundStyle(Theme.inkDim).frame(maxWidth: .infinity, alignment: .leading).glassCard()
                     }
                     ForEach(model.roster) { entry in rosterRow(entry) }
-                    rosterRow(RosterEntry(id: model.settings.jellyID, role: .app, slot: model.slot, ip: "this phone", lastSeen: Date(),
+                    rosterRow(RosterEntry(id: model.settings.jellyID, role: .app, slot: model.slot, ip: String(localized: "this phone"), lastSeen: Date(),
                                           firmware: BuildInfo.appVersion, modeCount: BuildInfo.modeCount), isSelf: true)
                 }
                 VStack(spacing: 10) {
@@ -70,7 +70,7 @@ struct SwarmView: View {
 
     private func modeList(_ modes: [JellyMode]) -> String {
         let names = modes.prefix(4).map(\.name)
-        return names.joined(separator: ", ") + (modes.count > 4 ? " and \(modes.count - 4) more" : "")
+        return names.joined(separator: ", ") + (modes.count > 4 ? String(localized: " and \(modes.count - 4) more") : "")
     }
 
     // MARK: rows
@@ -85,21 +85,27 @@ struct SwarmView: View {
                 .overlay(Text(e.slot >= 0 ? "\(e.slot)" : "?").font(.caption.weight(.bold)).foregroundStyle(.black.opacity(0.7)))
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
-                    Text(isSelf ? "This phone" : (e.role == .app ? "Phone \(e.id)" : "Jelly \(e.id)")).font(.headline).foregroundStyle(Theme.ink)
+                    (isSelf ? Text("This phone") : (e.role == .app ? Text("Phone \(e.id)") : Text("Jelly \(e.id)"))).font(.headline).foregroundStyle(Theme.ink)
                     chip(roleName(e.role), tint: e.role == .ap ? Theme.magenta.opacity(0.35) : .white.opacity(0.1))
                 }
                 HStack(spacing: 6) {
                     versionChip(e, isSelf: isSelf)
                     if let n = e.modeCount { Text("\(n) modes").font(.caption2).foregroundStyle(Theme.inkDim) }
                 }
-                Text(isSelf ? (e.slot >= 0 ? "virtual jelly, colour slot \(e.slot)" : "virtual jelly, waiting for a colour slot")
-                     : "\(e.ip.isEmpty ? "address unknown" : e.ip)  ·  \(stale ? "last heard " : "")\(e.lastSeen.formatted(date: .omitted, time: .standard))")
+                detailLine(e, isSelf: isSelf, stale: stale)
                     .font(.caption).foregroundStyle(Theme.inkDim)
             }
             Spacer()
         }
         .opacity(stale ? 0.6 : 1)
         .glassCard(padding: 12)
+    }
+
+    private func detailLine(_ e: RosterEntry, isSelf: Bool, stale: Bool) -> Text {
+        if isSelf { return e.slot >= 0 ? Text("virtual jelly, colour slot \(e.slot)") : Text("virtual jelly, waiting for a colour slot") }
+        let address = e.ip.isEmpty ? String(localized: "address unknown") : e.ip
+        let heard = stale ? String(localized: "last heard ") : ""
+        return Text(verbatim: "\(address)  ·  \(heard)\(e.lastSeen.formatted(date: .omitted, time: .standard))")
     }
 
     private func versionChip(_ e: RosterEntry, isSelf: Bool) -> some View {
@@ -114,7 +120,7 @@ struct SwarmView: View {
         let text: String
         if isSelf { text = BuildInfo.appVersion }
         else if let v = e.firmwareVersion { text = status == .latest ? v.text : "\(v.text) · \(status.label)" }
-        else { text = e.role == .app ? "app, no version" : "no version · before \(BuildInfo.latestFirmware.text)" }
+        else { text = e.role == .app ? String(localized: "app, no version") : String(localized: "no version · before \(BuildInfo.latestFirmware.text)") }
         return chip(text, tint: tint)
     }
 
@@ -124,6 +130,6 @@ struct SwarmView: View {
     }
 
     private func roleName(_ r: RosterEntry.Role) -> String {
-        switch r { case .ap: return "runs the network"; case .station: return "jelly"; case .app: return "app" }
+        switch r { case .ap: return String(localized: "runs the network"); case .station: return String(localized: "jelly"); case .app: return String(localized: "app") }
     }
 }
