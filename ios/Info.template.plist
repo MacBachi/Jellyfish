@@ -30,14 +30,11 @@
 	<string>JellyFloat talks to your jellyfish over the local Wi-Fi network.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
-	<!-- App Store Connect rejects a build that names only portrait (error 90474): the full
-	     list is required. The layout is scrolling lists and forms, so landscape works. -->
+	<!-- Portrait only, which an iPhone-only app may do. The all-orientations rule (error
+	     90474) applies to apps that also claim iPad; see TARGETED_DEVICE_FAMILY. -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Dark</string>
