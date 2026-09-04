@@ -5,6 +5,15 @@ entries start where the fork diverged.
 
 ## Unreleased
 
+### Added
+- `firmware_cpp/tools/power_sim`: builds the effect code for the host and prints the supply current of
+  every mode for three measured WS2812B models.
+
+### Changed
+- README: the power notes now rest on the KiCad file, measured LED currents and the simulation; the
+  calm modes peak at 1 to 2.6 A at full brightness, not "2–15 %". A quick-start section for putting
+  the current release onto a jelly without installing anything.
+
 ## 0.9.0 - 2026-09-04
 
 The web page replaces the iPhone app; verified on jelly 0451.

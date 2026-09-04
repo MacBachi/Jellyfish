@@ -59,21 +59,57 @@ production files for the control board in [pcb/](pcb/), and the [bill of materia
 
 ### Power
 
-WS2812B LEDs draw up to 60 mA each at full white: the ring alone can reach 5.8 A, four tentacles 2.9 A.
-The calm modes run at 2–15 % brightness with saturated colours and stay far below that, so a 2.4 A USB
-supply into the Pico's micro-USB is fine for them. For bright modes or more than four tentacles, feed 5 V
-to the strips directly from the supply and let the board carry data and ground only: the board's 5 V traces
-are 0.4 mm wide and the Pico's USB path is good for about 1 A. A 1000 µF capacitor at the ring's 5 V input
-and short data leads (the Pico drives 3.3 V into 5 V LEDs, which usually works but dislikes long wires)
-save a lot of debugging. `BRIGHTNESS_MODIFIER` in `jell_config.hpp` caps the overall brightness at build time.
+All the LED current goes through the Pico's micro-USB socket: on the Jellyboard only VBUS feeds the 5 V
+net, one 0.4 mm trace with no copper pour carries it to the eight LED headers, and the `5V`/`GND` pads
+beside the ring header are two tiny solder pads on that same trace. So the socket and the trace set the
+limit. The Pico datasheet gives no figure for the socket; connector makers rate micro-USB at 1.0 to 1.8 A,
+and by IPC-2221 a 0.4 mm trace in 35 µm copper carries about 1.2 A at 10 °C rise and 2 A at 30 °C.
+
+What a jelly draws depends on the mode. WS2812B LEDs measure 34 to 65 mA at full white depending on the
+chip generation, plus about 1 mA when dark; the WS2812B-4040 wire of the tentacles is rated 0.24 W (48 mA)
+per LED. Full white on the whole jelly, 96 ring and 48 tentacle LEDs, would be 5 to 9 A. No mode does
+that. `firmware_cpp/tools/power_sim` runs every mode through the real effect code and sums the current
+from the RGB values it produces. At full brightness, four tentacles of twelve LEDs and the Pico's own
+80 mA, the peaks are:
+
+| Modes | Peak with 35 mA LEDs | Peak with 60 mA LEDs |
+|---|---|---|
+| Glimmer, Fireflies, Moonlight, Drizzle | 0.3–0.5 A | 0.4–0.6 A |
+| Current, Whisper, Mic field (quiet room) | 0.8–0.9 A | 1.2–1.5 A |
+| Aurora, Lantern, Swarm, Palette | 1.1–1.3 A | 1.8–2.1 A |
+| Breathe | 1.6 A | 2.6 A |
+| Ambient rainbow/deepsea, Palette cycle, SOS, LED channel test | 1.8–1.9 A | 2.9–3.1 A |
+| Mic field, loud music | 2.6 A | 4.2 A |
+
+Averages are 60 to 90 % of the peaks; seven tentacles of sixteen add 0.4 to 1.2 A; half brightness
+halves nearly all of it. The original builders measured "about an amp" with the original firmware in a
+quiet room, which matches the table. So a 2.4 A USB supply into the micro-USB is fine for the dim modes
+and, at half brightness, for everything else. For full brightness in the bright modes, or more than four
+tentacles, feed 5 V to the ring and the tentacles straight from the supply and let the board carry data
+and ground only. A 1000 µF capacitor at the ring's 5 V input and short data leads (the Pico drives 3.3 V
+into 5 V LEDs, which usually works but dislikes long wires) save a lot of debugging. The `BRIGHT`
+command caps the brightness at runtime, `BRIGHTNESS_MODIFIER` in `jell_config.hpp` at build time.
 
 ## Getting started
 
-### Flash a release
+### Quick start: the current firmware onto a jelly
 
-Download `JellyFloatOS.uf2` from the [latest release](https://github.com/MacBachi/Jellyfish/releases/latest).
-Hold BOOTSEL on the Pico, plug in USB, copy the file onto the `RP2350` drive that appears. The jelly starts
-in the sound-reactive field mode and begins looking for a network.
+For anyone who just wants the jelly to run. You need the jelly, a computer, and a USB cable that carries
+data (some are charge-only). Nothing has to be installed.
+
+1. Open the [latest release](https://github.com/MacBachi/Jellyfish/releases/latest) and download the
+   file called `JellyFloatOS-v….uf2`. Skip the one with `ring39` in its name; that is for one particular
+   jelly with a 39-LED ring.
+2. Unplug the jelly. Hold the small BOOTSEL button on the Pico, plug the USB cable into the computer
+   while holding it, then let go. A drive named `RP2350` appears. If it does not, the cable is charge-only
+   or the button was not held.
+3. Copy the `.uf2` file onto that drive. The drive vanishes by itself a moment later: the jelly now runs
+   the new firmware. Nothing is stored on the jelly between runs, so there is nothing to migrate or reset.
+4. Plug the jelly into its USB power supply. The Pico's onboard LED blinks fast while it looks for a jelly
+   network and goes solid after up to two minutes: this jelly now runs the network. Switch on further
+   jellies after that; they blink slowly once they have joined.
+5. On your phone, join the WLAN called 🪼 with the password `FroschUndMaus` and open **http://192.168.4.1**.
+   The page shows the jelly and lets you pick modes, brightness and colour.
 
 ### Build it yourself
 
@@ -97,7 +133,8 @@ The firmware is `firmware_cpp/build/JellyFloatOS.uf2`. The CI does the same on e
 result as an artifact; a pushed tag such as `v0.9.0` publishes it as a release, with the
 default firmware and the 39-LED GRB/RGB variant attached. `python3 firmware_cpp/tools/elf_size.py
 firmware_cpp/build/JellyFloatOS.elf` prints how much flash and RAM a build takes; the CI puts the same
-numbers in its job summary.
+numbers in its job summary. `make -C firmware_cpp/tools/power_sim run` builds the effect code for the
+host and prints the supply current of every mode, see "Power" above.
 
 ### Versions
 
@@ -209,7 +246,7 @@ twelve times a second and the state once a second over a kept-alive connection. 
 
 | Path | Content |
 |---|---|
-| `firmware_cpp/` | the firmware: `JellyFloatOS.cpp` (main, both cores), `jell_net` (WLAN, election, protocol), `jell_web` + `web/` (the web page), `jell_effects` (modes), `jell_canvas` / `jell_led` (frame buffer, WS2812 output, crossfade), `jell_audio` (I2S microphone), `jell_state` (core-to-core state), `jell_config.hpp` (everything tunable), `tools/elf_size.py` (flash and RAM report) |
+| `firmware_cpp/` | the firmware: `JellyFloatOS.cpp` (main, both cores), `jell_net` (WLAN, election, protocol), `jell_web` + `web/` (the web page), `jell_effects` (modes), `jell_canvas` / `jell_led` (frame buffer, WS2812 output, crossfade), `jell_audio` (I2S microphone), `jell_state` (core-to-core state), `jell_config.hpp` (everything tunable), `tools/elf_size.py` (flash and RAM report), `tools/power_sim/` (supply current per mode) |
 | `pcb/` | KiCad project and JLCPCB production files for the Jellyboard |
 | `3D print files/` | base, ribs, pillar, loops, fabric plug |
 | `ios/` | the earlier JellyFloat iPhone app (SwiftUI); superseded by the web page, kept for reference |

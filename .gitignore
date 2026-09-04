@@ -10,6 +10,7 @@ firmware_cpp/pico_sdk_import.cmake
 *.uf2
 *.elf
 *.elf.map
+firmware_cpp/tools/power_sim/power_sim
 
 # KiCad working files
 pcb/*.lck
