@@ -1,7 +1,7 @@
 # JellyFloat im App Store einreichen
 
 Alles, was in App Store Connect einzutragen ist, in der Reihenfolge der Formulare. Die Texte liegen
-zum Kopieren in `metadata/en-GB/` und `metadata/de-DE/`, die Bildschirmfotos in `screenshots/`.
+zum Kopieren in `metadata/en-GB/` und `metadata/de-DE/`, die Bildschirmfotos in `screenshots/6.9-inch/` und `screenshots/6.5-inch/`.
 Die Texte für die Prüfer stehen unten unter "App-Überprüfungsinformationen".
 
 ## Vorher, einmalig
@@ -54,7 +54,7 @@ Lokalisierungen: **Englisch (Großbritannien)** und **Deutsch**, jeweils:
 | Support-URL | https://github.com/MacBachi/Jellyfish/issues |
 | Marketing-URL | https://github.com/MacBachi/Jellyfish |
 | Neue Funktionen | `metadata/<sprache>/release_notes.txt` |
-| Bildschirmfotos iPhone 6,9" | `screenshots/<sprache>/` (1320 × 2868, vier Stück: Beitritt, Schwarm, Quallen, Einstellungen) |
+| Bildschirmfotos | `screenshots/6.9-inch/<sprache>/` (1320 × 2868) und `screenshots/6.5-inch/<sprache>/` (1284 × 2778), je vier: Beitritt, Schwarm, Quallen, Einstellungen. App Store Connect hat für jede Größe einen eigenen Bereich und nimmt nur die dort geforderten Maße an; ein Satz genügt, beide schaden nicht. |
 
 iPad-Fotos sind nicht nötig, die App ist nur für iPhone gebaut (`TARGETED_DEVICE_FAMILY = 1`).
 
