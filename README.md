@@ -6,7 +6,7 @@
 
 Firmware for a bloom of audio-reactive, WLAN-synchronised LED jellyfish on the Raspberry Pi Pico 2 W.
 
-![Completed Jellies](images/JellyBloomTest.jpeg)
+![JellyFloat jellies](images/jellyfloat.png)
 
 > **Origin and credit.** JellyFloatOS started as a fork of the Sheffield-by-the-Sea EMF2026 Jellyfish,
 > **https://github.com/Sheffield-by-the-sea/Jellyfish**, and is continued here as its own project. The idea,
