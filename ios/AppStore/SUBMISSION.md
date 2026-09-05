@@ -141,6 +141,13 @@ erscheint beim ersten UDP-Senden. Beides ist so gewollt.
 Die App geht nie ins Internet. Alles ist quelloffen unter github.com/MacBachi/Jellyfish.
 ```
 
+## Wenn Apple nach Guideline 2.1 Informationen nachfordert
+
+Bei der ersten Einreichung eines neuen Entwicklerkontos ist das die Regel und kein Mangel an der
+App. Die vollständige Antwort samt Drehbuch für die verlangte Bildschirmaufnahme steht in
+`REVIEW-NOTES.md`; derselbe Text gehört anschließend ins Feld "Notizen" der
+App-Überprüfungsinformationen, damit er bei späteren Einreichungen schon dort steht.
+
 ## Build hochladen
 
 ```bash
