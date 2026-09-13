@@ -54,6 +54,7 @@ public:
             snap_h[i] = snap_s[i] = snap_v[i] = 0.0f;
 
         rgb_out = new uint8_t[(size_t)numLEDs * 3]();
+        words = new uint32_t[numLEDs]();
 
         posX = new float[numLEDs];
         posY = new float[numLEDs];
@@ -84,6 +85,7 @@ public:
         delete[] snap_s;
         delete[] snap_v;
         delete[] rgb_out;
+        delete[] words;
         delete[] posX;
         delete[] posY;
         delete[] posZ;
@@ -208,8 +210,15 @@ public:
                 break;
             }
 
-            pio_sm_put_blocking(pio, sm, pixel << 8u);
+            words[i] = pixel << 8u;
         }
+
+        // Push the finished frame back to back. Computing a pixel between pushes left gaps
+        // on the data line, and a strip with a short reset threshold latches in such a gap:
+        // the LEDs before it show the new picture, the rest keep the old one. Long rings
+        // during a crossfade were the worst case.
+        for (int i = 0; i < numLEDs; i++)
+            pio_sm_put_blocking(pio, sm, words[i]);
         sleep_us(100);
     }
 
@@ -317,6 +326,7 @@ private:
     float *h_buf, *s_buf, *v_buf;
     float *snap_h, *snap_s, *snap_v; // frozen picture for crossfades
     uint8_t* rgb_out;                // what the last paint_string() sent, as RGB
+    uint32_t* words;                 // the frame as PIO words, pushed in one go
 
     // Coordinate buffers
     float* posX;

@@ -6,6 +6,10 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Fixed
+- A ring sometimes showed the new picture only up to some LED and the old one beyond it,
+  mostly on a mode change. Each pixel was computed between two pushes to the PIO, which left
+  gaps on the data line; a strip whose reset threshold is short latched in such a gap. The
+  frame is now computed first and pushed back to back.
 - A station dropped off the network one second after joining. The AP-silence watchdog compared
   a timestamp taken at the top of the poll with one stamped while handling the STATE line in
   the same poll; the difference wrapped and looked like two weeks of silence. Only a stamp that
