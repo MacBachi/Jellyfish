@@ -6,6 +6,16 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- Six sound-reactive modes built on a proper analysis of the microphone. The signal is split
+  into bass, mid, melody and treble by a filter bank whose state carries across the 7 ms
+  buffers, and from those come a build-up measure, a silence measure and a tempo tracker that
+  locks a phase onto the bass onsets. Sundown and Tide follow the bands; Pulse breathes on the
+  tracked beat; Rise follows the arc of a track and blooms on the drop; Voice puts the lead
+  line on the ring; Relay hands the pulse from jelly to jelly on the bloom's shared beat.
+  All of them ease into a resting picture when the room falls silent.
+- The apps get the whole analysis in the `LEVEL` stream and render the same six modes.
+
+### Added
 - The brightness setting no longer dims the four filament LEDs: they stay at full output while the
   strips are turned down, which is what the jelly's glow wants. A switch on the web page ("Brightness
   dims the filaments too") puts them back under the slider, and the new `NOODLE 0|1` command carries

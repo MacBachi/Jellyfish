@@ -2,6 +2,7 @@
 #include "i2s_microphone.pio.h"
 #include "pico/time.h"
 #include "math.h"
+#include <algorithm>
 
 // How loud is this band right now, against what it has been doing? hi and lo follow the
 // band's loud and quiet ends; the current value is stretched between them. A band that
@@ -28,6 +29,8 @@ Microphone::Microphone(int32_t samp_size)
     // One-pole coefficients for the two corners of the filter bank.
     k_bass = 1.0f - expf(-2.0f * (float)M_PI * BASS_CORNER_HZ / SAMPLE_RATE_HZ);
     k_treble = 1.0f - expf(-2.0f * (float)M_PI * TREBLE_CORNER_HZ / SAMPLE_RATE_HZ);
+    k_mel_lo = 1.0f - expf(-2.0f * (float)M_PI * MELODY_LOW_HZ / SAMPLE_RATE_HZ);
+    k_mel_hi = 1.0f - expf(-2.0f * (float)M_PI * MELODY_HIGH_HZ / SAMPLE_RATE_HZ);
 
     // Set up two buffers for ping-ponging with DMA
     buffer_0 = new int32_t[sample_size];
@@ -152,7 +155,7 @@ AudioFrame Microphone::capture()
     // samples are scaled down first: squaring 24-bit values overflows a float's precision.
     int32_t peak = 0;
     int64_t sum_of_squares = 0;
-    float bass_sq = 0.0f, mid_sq = 0.0f, treble_sq = 0.0f;
+    float bass_sq = 0.0f, mid_sq = 0.0f, melody_sq = 0.0f, treble_sq = 0.0f;
     for (int i = 0; i < frame.sample_count; i++)
     {
         samples[i] -= frame.mean;
@@ -166,11 +169,18 @@ AudioFrame Microphone::capture()
         lp_split_1 += (x - lp_split_1) * k_treble;
         lp_split_2 += (lp_split_1 - lp_split_2) * k_treble;
 
-        const float b = lp_bass_2;            // below the bass corner
+        lp_mel_lo_1 += (x - lp_mel_lo_1) * k_mel_lo;
+        lp_mel_lo_2 += (lp_mel_lo_1 - lp_mel_lo_2) * k_mel_lo;
+        lp_mel_hi_1 += (x - lp_mel_hi_1) * k_mel_hi;
+        lp_mel_hi_2 += (lp_mel_hi_1 - lp_mel_hi_2) * k_mel_hi;
+
+        const float b = lp_bass_2;              // below the bass corner
         const float m = lp_split_2 - lp_bass_2; // between the two corners
+        const float e = lp_mel_hi_2 - lp_mel_lo_2; // the melody window inside the mids
         const float t = x - lp_split_2;         // above the treble corner
         bass_sq += b * b;
         mid_sq += m * m;
+        melody_sq += e * e;
         treble_sq += t * t;
     }
 
@@ -226,7 +236,25 @@ AudioFrame Microphone::capture()
     const float inv_n = 1.0f / (float)frame.sample_count;
     frame.bass = band_bass.update(sqrtf(bass_sq * inv_n), dt, RANGE_TRACK_TAU_S, BASS_ATTACK_S, BASS_RELEASE_S);
     frame.mid = band_mid.update(sqrtf(mid_sq * inv_n), dt, RANGE_TRACK_TAU_S, MID_ATTACK_S, MID_RELEASE_S);
+    frame.melody = band_melody.update(sqrtf(melody_sq * inv_n), dt, RANGE_TRACK_TAU_S, MELODY_ATTACK_S, MELODY_RELEASE_S);
     frame.treble = band_treble.update(sqrtf(treble_sq * inv_n), dt, RANGE_TRACK_TAU_S, TREBLE_ATTACK_S, TREBLE_RELEASE_S);
+
+    // A build-up: the last few seconds standing above the last half minute.
+    rise_fast_ += (frame.level - rise_fast_) * (1.0f - expf(-dt / RISE_FAST_TAU_S));
+    rise_slow_ += (frame.level - rise_slow_) * (1.0f - expf(-dt / RISE_SLOW_TAU_S));
+    frame.rise = std::clamp((rise_fast_ - rise_slow_) * 3.0f, 0.0f, 1.0f);
+
+    // Silence: slow to believe, quick to leave, so one quiet bar does not darken the jelly.
+    const float q = frame.level < QUIET_LEVEL ? 1.0f : 0.0f;
+    const float q_tau = q > quiet_ ? QUIET_ENTER_TAU_S : QUIET_LEAVE_TAU_S;
+    quiet_ += (q - quiet_) * (1.0f - expf(-dt / q_tau));
+    frame.quiet = quiet_;
+
+    // The pulse of the track.
+    tempo_.update(frame.bass, dt);
+    frame.tempo_phase = tempo_.phase();
+    frame.tempo_bpm = tempo_.bpm();
+    frame.tempo_conf = tempo_.confidence();
 
     //copy persistant mic data for returrn in frame
     frame.rms_min = rms_min;

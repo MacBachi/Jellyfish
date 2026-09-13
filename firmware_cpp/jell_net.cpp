@@ -1081,8 +1081,9 @@ void Net::poll()
             {
                 last_level_sent = level;
                 char line[NET_LINE_MAX];
-                snprintf(line, sizeof line, "LEVEL %.2f %.2f %.2f %.2f", level,
-                         g_local_bass, g_local_mid, g_local_treble);
+                snprintf(line, sizeof line, "LEVEL %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
+                         level, g_local_bass, g_local_mid, g_local_melody, g_local_treble,
+                         g_local_rise, g_local_quiet, g_local_phase, g_local_conf);
                 send_subscribers_only(line);
             }
         }

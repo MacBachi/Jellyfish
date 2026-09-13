@@ -101,6 +101,16 @@
         }
       }
     },
+    "A bright spot that follows the lead line around the ring": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein heller Punkt, der der Melodie um den Ring folgt"
+          }
+        }
+      }
+    },
     "A gentle wave travelling up the tentacles": {
       "localizations": {
         "de": {
@@ -257,6 +267,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Atmen"
+          }
+        }
+      }
+    },
+    "Breathes on the beat, not on every kick": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atmet im Takt, nicht bei jedem Schlag"
           }
         }
       }
@@ -487,6 +507,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tropfen bei jedem Beat"
+          }
+        }
+      }
+    },
+    "Every beat hands the pulse to the next jelly": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jeder Schlag reicht den Puls an die nächste Qualle weiter"
           }
         }
       }
@@ -961,6 +991,16 @@
         }
       }
     },
+    "Pulse": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puls"
+          }
+        }
+      }
+    },
     "Rainbow": {
       "localizations": {
         "de": {
@@ -987,6 +1027,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rot, Grün, Blau, eine Noodle nach der anderen"
+          }
+        }
+      }
+    },
+    "Relay": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Staffel"
           }
         }
       }
@@ -1027,6 +1077,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ring-LEDs: %lld"
+          }
+        }
+      }
+    },
+    "Rise": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steigerung"
           }
         }
       }
@@ -1297,6 +1357,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Virtuelle Qualle"
+          }
+        }
+      }
+    },
+    "Voice": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stimme"
+          }
+        }
+      }
+    },
+    "Walks from cool to gold as the music builds, and blooms on the drop": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wandert von Kühl nach Gold, während die Musik steigt, und blüht beim Einsatz auf"
           }
         }
       }

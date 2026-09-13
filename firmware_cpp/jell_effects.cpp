@@ -789,6 +789,202 @@ void effect_tide(Canvas& canvas, const AudioFrame& audio, float time)
     canvas.all_noodles_level(0.12f + 0.6f * audio.mid);
 }
 
+// How far this effect should fall back to a resting picture because the room has gone
+// quiet. 0 = music, 1 = silence.
+static float rest_mix(const AudioFrame& audio) { return audio.quiet; }
+
+void effect_pulse(Canvas& canvas, const AudioFrame& audio, float time)
+{
+    // One breath per beat. The phase comes from the tempo tracker, so the jelly keeps the
+    // pulse through a bar without a kick; where there is no pulse to find it breathes free.
+    constexpr float FREE_PERIOD_S = 6.0f;
+    constexpr float HUE_COOL = 195.0f;
+    constexpr float HUE_WARM = 330.0f;
+
+    const float rest = rest_mix(audio);
+    const float locked = audio.tempo_conf;
+    const float free_phase = frac(time / FREE_PERIOD_S);
+    const float phase = locked > 0.25f ? audio.tempo_phase : free_phase;
+
+    // Sharpen the raised cosine into something with a swing to it.
+    const float raw = bump(phase);
+    const float breath = raw * raw * (0.35f + 0.65f * locked) + (1.0f - locked) * 0.25f * raw;
+    const float hue = hue_lerp_shortest(HUE_COOL, HUE_WARM, audio.melody);
+    const float depth = (1.0f - 0.75f * rest);
+
+    for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_RING; i++)
+    {
+        const Point3 p = canvas.ring_position(i);
+        const float around = 0.5f + 0.5f * sinf(TWO_PI * (0.07f * time + 0.5f * p.x));
+        const float v = (0.04f + 0.55f * breath * (0.6f + 0.4f * around)) * depth;
+        canvas.ring_pixel_hsv(i, hue + 12.0f * around, 0.9f, v);
+    }
+
+    // The breath needs a moment to reach the tips.
+    for (int t = 0; t < JellConfig::NUMBER_OF_TENTACLES; t++)
+    {
+        for (int j = 0; j < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; j++)
+        {
+            const float dep = (float)j / (float)(JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE - 1);
+            const float lagged = bump(frac(phase - 0.18f * dep));
+            const float v = (0.02f + 0.40f * lagged * lagged * (1.0f - 0.4f * dep)) * depth;
+            canvas.spoke_pixel_hsv(t, j, hue + 20.0f * dep, 0.9f, v);
+        }
+    }
+
+    canvas.all_noodles_level((0.10f + 0.80f * breath) * depth);
+}
+
+void effect_rise(Canvas& canvas, const AudioFrame& audio, float time)
+{
+    // The shape of a track rather than a single beat: while the music builds, the colour
+    // walks from cool blue to gold and the picture tightens. When the bass returns after a
+    // build, the whole jelly blooms and then settles again.
+    constexpr float HUE_COOL = 215.0f;
+    constexpr float HUE_GOLD = 42.0f;
+    constexpr float BLOOM_TAU_S = 1.6f;
+
+    static uint64_t last_us = 0;
+    static float bloom = 0.0f;
+    static float was_rising = 0.0f;
+    const float dt = seconds_since_last_call(last_us);
+
+    // A drop: the music had been building and the bass has just come back hard.
+    if (was_rising > 0.35f && audio.bass > 0.7f)
+        bloom = 1.0f;
+    was_rising += (audio.rise - was_rising) * (1.0f - expf(-dt / 2.0f));
+    bloom *= expf(-dt / BLOOM_TAU_S);
+
+    const float rest = rest_mix(audio);
+    const float warmth = std::clamp(audio.rise + 0.6f * bloom, 0.0f, 1.0f);
+    const float hue = hue_lerp_shortest(HUE_COOL, HUE_GOLD, warmth);
+    const float depth = 1.0f - 0.8f * rest;
+
+    for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_RING; i++)
+    {
+        const Point3 p = canvas.ring_position(i);
+        // The band tightens around the ring as the music builds: a wide glow becomes a line.
+        const float width = 0.9f - 0.55f * warmth;
+        const float band = expf(-(p.y * p.y) / (width * width));
+        const float shimmer = 0.15f * audio.treble * (0.5f + 0.5f * sinf(TWO_PI * (2.7f * time + 5.0f * p.x)));
+        const float v = (0.03f + 0.30f * audio.mid + 0.45f * warmth * band + 0.55f * bloom + shimmer) * depth;
+        canvas.ring_pixel_hsv(i, hue + 18.0f * band, 0.95f - 0.35f * warmth, std::min(v, 1.0f));
+    }
+
+    for (int t = 0; t < JellConfig::NUMBER_OF_TENTACLES; t++)
+    {
+        for (int j = 0; j < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; j++)
+        {
+            const float dep = (float)j / (float)(JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE - 1);
+            const float run = 0.5f + 0.5f * sinf(TWO_PI * (0.25f * time - 1.2f * dep));
+            const float v = (0.02f + (0.25f * audio.bass + 0.35f * bloom) * run * (1.0f - 0.5f * dep)) * depth;
+            canvas.spoke_pixel_hsv(t, j, hue_lerp_shortest(hue, HUE_COOL, dep), 0.9f, std::min(v, 1.0f));
+        }
+    }
+
+    canvas.all_noodles_level((0.10f + 0.5f * warmth + 0.4f * bloom) * depth);
+}
+
+void effect_voice(Canvas& canvas, const AudioFrame& audio, float time)
+{
+    // The lead line gets a body: a bright spot travels around the ring, its colour and its
+    // height follow the melody band, the bass holds the floor underneath.
+    constexpr float HUE_LOW = 275.0f;  // violet when the lead sits low
+    constexpr float HUE_HIGH = 55.0f;  // gold when it climbs
+
+    static uint64_t last_us = 0;
+    static float spot = 0.0f;   // where the voice stands on the ring, 0..1
+    static float held = 0.0f;   // a slow follower, so the spot glides
+    const float dt = seconds_since_last_call(last_us);
+
+    held += (audio.melody - held) * (1.0f - expf(-dt / 0.35f));
+    spot = frac(spot + dt * (0.05f + 0.25f * held));
+
+    const float rest = rest_mix(audio);
+    const float depth = 1.0f - 0.8f * rest;
+    const float hue = hue_lerp_shortest(HUE_LOW, HUE_HIGH, held);
+    const float width = 0.06f + 0.10f * (1.0f - held);
+
+    for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_RING; i++)
+    {
+        const float u = (float)i / (float)JellConfig::NUMBER_LEDS_IN_RING;
+        float d = fabsf(u - spot);
+        if (d > 0.5f) d = 1.0f - d;                   // the ring closes on itself
+        const float peak = expf(-(d * d) / (width * width));
+        const float floor_v = 0.03f + 0.22f * audio.bass;
+        const float v = (floor_v + 0.75f * held * peak) * depth;
+        canvas.ring_pixel_hsv(i, hue - 25.0f * peak, 0.9f, std::min(v, 1.0f));
+    }
+
+    for (int t = 0; t < JellConfig::NUMBER_OF_TENTACLES; t++)
+    {
+        for (int j = 0; j < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; j++)
+        {
+            const float dep = (float)j / (float)(JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE - 1);
+            const float v = (0.02f + 0.35f * audio.bass * (1.0f - dep) + 0.12f * audio.treble) * depth;
+            canvas.spoke_pixel_hsv(t, j, hue_lerp_shortest(hue, HUE_LOW, dep), 0.85f, std::min(v, 1.0f));
+        }
+    }
+
+    canvas.all_noodles_level((0.10f + 0.7f * held) * depth);
+}
+
+void effect_relay(Canvas& canvas, const AudioFrame& audio, float time, int slot, uint32_t beat_count)
+{
+    // The bloom as one instrument. Every beat the AP announces hands the pulse to the next
+    // colour slot, so the light walks from jelly to jelly around the room. A jelly on its
+    // own still shows every fourth beat, which reads as a slow pulse.
+    constexpr int STATIONS = 4;      // how many jellies the pulse walks over before it wraps
+    constexpr float DECAY_TAU_S = 0.55f;
+
+    static uint64_t last_us = 0;
+    static uint32_t seen_beats = 0;
+    static float here = 0.0f;        // how brightly the pulse stands on this jelly
+    static float neighbour = 0.0f;   // the tail of the jelly before us
+    const float dt = seconds_since_last_call(last_us);
+
+    if (beat_count != seen_beats)
+    {
+        const int active = (int)(beat_count % (uint32_t)STATIONS);
+        const int mine = slot < 0 ? 0 : slot % STATIONS;
+        if (active == mine)
+            here = 1.0f;
+        else if (((active + 1) % STATIONS) == mine)
+            neighbour = 0.6f;        // the pulse is next door: glow a little in anticipation
+        seen_beats = beat_count;
+    }
+
+    const float keep = expf(-dt / DECAY_TAU_S);
+    here *= keep;
+    neighbour *= keep;
+
+    const float rest = rest_mix(audio);
+    const float depth = 1.0f - 0.85f * rest;
+    const float hue = JellConfig::PALETTE[(slot < 0 ? 0 : slot) % JellConfig::PALETTE_SIZE];
+
+    for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_RING; i++)
+    {
+        const Point3 p = canvas.ring_position(i);
+        const float sweep = 0.5f + 0.5f * sinf(TWO_PI * (0.1f * time + 0.5f * p.x));
+        const float v = (0.03f + 0.75f * here * (0.6f + 0.4f * sweep) + 0.12f * neighbour) * depth;
+        canvas.ring_pixel_hsv(i, hue + 20.0f * sweep, 0.9f, std::min(v, 1.0f));
+    }
+
+    for (int t = 0; t < JellConfig::NUMBER_OF_TENTACLES; t++)
+    {
+        for (int j = 0; j < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; j++)
+        {
+            const float dep = (float)j / (float)(JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE - 1);
+            // The pulse runs down the tentacles as it fades.
+            const float front = std::max(0.0f, 1.0f - fabsf(dep - (1.0f - here)) * 4.0f);
+            const float v = (0.02f + 0.7f * here * front + 0.15f * audio.bass * (1.0f - dep)) * depth;
+            canvas.spoke_pixel_hsv(t, j, hue, 0.9f, std::min(v, 1.0f));
+        }
+    }
+
+    canvas.all_noodles_level((0.08f + 0.8f * here) * depth);
+}
+
 void effect_sos(Canvas& canvas, float time)
 {
     constexpr float UNIT_S = 0.25f; // one Morse unit; a dit is 1, a dah 3

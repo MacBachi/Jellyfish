@@ -70,6 +70,21 @@ void effect_sundown(Canvas& canvas, const AudioFrame& audio, float time);
 // the ring and washes down. The ring itself breathes with the pads, the hats shimmer.
 void effect_tide(Canvas& canvas, const AudioFrame& audio, float time);
 
+// Breathes on the beat the tempo tracker found, not on every kick. The colour walks with
+// the melody band. Without a pulse to lock onto it falls back to a slow free breath.
+void effect_pulse(Canvas& canvas, const AudioFrame& audio, float time);
+
+// The long arc of a track: the colour walks from cool to gold while the music builds, and
+// blooms when the bass comes back.
+void effect_rise(Canvas& canvas, const AudioFrame& audio, float time);
+
+// The lead line: the melody band moves a bright spot around the ring and sets its colour.
+void effect_voice(Canvas& canvas, const AudioFrame& audio, float time);
+
+// The bloom as one instrument: each beat hands the pulse to the next jelly, in colour-slot
+// order, on the shared beat count. Needs more than one jelly to make sense.
+void effect_relay(Canvas& canvas, const AudioFrame& audio, float time, int slot, uint32_t beat_count);
+
 // The whole jelly flashes "SOS" in red Morse code, over and over, on the shared clock.
 void effect_sos(Canvas& canvas, float time);
     

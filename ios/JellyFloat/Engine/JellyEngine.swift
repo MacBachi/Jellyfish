@@ -107,6 +107,7 @@ final class JellyEngine {
         var noodleFollow: Bool     // false: the filament LEDs ignore brightness
         var audio: AudioLevels     // the AP's microphone: level and the three bands
         var beat: Bool
+        var beatCount: Int
         var identStartUs: Int64    // 0 = none
         var isAP: Bool
     }
@@ -132,6 +133,13 @@ final class JellyEngine {
     private var glimmerPool = [Spark](repeating: Spark(), count: 12)
     private var tideHistory: [Double] = []
     private var tideSinceStep = 0.0
+    private var bloom = 0.0
+    private var wasRising = 0.0
+    private var voiceSpot = 0.0
+    private var voiceHeld = 0.0
+    private var relayHere = 0.0
+    private var relayNeighbour = 0.0
+    private var relaySeenBeats = 0
     private var fireflyPool = [Spark](repeating: Spark(), count: 6)
     private var whisperEMA = 0.0
     private var testState = 0
@@ -199,6 +207,10 @@ final class JellyEngine {
         case .drops: drops(time, level: input.audio.level, beat: input.beat, dt: dt)
         case .sundown: sundown(time, audio: input.audio, dt: dt)
         case .tide: tide(time, audio: input.audio, dt: dt)
+        case .pulse: pulse(time, audio: input.audio)
+        case .rise: riseMode(time, audio: input.audio, dt: dt)
+        case .voice: voice(audio: input.audio, dt: dt)
+        case .relay: relay(time, audio: input.audio, dt: dt, slot: input.slot, beatCount: input.beatCount)
         case .palette: ambient(time, noiseScale: 1, hueBase: paletteHue(slot: input.slot, time: time, cyclePeriod: input.cyclePeriod, cycle: false), hueRange: 20, timeScale: 0.15)
         case .paletteCycle: ambient(time, noiseScale: 1, hueBase: paletteHue(slot: input.slot, time: time, cyclePeriod: input.cyclePeriod, cycle: true), hueRange: 20, timeScale: 0.15)
         case .ambientRainbow: ambient(time, noiseScale: 1, hueBase: 220, hueRange: 360, timeScale: 0.15)
@@ -404,6 +416,125 @@ final class JellyEngine {
             }
         }
         allNoodles(0.12 + 0.6 * audio.mid)
+    }
+
+    // One breath per beat, on the phase the tempo tracker locked onto. The mirror of
+    // effect_pulse in the firmware.
+    private func pulse(_ time: Double, audio: AudioLevels) {
+        let freePeriod = 6.0, hueCool = 195.0, hueWarm = 330.0
+        let locked = audio.tempoConfidence
+        let phase = locked > 0.25 ? audio.tempoPhase : (time / freePeriod).truncatingRemainder(dividingBy: 1)
+        let raw = 0.5 - 0.5 * cos(2 * .pi * phase)
+        let breath = raw * raw * (0.35 + 0.65 * locked) + (1 - locked) * 0.25 * raw
+        let hue = hueLerpShortest(hueCool, hueWarm, audio.melody)
+        let depth = 1 - 0.75 * audio.quiet
+
+        for (i, p) in layout.ring.enumerated() {
+            let around = 0.5 + 0.5 * sin(2 * .pi * (0.07 * time + 0.5 * p.x))
+            setRing(i, hue + 12 * around, 0.9, (0.04 + 0.55 * breath * (0.6 + 0.4 * around)) * depth)
+        }
+        for (t, tent) in layout.tentacles.enumerated() {
+            let n = Double(tent.count - 1)
+            for j in tent.indices {
+                let dep = n > 0 ? Double(j) / n : 0
+                let lag = (phase - 0.18 * dep).truncatingRemainder(dividingBy: 1)
+                let lagged = 0.5 - 0.5 * cos(2 * .pi * (lag < 0 ? lag + 1 : lag))
+                setSpoke(t, j, hue + 20 * dep, 0.9, (0.02 + 0.40 * lagged * lagged * (1 - 0.4 * dep)) * depth)
+            }
+        }
+        allNoodles((0.10 + 0.80 * breath) * depth)
+    }
+
+    // The arc of a track: cool to gold while it builds, a bloom when the bass returns.
+    private func riseMode(_ time: Double, audio: AudioLevels, dt: Double) {
+        let hueCool = 215.0, hueGold = 42.0
+        if wasRising > 0.35 && audio.bass > 0.7 { bloom = 1 }
+        wasRising += (audio.rise - wasRising) * (1 - exp(-dt / 2))
+        bloom *= exp(-dt / 1.6)
+
+        let warmth = min(max(audio.rise + 0.6 * bloom, 0), 1)
+        let hue = hueLerpShortest(hueCool, hueGold, warmth)
+        let depth = 1 - 0.8 * audio.quiet
+
+        for (i, p) in layout.ring.enumerated() {
+            let width = 0.9 - 0.55 * warmth
+            let band = exp(-(p.y * p.y) / (width * width))
+            let shimmer = 0.15 * audio.treble * (0.5 + 0.5 * sin(2 * .pi * (2.7 * time + 5 * p.x)))
+            let v = (0.03 + 0.30 * audio.mid + 0.45 * warmth * band + 0.55 * bloom + shimmer) * depth
+            setRing(i, hue + 18 * band, 0.95 - 0.35 * warmth, min(v, 1))
+        }
+        for (t, tent) in layout.tentacles.enumerated() {
+            let n = Double(tent.count - 1)
+            for j in tent.indices {
+                let dep = n > 0 ? Double(j) / n : 0
+                let run = 0.5 + 0.5 * sin(2 * .pi * (0.25 * time - 1.2 * dep))
+                let v = (0.02 + (0.25 * audio.bass + 0.35 * bloom) * run * (1 - 0.5 * dep)) * depth
+                setSpoke(t, j, hueLerpShortest(hue, hueCool, dep), 0.9, min(v, 1))
+            }
+        }
+        allNoodles((0.10 + 0.5 * warmth + 0.4 * bloom) * depth)
+    }
+
+    // The lead line as a bright spot travelling the ring.
+    private func voice(audio: AudioLevels, dt: Double) {
+        let hueLow = 275.0, hueHigh = 55.0
+        voiceHeld += (audio.melody - voiceHeld) * (1 - exp(-dt / 0.35))
+        voiceSpot = (voiceSpot + dt * (0.05 + 0.25 * voiceHeld)).truncatingRemainder(dividingBy: 1)
+
+        let depth = 1 - 0.8 * audio.quiet
+        let hue = hueLerpShortest(hueLow, hueHigh, voiceHeld)
+        let width = 0.06 + 0.10 * (1 - voiceHeld)
+
+        for i in layout.ring.indices {
+            let u = Double(i) / Double(layout.ring.count)
+            var d = abs(u - voiceSpot)
+            if d > 0.5 { d = 1 - d }
+            let peak = exp(-(d * d) / (width * width))
+            let v = (0.03 + 0.22 * audio.bass + 0.75 * voiceHeld * peak) * depth
+            setRing(i, hue - 25 * peak, 0.9, min(v, 1))
+        }
+        for (t, tent) in layout.tentacles.enumerated() {
+            let n = Double(tent.count - 1)
+            for j in tent.indices {
+                let dep = n > 0 ? Double(j) / n : 0
+                let v = (0.02 + 0.35 * audio.bass * (1 - dep) + 0.12 * audio.treble) * depth
+                setSpoke(t, j, hueLerpShortest(hue, hueLow, dep), 0.85, min(v, 1))
+            }
+        }
+        allNoodles((0.10 + 0.7 * voiceHeld) * depth)
+    }
+
+    // Every beat hands the pulse to the next colour slot, so it walks around the room.
+    private func relay(_ time: Double, audio: AudioLevels, dt: Double, slot: Int, beatCount: Int) {
+        let stations = 4
+        if beatCount != relaySeenBeats {
+            let active = ((beatCount % stations) + stations) % stations
+            let mine = ((max(slot, 0) % stations) + stations) % stations
+            if active == mine { relayHere = 1 } else if (active + 1) % stations == mine { relayNeighbour = 0.6 }
+            relaySeenBeats = beatCount
+        }
+        let keep = exp(-dt / 0.55)
+        relayHere *= keep
+        relayNeighbour *= keep
+
+        let depth = 1 - 0.85 * audio.quiet
+        let hue = JellyPalette.hue(forSlot: max(slot, 0))
+
+        for (i, p) in layout.ring.enumerated() {
+            let sweep = 0.5 + 0.5 * sin(2 * .pi * (0.1 * time + 0.5 * p.x))
+            let v = (0.03 + 0.75 * relayHere * (0.6 + 0.4 * sweep) + 0.12 * relayNeighbour) * depth
+            setRing(i, hue + 20 * sweep, 0.9, min(v, 1))
+        }
+        for (t, tent) in layout.tentacles.enumerated() {
+            let n = Double(tent.count - 1)
+            for j in tent.indices {
+                let dep = n > 0 ? Double(j) / n : 0
+                let front = max(0, 1 - abs(dep - (1 - relayHere)) * 4)
+                let v = (0.02 + 0.7 * relayHere * front + 0.15 * audio.bass * (1 - dep)) * depth
+                setSpoke(t, j, hue, 0.9, min(v, 1))
+            }
+        }
+        allNoodles((0.08 + 0.8 * relayHere) * depth)
     }
 
     private func micField(_ time: Double, level: Double) {

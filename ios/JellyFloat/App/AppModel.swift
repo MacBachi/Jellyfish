@@ -251,7 +251,7 @@ final class AppModel: ObservableObject {
         let input = JellyEngine.Input(
             mode: state.mode, masterUs: masterNowUs, slot: slot, cyclePeriod: state.cyclePeriod,
             brightness: state.brightness, hueOffset: state.hueOffset, noodleFollow: state.noodleFollow,
-            audio: audio, beat: beat, identStartUs: identStartUs, isAP: false)
+            audio: audio, beat: beat, beatCount: beatCount, identStartUs: identStartUs, isAP: false)
         return engine.render(input)
     }
 

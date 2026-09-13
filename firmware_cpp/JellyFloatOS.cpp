@@ -28,6 +28,11 @@ volatile float g_local_level = 0.0f;
 volatile float g_local_bass = 0.0f;
 volatile float g_local_mid = 0.0f;
 volatile float g_local_treble = 0.0f;
+volatile float g_local_melody = 0.0f;
+volatile float g_local_rise = 0.0f;
+volatile float g_local_quiet = 0.0f;
+volatile float g_local_phase = 0.0f;
+volatile float g_local_conf = 0.0f;
 
 // --- Global State ---
 // Initialize LEDs     
@@ -108,6 +113,22 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
     case JellConfig::DisplayMode::Tide:
         effect_tide(canvas, audio, time);
+        break;
+
+    case JellConfig::DisplayMode::Pulse:
+        effect_pulse(canvas, audio, time);
+        break;
+
+    case JellConfig::DisplayMode::Rise:
+        effect_rise(canvas, audio, time);
+        break;
+
+    case JellConfig::DisplayMode::Voice:
+        effect_voice(canvas, audio, time);
+        break;
+
+    case JellConfig::DisplayMode::Relay:
+        effect_relay(canvas, audio, time, s.slot, s.beat_count);
         break;
 
     case JellConfig::DisplayMode::Palette:
@@ -206,6 +227,11 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         g_local_bass = audio.bass;
         g_local_mid = audio.mid;
         g_local_treble = audio.treble;
+        g_local_melody = audio.melody;
+        g_local_rise = audio.rise;
+        g_local_quiet = audio.quiet;
+        g_local_phase = audio.tempo_phase;
+        g_local_conf = audio.tempo_conf;
 
         // Master time: the AP's clock, which every station follows via time_offset_us.
         const int64_t master_us = (int64_t)time_us_64() + s.time_offset_us;
@@ -252,8 +278,11 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
         canvas.set_global(s.brightness, s.hue_offset, s.noodle_follow);
 
+        // Drops and Relay both live off the bloom's shared beat; the AP is the ear.
+        const bool wants_beats = mode == JellConfig::DisplayMode::Mic_Drops
+                              || mode == JellConfig::DisplayMode::Relay;
         bool beat = false;
-        if (mode == JellConfig::DisplayMode::Mic_Drops)
+        if (wants_beats)
         {
             if (s.follow_network_beats)
             {

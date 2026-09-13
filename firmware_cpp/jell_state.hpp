@@ -80,3 +80,8 @@ extern volatile float g_local_level;
 extern volatile float g_local_bass;
 extern volatile float g_local_mid;
 extern volatile float g_local_treble;
+extern volatile float g_local_melody;
+extern volatile float g_local_rise;
+extern volatile float g_local_quiet;
+extern volatile float g_local_phase;
+extern volatile float g_local_conf;

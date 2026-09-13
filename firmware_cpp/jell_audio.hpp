@@ -2,6 +2,7 @@
 #include <cstdint>
 #include "hardware/pio.h"
 #include "hardware/dma.h"
+#include "jell_beat.hpp"
 
 struct AudioFrame
 {
@@ -25,7 +26,15 @@ struct AudioFrame
     // sound-reactive effects follow; `level` is the whole signal and says little about music.
     float bass;
     float mid;
+    float melody;   // 300 Hz to 800 Hz: the voice, the lead, the part you hum
     float treble;
+
+    // What the music is doing over longer stretches.
+    float rise;     // 0..1, how far the last few seconds sit above the last half minute
+    float quiet;    // 0..1, 1 once the room has been silent for a few seconds
+    float tempo_phase;      // 0..1, zero on the beat, keeps turning through a gap
+    float tempo_bpm;
+    float tempo_conf;       // 0 = no pulse found, 1 = steady
 };
 
 // One band of the filter bank: tracks how loud the band has been, stretches the current
@@ -83,9 +92,20 @@ public:
     // enough to tell a kick from a hi-hat, gentle enough that nothing rings.
     static constexpr float BASS_CORNER_HZ = 160.0f;
     static constexpr float TREBLE_CORNER_HZ = 1200.0f;
+    // The melody band sits inside the mids, where a lead or a voice lives.
+    static constexpr float MELODY_LOW_HZ = 300.0f;
+    static constexpr float MELODY_HIGH_HZ = 800.0f;
+    // A build-up is the last few seconds standing above the last half minute.
+    static constexpr float RISE_FAST_TAU_S = 3.0f;
+    static constexpr float RISE_SLOW_TAU_S = 25.0f;
+    // Silence has to hold for a while to count; music ends it at once.
+    static constexpr float QUIET_LEVEL = 0.12f;
+    static constexpr float QUIET_ENTER_TAU_S = 4.0f;
+    static constexpr float QUIET_LEAVE_TAU_S = 0.7f;
     // Rise fast enough to see the beat, fall slowly enough to stay calm.
     static constexpr float BASS_ATTACK_S = 0.02f, BASS_RELEASE_S = 0.40f;
     static constexpr float MID_ATTACK_S = 0.05f, MID_RELEASE_S = 0.55f;
+    static constexpr float MELODY_ATTACK_S = 0.04f, MELODY_RELEASE_S = 0.45f;
     static constexpr float TREBLE_ATTACK_S = 0.01f, TREBLE_RELEASE_S = 0.15f;
 
 
@@ -111,7 +131,14 @@ private:
     float k_bass = 0.0f, k_treble = 0.0f;
     float lp_bass_1 = 0.0f, lp_bass_2 = 0.0f;
     float lp_split_1 = 0.0f, lp_split_2 = 0.0f;
-    AudioBand band_bass, band_mid, band_treble;
+    float k_mel_lo = 0.0f, k_mel_hi = 0.0f;
+    float lp_mel_lo_1 = 0.0f, lp_mel_lo_2 = 0.0f;
+    float lp_mel_hi_1 = 0.0f, lp_mel_hi_2 = 0.0f;
+    AudioBand band_bass, band_mid, band_melody, band_treble;
+
+    // The longer view: the build-up, the silence and the pulse.
+    float rise_fast_ = 0.0f, rise_slow_ = 0.0f, quiet_ = 0.0f;
+    TempoTracker tempo_;
 
     uint audio_sm;
     PIO audio_pio;
