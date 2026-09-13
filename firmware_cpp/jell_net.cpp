@@ -348,6 +348,15 @@ namespace
         return (int)i;
     }
 
+    // Runs in the WLAN driver's background context, not the main loop. Nothing here may
+    // touch stdio: the USB stack is not re-entrant, and a printf from this context while
+    // the main loop is printing can leave USB dead with the jelly still enumerated. The
+    // sighting is recorded and logged from poll().
+    volatile int found_rssi = 0;
+    volatile bool found_unlogged = false;
+    volatile uint32_t dropped_web_commands = 0; // counted in lwIP context, reported from poll()
+    uint32_t reported_drops = 0;
+
     int on_scan_result(void*, const cyw43_ev_scan_result_t* result)
     {
         if (result == nullptr)
@@ -357,7 +366,10 @@ namespace
         if (result->ssid_len == want && memcmp(result->ssid, JellConfig::WIFI_SSID, want) == 0)
         {
             if (!ssid_seen)
-                log("found %s (rssi %d)", JellConfig::WIFI_SSID, (int)result->rssi);
+            {
+                found_rssi = (int)result->rssi;
+                found_unlogged = true;
+            }
             ssid_seen = true;
         }
         return 0;
@@ -901,10 +913,11 @@ void Net::init()
 void Net::submit_line(const char* line)
 {
     // Same queue as the datagrams: both producers run in the lwIP context, one at a time.
+    // That context must not print (see on_scan_result), so a drop is only counted here.
     const int next = (rx_head + 1) % RX_QUEUE_SIZE;
     if (next == rx_tail)
     {
-        log("queue full, dropping web command %s", line);
+        dropped_web_commands = dropped_web_commands + 1;
         return;
     }
     RxLine& slot = rx_queue[rx_head];
@@ -977,6 +990,12 @@ void Net::poll()
 
     const uint64_t now = time_us_64();
 
+    if (dropped_web_commands != reported_drops)
+    {
+        log("queue full, dropped %lu web command(s)", (unsigned long)(dropped_web_commands - reported_drops));
+        reported_drops = dropped_web_commands;
+    }
+
     // Received lines first, so a command never waits on the state machine below.
     while (rx_tail != rx_head)
     {
@@ -992,6 +1011,11 @@ void Net::poll()
     switch (::role) // the variable; unqualified `role` here is the accessor Net::role()
     {
     case Role::Scanning:
+        if (found_unlogged)
+        {
+            found_unlogged = false;
+            log("found %s (rssi %d)", JellConfig::WIFI_SSID, found_rssi);
+        }
         if (ssid_seen)
         {
             set_joining();

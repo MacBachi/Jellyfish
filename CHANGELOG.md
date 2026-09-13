@@ -6,6 +6,12 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Fixed
+- A station could lose its USB console and, with it, the ability to be reflashed or heard,
+  while its LEDs kept running: the WLAN scan callback printed from the driver's interrupt
+  context, and the USB stack it went through is not re-entrant. Nothing prints from driver,
+  lwIP or BTstack callbacks any more; sightings are recorded there and logged from the main loop.
+
+### Fixed
 - Identify no longer lights every LED at full brightness whatever the brightness was set to.
   A 94-LED ring on one full channel pulls around 2 A through the micro-USB socket and the
   board's single 0.4 mm trace, which can drop the rail far enough to reset the jelly. It now

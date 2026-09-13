@@ -101,6 +101,7 @@ namespace
     uint8_t g_adv[31];
     bd_addr_t g_addr;
     bool g_ble_started = false;
+    volatile bool g_advertising_unlogged = false;
 
     // The OpenHaystack layout: the address carries the key's first six bytes (top two bits
     // set: static random address), the payload bytes 6..27, and the key's top two bits.
@@ -131,8 +132,7 @@ namespace
         gap_advertisements_set_params(0x0640, 0x0C80, 0x03, 0, none, 0x07, 0x00);
         gap_advertisements_set_data(sizeof g_adv, g_adv);
         gap_advertisements_enable(1);
-        printf("FindMy: advertising as %02x:%02x:%02x:%02x:%02x:%02x\n",
-               g_addr[0], g_addr[1], g_addr[2], g_addr[3], g_addr[4], g_addr[5]);
+        g_advertising_unlogged = true; // this runs in BTstack's context: poll() prints it
     }
 
     void start_ble()
@@ -260,6 +260,12 @@ int FindMy::provision(const char* body)
 
 void FindMy::poll()
 {
+    if (g_advertising_unlogged)
+    {
+        g_advertising_unlogged = false;
+        printf("FindMy: advertising as %02x:%02x:%02x:%02x:%02x:%02x\n",
+               g_addr[0], g_addr[1], g_addr[2], g_addr[3], g_addr[4], g_addr[5]);
+    }
     if (g_window_open && time_us_64() >= g_window_until_us)
     {
         g_window_open = false;
