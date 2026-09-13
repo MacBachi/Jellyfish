@@ -98,6 +98,9 @@ public:
     // 20 %: bright enough for a room, and a jelly on USB power stays well inside what the
     // socket and the board carry (see README "Power"). BRIGHT raises it at runtime.
     static constexpr float DEFAULT_BRIGHTNESS = 0.2f;
+    // Whether the brightness setting also dims the PWM noodles. Off by default: the noodles
+    // are the jelly's bioluminescence and stay bright while the strips are turned down.
+    static constexpr bool DEFAULT_NOODLE_FOLLOW = false;
     static constexpr float DEFAULT_HUE_OFFSET = 0.0f;
 
     // Palette modes: every jelly gets one of these hues (degrees) by its colour slot.

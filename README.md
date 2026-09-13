@@ -89,7 +89,9 @@ tentacles, feed 5 V to the ring and the tentacles straight from the supply and l
 and ground only. A 1000 µF capacitor at the ring's 5 V input and short data leads (the Pico drives 3.3 V
 into 5 V LEDs, which usually works but dislikes long wires) save a lot of debugging. Every jelly starts at
 20 % brightness (`DEFAULT_BRIGHTNESS`); the `BRIGHT` command and the page's slider change it at runtime,
-`BRIGHTNESS_MODIFIER` in `jell_config.hpp` caps it at build time.
+`BRIGHTNESS_MODIFIER` in `jell_config.hpp` caps it at build time. The filament LEDs ignore that slider
+unless the page's switch says otherwise (`DEFAULT_NOODLE_FOLLOW`, `NOODLE 0|1`), so the glow stays put
+while the strips go down.
 
 ## Getting started
 
@@ -189,7 +191,8 @@ nc -lu 4210                     # in a second terminal: watch heartbeats, beats 
 | Command | Effect |
 |---|---|
 | `MODE n`, `NEXT`, `PREV` | switch the display mode on every jelly |
-| `BRIGHT 0..1` | overall brightness |
+| `BRIGHT 0..1` | overall brightness of the strips |
+| `NOODLE 0\|1` | whether that brightness also dims the four filament LEDs. Off by default: they stay at full output while the strips are turned down. |
 | `HUE deg` | shift every colour by this many degrees |
 | `CYCLE s` | period of the palette cycle mode |
 | `IDENT` | the AP jelly blinks red three times, all others blue |

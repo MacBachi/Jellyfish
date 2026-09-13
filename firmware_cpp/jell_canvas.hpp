@@ -43,7 +43,9 @@ public:
         // Global brightness (0..1) and hue offset (degrees), applied when pixels and noodle
         // levels go to the hardware. The stored HSV values are untouched, so fade() and
         // trails are unaffected. Set once per frame from the shared state.
-        void set_global(float brightness, float hue_offset);
+        // Global brightness (0..1) and hue offset (degrees) for the strips. noodles_follow
+        // decides whether the noodles are dimmed with them or stay at full output.
+        void set_global(float brightness, float hue_offset, bool noodles_follow = true);
 
         void ring_pixel_hsv(
             int pixel,
@@ -90,6 +92,7 @@ public:
 
         float brightness_ = JellConfig::BRIGHTNESS_MODIFIER;
         float hue_offset_ = 0.0f;
+        bool noodles_follow_ = true;
 
         float noodle_levels_[JellConfig::NUMBER_OF_NOODLES] = {};
         float noodle_snapshot_[JellConfig::NUMBER_OF_NOODLES] = {};

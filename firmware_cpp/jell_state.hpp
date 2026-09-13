@@ -9,9 +9,10 @@
 struct JellState
 {
     JellConfig::DisplayMode mode = JellConfig::DEFAULT_DISPLAY_MODE;
-    float brightness = JellConfig::DEFAULT_BRIGHTNESS;          // 0..1, scales every pixel and noodle
+    float brightness = JellConfig::DEFAULT_BRIGHTNESS;          // 0..1, scales every pixel
     float hue_offset = JellConfig::DEFAULT_HUE_OFFSET;          // degrees added to every hue
     float cycle_period_s = JellConfig::DEFAULT_CYCLE_PERIOD_S;  // Palette_Cycle period
+    bool noodle_follow = JellConfig::DEFAULT_NOODLE_FOLLOW;     // brightness dims the noodles too
     int slot = 0;                        // colour slot of this jelly; AP = 0, -1 = none assigned yet
     bool is_ap = true;                   // until the network says otherwise this jelly is on its own
     bool follow_network_beats = false;   // station: drops fire on beat_count, not on its own microphone

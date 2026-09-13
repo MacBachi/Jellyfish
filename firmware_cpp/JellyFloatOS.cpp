@@ -235,7 +235,7 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
             }
         }
 
-        canvas.set_global(s.brightness, s.hue_offset);
+        canvas.set_global(s.brightness, s.hue_offset, s.noodle_follow);
 
         bool beat = false;
         if (mode == JellConfig::DisplayMode::Mic_Drops)

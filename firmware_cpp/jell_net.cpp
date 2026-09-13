@@ -245,9 +245,9 @@ namespace
     void send_state()
     {
         char line[NET_LINE_MAX];
-        snprintf(line, sizeof line, "STATE %d %.2f %.0f %.1f %llu %s",
+        snprintf(line, sizeof line, "STATE %d %.2f %.0f %.1f %llu %s %d",
                  (int)state.mode, state.brightness, state.hue_offset, state.cycle_period_s,
-                 (unsigned long long)time_us_64(), my_id);
+                 (unsigned long long)time_us_64(), my_id, state.noodle_follow ? 1 : 0);
         send_line(line);
         last_state_sent_us = time_us_64();
         next_state_us = last_state_sent_us + (uint64_t)JellConfig::NET_STATE_PERIOD_MS * 1000;
@@ -595,6 +595,14 @@ namespace
         if (state.hue_offset != hue) { state.hue_offset = hue; changed = true; }
         if (state.cycle_period_s != cycle) { state.cycle_period_s = cycle; changed = true; }
 
+        // Trailing field, added after 1.1.0: an AP that does not send it leaves ours alone.
+        int noodle = state.noodle_follow ? 1 : 0;
+        if (next_int(p, noodle) && state.noodle_follow != (noodle != 0))
+        {
+            state.noodle_follow = noodle != 0;
+            changed = true;
+        }
+
         // Time sync: the AP's clock at send time versus our clock at arrival.
         if (current_rx_us != 0)
         {
@@ -734,6 +742,21 @@ void Net::handle_line(const char* line, bool local)
             if (local)
             {
                 snprintf(out, sizeof out, "CYCLE %.1f", state.cycle_period_s);
+                send_line(out);
+            }
+        }
+    }
+    else if (strcmp(verb, "NOODLE") == 0)
+    {
+        int v;
+        if (next_int(args, v))
+        {
+            state.noodle_follow = v != 0;
+            publish();
+            state_dirty = true;
+            if (local)
+            {
+                snprintf(out, sizeof out, "NOODLE %d", state.noodle_follow ? 1 : 0);
                 send_line(out);
             }
         }
@@ -918,6 +941,7 @@ size_t Net::write_status_json(char* buf, size_t n)
     put(",\"modes\":%d,\"mode\":%d,\"shown\":%d,\"bright\":%.2f,\"hue\":%.0f,\"cycle\":%.1f,\"slot\":%d",
         (int)JellConfig::DisplayMode::Count, (int)state.mode, (int)effective_mode(state, master_us),
         state.brightness, state.hue_offset, state.cycle_period_s, state.slot);
+    put(",\"noodleFollow\":%s", state.noodle_follow ? "true" : "false");
     put(",\"level\":%.2f,\"ident\":%s,\"uptime\":%lu", g_local_level,
         state.ident_start_master_us != 0 ? "true" : "false", (unsigned long)(now / 1000000));
     put(",\"ring\":%d,\"tentacles\":%d,\"tentacleLeds\":%d,\"noodles\":%d",

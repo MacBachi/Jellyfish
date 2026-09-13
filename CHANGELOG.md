@@ -5,6 +5,18 @@ entries start where the fork diverged.
 
 ## Unreleased
 
+### Added
+- The brightness setting no longer dims the four filament LEDs: they stay at full output while the
+  strips are turned down, which is what the jelly's glow wants. A switch on the web page ("Brightness
+  dims the filaments too") puts them back under the slider, and the new `NOODLE 0|1` command carries
+  the choice through the bloom.
+
+### Added
+- The brightness setting no longer dims the four filament LEDs: they stay at full output while the
+  strips are turned down, which is what the jelly's glow wants. A switch on the web page ("Brightness
+  dims the filaments too") puts them back under the slider, and the new `NOODLE 0|1` command carries
+  the choice through the bloom.
+
 ### Fixed
 - The app declares all four interface orientations. App Store Connect refuses a build that names
   only portrait (error 90474).

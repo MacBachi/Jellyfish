@@ -65,11 +65,15 @@ void Canvas::show(float mix)
     for (int i = 0; i < JellConfig::NUMBER_OF_TENTACLES; i++)
         spokes[i].paint_string(brightness_, hue_offset_, mix);
 
+    // The noodles follow the brightness only if asked to; otherwise they run at what the
+    // build allows, so turning the strips down leaves the jelly's glow alone.
+    const float noodle_scale = noodles_follow_ ? brightness_ : JellConfig::BRIGHTNESS_MODIFIER;
+
     for (int n = 0; n < JellConfig::NUMBER_OF_NOODLES; n++)
     {
         const float level = noodle_snapshot_[n] + (noodle_levels_[n] - noodle_snapshot_[n]) * mix;
-        noodles[n].set_level(level * brightness_);
-        noodle_out_[n] = (uint8_t)(std::clamp(level * brightness_, 0.0f, 1.0f) * 255.0f);
+        noodles[n].set_level(level * noodle_scale);
+        noodle_out_[n] = (uint8_t)(std::clamp(level * noodle_scale, 0.0f, 1.0f) * 255.0f);
     }
 
     publish_frame();
@@ -127,9 +131,10 @@ void Canvas::begin_crossfade(float current_mix)
     }
 }
 
-void Canvas::set_global(float brightness, float hue_offset)
+void Canvas::set_global(float brightness, float hue_offset, bool noodles_follow)
 {
     brightness_ = std::clamp(brightness, 0.0f, 1.0f) * JellConfig::BRIGHTNESS_MODIFIER;
+    noodles_follow_ = noodles_follow;
     hue_offset_ = fmodf(hue_offset, 360.0f);
     if (hue_offset_ < 0.0f)
         hue_offset_ += 360.0f;
