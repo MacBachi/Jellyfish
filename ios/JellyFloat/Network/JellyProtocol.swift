@@ -119,6 +119,8 @@ struct JellyState: Equatable {
     var brightness: Double = 0.2 // the firmware's DEFAULT_BRIGHTNESS
     var hueOffset: Double = 0
     var cyclePeriod: Double = 10
+    /// Whether the brightness setting also dims the filament LEDs. The firmware's default is off.
+    var noodleFollow: Bool = false
 }
 
 struct RosterEntry: Identifiable, Equatable {
@@ -146,6 +148,7 @@ enum InboundLine: Equatable {
     case brightness(Double)
     case hue(Double)
     case cycle(Double)
+    case noodleFollow(Bool)
     case unknown(String)
 
     static func parse(_ raw: String, at date: Date = Date()) -> InboundLine {
@@ -158,7 +161,9 @@ enum InboundLine: Equatable {
         case "STATE":
             guard let m = n(0), let b = d(1), let h = d(2), let c = d(3), let t = args.count > 4 ? Int64(args[4]) : nil, args.count > 5 else { return .unknown(raw) }
             let mode = JellyMode(rawValue: m) ?? .micField
-            return .state(JellyState(mode: mode, brightness: b, hueOffset: h, cyclePeriod: c), apTimeUs: t, apID: args[5])
+            let follow = args.count > 6 ? args[6] != "0" : true
+            return .state(JellyState(mode: mode, brightness: b, hueOffset: h, cyclePeriod: c, noodleFollow: follow),
+                          apTimeUs: t, apID: args[5])
         case "HELLO":
             // HELLO <id> <role> <slot> [<ip> [<version> <modes>]]; "?" and 0 stand for "not known".
             guard args.count >= 3, let role = RosterEntry.Role(rawValue: args[1].uppercased()), let s = n(2) else { return .unknown(raw) }
@@ -178,6 +183,7 @@ enum InboundLine: Equatable {
         case "BRIGHT": return d(0).map { .brightness($0) } ?? .unknown(raw)
         case "HUE": return d(0).map { .hue($0) } ?? .unknown(raw)
         case "CYCLE": return d(0).map { .cycle($0) } ?? .unknown(raw)
+        case "NOODLE": return n(0).map { .noodleFollow($0 != 0) } ?? .unknown(raw)
         default: return .unknown(raw)
         }
     }
@@ -191,6 +197,7 @@ enum OutboundLine {
     static func brightness(_ v: Double) -> String { String(format: "BRIGHT %.2f", v) }
     static func hue(_ v: Double) -> String { String(format: "HUE %.0f", v) }
     static func cycle(_ v: Double) -> String { String(format: "CYCLE %.1f", v) }
+    static func noodleFollow(_ on: Bool) -> String { "NOODLE \(on ? 1 : 0)" }
     static let identify = "IDENT"
     static let rollCall = "HELLO"
     static let beat = "BEAT"

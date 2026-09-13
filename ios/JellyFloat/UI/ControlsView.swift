@@ -27,6 +27,12 @@ struct ControlsView: View {
                     Text("every \(Int(model.state.cyclePeriod)) s").monospacedDigit().foregroundStyle(Theme.inkDim)
                 }
             }
+            // the filament LEDs, which ignore the brightness unless this is on
+            Toggle(isOn: Binding(get: { model.state.noodleFollow }, set: { model.setNoodleFollow($0) })) {
+                Label("Brightness dims the filaments", systemImage: "lightbulb.2")
+                    .font(.subheadline.weight(.medium))
+            }
+            .tint(Theme.cyan)
         }
         .foregroundStyle(Theme.ink)
         .glassCard()

@@ -135,6 +135,7 @@ final class AppModel: ObservableObject {
     func setBrightness(_ v: Double) { state.brightness = v; throttled("BRIGHT") { self.send(OutboundLine.brightness(v)) } }
     func setHue(_ v: Double) { state.hueOffset = v; throttled("HUE") { self.send(OutboundLine.hue(v)) } }
     func setCycle(_ v: Double) { state.cyclePeriod = v; throttled("CYCLE") { self.send(OutboundLine.cycle(v)) } }
+    func setNoodleFollow(_ on: Bool) { state.noodleFollow = on; send(OutboundLine.noodleFollow(on)) }
     func identify() { send(OutboundLine.identify) }
     func rollCall() { send(OutboundLine.rollCall) }
     func sendBeat() { send(OutboundLine.beat) }
@@ -184,6 +185,7 @@ final class AppModel: ObservableObject {
         case .brightness(let v): state.brightness = v
         case .hue(let v): state.hueOffset = v
         case .cycle(let v): state.cyclePeriod = v
+        case .noodleFollow(let on): state.noodleFollow = on
         case .unknown: break
         }
     }
@@ -248,8 +250,8 @@ final class AppModel: ObservableObject {
         let beat = pendingBeat; pendingBeat = false
         let input = JellyEngine.Input(
             mode: state.mode, masterUs: masterNowUs, slot: slot, cyclePeriod: state.cyclePeriod,
-            brightness: state.brightness, hueOffset: state.hueOffset, level: level, beat: beat,
-            identStartUs: identStartUs, isAP: false)
+            brightness: state.brightness, hueOffset: state.hueOffset, noodleFollow: state.noodleFollow,
+            level: level, beat: beat, identStartUs: identStartUs, isAP: false)
         return engine.render(input)
     }
 

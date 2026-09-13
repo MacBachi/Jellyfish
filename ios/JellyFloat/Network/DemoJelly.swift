@@ -38,7 +38,7 @@ final class DemoJelly: JellyTransport {
     private func emit(_ line: String) { onLine?(line, TimeSync.nowUs()) }
 
     private func emitState() {
-        emit(String(format: "STATE %d %.2f %.0f %.1f %lld %@", state.mode.rawValue, state.brightness, state.hueOffset, state.cyclePeriod, apTimeUs, apID))
+        emit(String(format: "STATE %d %.2f %.0f %.1f %lld %@ %d", state.mode.rawValue, state.brightness, state.hueOffset, state.cyclePeriod, apTimeUs, apID, state.noodleFollow ? 1 : 0))
     }
 
     private func step() {
@@ -66,6 +66,7 @@ final class DemoJelly: JellyTransport {
         case "BRIGHT": if let v = arg(1).flatMap(Double.init) { state.brightness = min(max(v, 0), 1); emitState() }
         case "HUE": if let v = arg(1).flatMap(Double.init) { state.hueOffset = v.truncatingRemainder(dividingBy: 360); emitState() }
         case "CYCLE": if let v = arg(1).flatMap(Double.init) { state.cyclePeriod = max(v, 1); emitState() }
+        case "NOODLE": if let v = arg(1).flatMap(Int.init) { state.noodleFollow = v != 0; emitState() }
         case "BEAT": emit("BEAT")
         case "IDENT": emit("IDENT \(apTimeUs + 200_000)")
         case "HELLO":

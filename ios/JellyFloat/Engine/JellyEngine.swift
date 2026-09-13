@@ -104,6 +104,7 @@ final class JellyEngine {
         var cyclePeriod: Double
         var brightness: Double
         var hueOffset: Double
+        var noodleFollow: Bool     // false: the filament LEDs ignore brightness
         var level: Double          // the AP's smoothed microphone level
         var beat: Bool
         var identStartUs: Int64    // 0 = none
@@ -166,7 +167,7 @@ final class JellyEngine {
 
         if renderIdent(input) {
             shown = mode; fading = false; mix = 1
-            return output(brightness: 1, hueOffset: 0, mix: 1)
+            return output(brightness: 1, hueOffset: 0, noodleFollow: true, mix: 1)
         }
 
         if mode != shown {
@@ -203,7 +204,7 @@ final class JellyEngine {
         case .sos: sos(time)
         case .playlist: clear()
         }
-        return output(brightness: input.brightness, hueOffset: input.hueOffset, mix: mix)
+        return output(brightness: input.brightness, hueOffset: input.hueOffset, noodleFollow: input.noodleFollow, mix: mix)
     }
 
     // MARK: - buffers, fade, crossfade (jell_led.hpp / jell_canvas.cpp)
@@ -243,8 +244,9 @@ final class JellyEngine {
         for n in noodles.indices { snapNoodles[n] = snapNoodles[n] + (noodles[n] - snapNoodles[n]) * currentMix; noodles[n] = 0 }
     }
 
-    private func output(brightness: Double, hueOffset: Double, mix: Double) -> JellyFrame {
+    private func output(brightness: Double, hueOffset: Double, noodleFollow: Bool, mix: Double) -> JellyFrame {
         let b = min(max(brightness, 0), 1)
+        let nb = noodleFollow ? b : 1
         func out(_ a: HSV, _ live: HSV) -> HSV {
             var c = blended(a, live, mix)
             c.h = (c.h + hueOffset + 360).truncatingRemainder(dividingBy: 360)
@@ -254,7 +256,7 @@ final class JellyEngine {
         return JellyFrame(
             ring: ring.indices.map { out(snapRing[$0], ring[$0]) },
             tentacles: tentacles.indices.map { t in tentacles[t].indices.map { out(snapTentacles[t][$0], tentacles[t][$0]) } },
-            noodles: noodles.indices.map { (snapNoodles[$0] + (noodles[$0] - snapNoodles[$0]) * mix) * b }
+            noodles: noodles.indices.map { (snapNoodles[$0] + (noodles[$0] - snapNoodles[$0]) * mix) * nb }
         )
     }
 
