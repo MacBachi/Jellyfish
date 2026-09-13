@@ -105,7 +105,7 @@ final class JellyEngine {
         var brightness: Double
         var hueOffset: Double
         var noodleFollow: Bool     // false: the filament LEDs ignore brightness
-        var level: Double          // the AP's smoothed microphone level
+        var audio: AudioLevels     // the AP's microphone: level and the three bands
         var beat: Bool
         var identStartUs: Int64    // 0 = none
         var isAP: Bool
@@ -130,6 +130,8 @@ final class JellyEngine {
     private var dropPos: [Double] = Array(repeating: -1, count: 7)
     private var drizzlePos: [Double] = Array(repeating: -1, count: 7)
     private var glimmerPool = [Spark](repeating: Spark(), count: 12)
+    private var tideHistory: [Double] = []
+    private var tideSinceStep = 0.0
     private var fireflyPool = [Spark](repeating: Spark(), count: 6)
     private var whisperEMA = 0.0
     private var testState = 0
@@ -192,14 +194,16 @@ final class JellyEngine {
         case .drizzle: drizzle(dt)
         case .fireflies: fireflies(dt)
         case .swarm: swarm(time, slot: input.slot)
-        case .whisper: whisper(time, level: input.level, dt: dt)
-        case .micField: micField(time, level: input.level)
-        case .drops: drops(time, level: input.level, beat: input.beat, dt: dt)
+        case .whisper: whisper(time, level: input.audio.level, dt: dt)
+        case .micField: micField(time, level: input.audio.level)
+        case .drops: drops(time, level: input.audio.level, beat: input.beat, dt: dt)
+        case .sundown: sundown(time, audio: input.audio, dt: dt)
+        case .tide: tide(time, audio: input.audio, dt: dt)
         case .palette: ambient(time, noiseScale: 1, hueBase: paletteHue(slot: input.slot, time: time, cyclePeriod: input.cyclePeriod, cycle: false), hueRange: 20, timeScale: 0.15)
         case .paletteCycle: ambient(time, noiseScale: 1, hueBase: paletteHue(slot: input.slot, time: time, cyclePeriod: input.cyclePeriod, cycle: true), hueRange: 20, timeScale: 0.15)
         case .ambientRainbow: ambient(time, noiseScale: 1, hueBase: 220, hueRange: 360, timeScale: 0.15)
         case .ambientDeepSea: ambient(time, noiseScale: 2, hueBase: 220, hueRange: 100, timeScale: 0.8)
-        case .micLevelCheck: all(HSV(h: 220, s: 1, v: input.level)); allNoodles(input.level)
+        case .micLevelCheck: all(HSV(h: 220, s: 1, v: input.audio.level)); allNoodles(input.audio.level)
         case .ledChannelTest: channelTest(nowUs)
         case .sos: sos(time)
         case .playlist: clear()
@@ -332,6 +336,74 @@ final class JellyEngine {
         for (n, p) in layout.noodles.enumerated() {
             setNoodle(n, Field.noise(p, scale: noiseScale, time: time * timeScale) * 0.6 + 0.4)
         }
+    }
+
+    // A sunset over the ring: the sun swells with the bass, the sky drifts with the pads,
+    // the hats put sparks on the water. The mirror of effect_sundown in the firmware.
+    private func sundown(_ time: Double, audio: AudioLevels, dt: Double) {
+        let hueSun = 30.0, hueSky = 338.0, skyDrift = 0.03
+        let sunY = -0.6 + 0.55 * audio.bass
+        let reach = 0.35 + 0.25 * audio.bass
+        let glow = 0.06 + 0.70 * audio.bass
+
+        for (i, p) in layout.ring.enumerated() {
+            let d = (p.y - sunY) / reach
+            let sun = exp(-d * d)
+            let sky = 0.5 + 0.5 * sin(2 * .pi * (skyDrift * time + 0.3 * p.x))
+            let hue = hueLerpShortest(hueSky, hueSun, sun * (0.55 + 0.45 * audio.mid))
+            let v = 0.03 + 0.06 * sky * (0.3 + 0.7 * audio.mid) + glow * sun
+            setRing(i, hue, 0.95 - 0.30 * sun, min(v, 1))
+        }
+        for (t, tent) in layout.tentacles.enumerated() {
+            let n = Double(tent.count - 1)
+            for j in tent.indices {
+                let depth = n > 0 ? Double(j) / n : 0
+                let fade = (1 - depth) * (1 - depth)
+                let ripple = 0.5 + 0.5 * sin(2 * .pi * (0.08 * time - 0.7 * depth + 0.13 * Double(t)))
+                setSpoke(t, j, hueLerpShortest(hueSun, hueSky, depth), 0.9, (0.02 + 0.30 * audio.bass * ripple) * fade)
+            }
+        }
+        if Double.random(in: 0..<1) < dt * (2 + 26 * audio.treble * audio.treble) {
+            spawnSpark(&glimmerPool, ringShare: 0.75, life: 0.25...0.7, hue: 35...55, peak: 0.4...0.9)
+        }
+        drawSparks(&glimmerPool, dt: dt, envelope: { u in u < 0.15 ? u / 0.15 : pow((1 - u) / 0.85, 2) }, saturation: 0.55, bgV: 0)
+        allNoodles(0.15 + 0.85 * audio.bass)
+    }
+
+    // The last two seconds of the bass, hanging in the water down the tentacles. The mirror
+    // of effect_tide in the firmware, history and all.
+    private func tide(_ time: Double, audio: AudioLevels, dt: Double) {
+        let stepS = 0.11, hueNear = 196.0, hueFar = 234.0
+        let depthCount = layout.tentacles.first?.count ?? 1
+        if tideHistory.count != depthCount { tideHistory = Array(repeating: 0, count: depthCount) }
+
+        tideSinceStep += dt
+        while tideSinceStep >= stepS {
+            tideSinceStep -= stepS
+            if tideHistory.count > 1 {
+                for j in stride(from: tideHistory.count - 1, to: 0, by: -1) { tideHistory[j] = tideHistory[j - 1] }
+            }
+            tideHistory[0] = audio.bass
+        }
+
+        let shimmer = audio.treble * audio.treble
+        for (i, p) in layout.ring.enumerated() {
+            let wave = 0.5 + 0.5 * sin(2 * .pi * (0.05 * time + 0.5 * p.x + 0.3 * p.y))
+            let sparkle = shimmer * (0.5 + 0.5 * sin(2 * .pi * (3.1 * time + 7 * p.x)))
+            let v = 0.03 + 0.38 * audio.mid * wave + 0.25 * sparkle
+            setRing(i, hueLerpShortest(hueNear, hueFar, 0.3 + 0.5 * wave - 0.3 * audio.mid), 0.85, min(v, 1))
+        }
+        for (t, tent) in layout.tentacles.enumerated() {
+            let lag = 0.35 * Double(t) / Double(layout.tentacles.count)
+            let n = Double(tent.count - 1)
+            for j in tent.indices {
+                let depth = n > 0 ? Double(j) / n : 0
+                let sway = 0.85 + 0.15 * sin(2 * .pi * (0.12 * time - depth + lag))
+                let v = 0.02 + 0.75 * tideHistory[min(j, tideHistory.count - 1)] * sway * (1 - 0.35 * depth)
+                setSpoke(t, j, hueLerpShortest(hueNear, hueFar, depth), 0.9, min(v, 1))
+            }
+        }
+        allNoodles(0.12 + 0.6 * audio.mid)
     }
 
     private func micField(_ time: Double, level: Double) {

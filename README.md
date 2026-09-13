@@ -222,13 +222,15 @@ In button order; the number is what `MODE n` takes.
 | 10 | Playlist | cycles through the calm modes every 3 minutes, all jellies together |
 | 11 | Mic field (default) | the original sound-reactive noise field |
 | 12 | Drops | beat-triggered drops down the tentacles |
-| 13 | Palette | one colour per jelly |
-| 14 | Palette cycle | same, rotating one colour further every `CYCLE` seconds |
-| 15 | Ambient rainbow | |
-| 16 | Ambient deep sea | |
-| 17 | Mic level check | prints levels to the serial console |
-| 18 | LED channel test | red, green, blue, and one noodle at a time |
-| 19 | SOS | the whole jelly flashes SOS in red Morse code, all jellies in step |
+| 13 | Sundown | a sunset over the ring: the sun swells with the bass, the sky drifts with the pads, the hats spark on the water |
+| 14 | Tide | the last two seconds of the bass wash down the tentacles while the ring breathes with the pads |
+| 15 | Palette | one colour per jelly |
+| 16 | Palette cycle | same, rotating one colour further every `CYCLE` seconds |
+| 17 | Ambient rainbow | |
+| 18 | Ambient deep sea | |
+| 19 | Mic level check | prints levels to the serial console |
+| 20 | LED channel test | red, green, blue, and one noodle at a time |
+| 21 | SOS | the whole jelly flashes SOS in red Morse code, all jellies in step |
 
 ## The web page
 

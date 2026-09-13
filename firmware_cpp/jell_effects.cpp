@@ -682,6 +682,113 @@ void effect_whisper(Canvas& canvas, const AudioFrame& audio, float time)
     canvas.all_noodles_level(0.05f + 0.4f * ema);
 }
 
+void effect_sundown(Canvas& canvas, const AudioFrame& audio, float time)
+{
+    // A horizon across the ring. The sun sits low and rises with the bass; the sky above it
+    // drifts on its own slow clock and takes its depth from the pads. Nothing here is fast:
+    // the envelopes in the filter bank do the following, this only draws it.
+    constexpr float HUE_SUN = 30.0f;   // amber
+    constexpr float HUE_SKY = 338.0f;  // deep magenta
+    constexpr float SKY_DRIFT = 0.03f; // cycles per second
+    constexpr int SPARKS = 10;
+
+    static Spark sparks[SPARKS];
+    static uint64_t last_us = 0;
+    const float dt = seconds_since_last_call(last_us);
+
+    // Where the sun sits on the unit circle, and how far it reaches.
+    const float sun_y = -0.6f + 0.55f * audio.bass;
+    const float reach = 0.35f + 0.25f * audio.bass;
+    const float glow = 0.06f + 0.70f * audio.bass;
+
+    for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_RING; i++)
+    {
+        const Point3 p = canvas.ring_position(i);
+        const float d = (p.y - sun_y) / reach;
+        const float sun = expf(-d * d);
+        const float sky = 0.5f + 0.5f * sinf(TWO_PI * (SKY_DRIFT * time + 0.3f * p.x));
+        const float warmth = sun * (0.55f + 0.45f * audio.mid);
+        const float hue = hue_lerp_shortest(HUE_SKY, HUE_SUN, warmth);
+        const float v = 0.03f + 0.06f * sky * (0.3f + 0.7f * audio.mid) + glow * sun;
+        canvas.ring_pixel_hsv(i, hue, 0.95f - 0.30f * sun, std::min(v, 1.0f));
+    }
+
+    // The tentacles hang in the water below the horizon: warm near the ring, fading down,
+    // swaying on the bass.
+    for (int t = 0; t < JellConfig::NUMBER_OF_TENTACLES; t++)
+    {
+        for (int j = 0; j < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; j++)
+        {
+            const float depth = (float)j / (float)(JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE - 1);
+            const float fade = (1.0f - depth) * (1.0f - depth);
+            const float ripple = 0.5f + 0.5f * sinf(TWO_PI * (0.08f * time - 0.7f * depth + 0.13f * (float)t));
+            const float v = (0.02f + 0.30f * audio.bass * ripple) * fade;
+            canvas.spoke_pixel_hsv(t, j, hue_lerp_shortest(HUE_SUN, HUE_SKY, depth), 0.9f, v);
+        }
+    }
+
+    // Hats and shakers: short sparks on the water, more of them the busier the top end.
+    if (frand01() < dt * (2.0f + 26.0f * audio.treble * audio.treble))
+        spawn_spark(sparks, SPARKS, 0.75f, 0.25f, 0.7f, 35.0f, 55.0f, 0.4f, 0.9f);
+    draw_sparks(canvas, sparks, SPARKS, dt, glimmer_envelope, 0.55f, 0.0f);
+
+    // The noodles are the swell itself.
+    canvas.all_noodles_level(0.15f + 0.85f * audio.bass);
+}
+
+void effect_tide(Canvas& canvas, const AudioFrame& audio, float time)
+{
+    // The tentacles are a memory of the bass: every step, what the room is doing now is
+    // pushed in at the ring and everything below moves one place further down. Two seconds
+    // of music hang in the water, and you can watch a bass note leave and sink.
+    constexpr float STEP_S = 0.11f;
+    constexpr int HISTORY = JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE;
+    constexpr float HUE_NEAR = 196.0f; // teal at the ring
+    constexpr float HUE_FAR = 234.0f;  // deep blue at the tips
+
+    static float history[HISTORY] = {};
+    static float since_step_s = 0.0f;
+    static uint64_t last_us = 0;
+    const float dt = seconds_since_last_call(last_us);
+
+    since_step_s += dt;
+    while (since_step_s >= STEP_S)
+    {
+        since_step_s -= STEP_S;
+        for (int j = HISTORY - 1; j > 0; j--)
+            history[j] = history[j - 1];
+        history[0] = audio.bass;
+    }
+
+    // The ring breathes with the pads and shimmers with the hats.
+    const float shimmer = audio.treble * audio.treble;
+    for (int i = 0; i < JellConfig::NUMBER_LEDS_IN_RING; i++)
+    {
+        const Point3 p = canvas.ring_position(i);
+        const float wave = 0.5f + 0.5f * sinf(TWO_PI * (0.05f * time + 0.5f * p.x + 0.3f * p.y));
+        const float sparkle = shimmer * (0.5f + 0.5f * sinf(TWO_PI * (3.1f * time + 7.0f * p.x)));
+        const float v = 0.03f + 0.38f * audio.mid * wave + 0.25f * sparkle;
+        const float hue = hue_lerp_shortest(HUE_NEAR, HUE_FAR, 0.3f + 0.5f * wave - 0.3f * audio.mid);
+        canvas.ring_pixel_hsv(i, hue, 0.85f, std::min(v, 1.0f));
+    }
+
+    // Each tentacle LED shows the bass from its own depth in the history, the deeper the
+    // older. A small offset per tentacle keeps them from moving as one block.
+    for (int t = 0; t < JellConfig::NUMBER_OF_TENTACLES; t++)
+    {
+        const float lag = 0.35f * (float)t / (float)JellConfig::NUMBER_OF_TENTACLES;
+        for (int j = 0; j < JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE; j++)
+        {
+            const float depth = (float)j / (float)(JellConfig::NUMBER_LEDS_IN_EACH_TENTACLE - 1);
+            const float sway = 0.85f + 0.15f * sinf(TWO_PI * (0.12f * time - depth + lag));
+            const float v = 0.02f + 0.75f * history[j] * sway * (1.0f - 0.35f * depth);
+            canvas.spoke_pixel_hsv(t, j, hue_lerp_shortest(HUE_NEAR, HUE_FAR, depth), 0.9f, std::min(v, 1.0f));
+        }
+    }
+
+    canvas.all_noodles_level(0.12f + 0.6f * audio.mid);
+}
+
 void effect_sos(Canvas& canvas, float time)
 {
     constexpr float UNIT_S = 0.25f; // one Morse unit; a dit is 1, a dah 3

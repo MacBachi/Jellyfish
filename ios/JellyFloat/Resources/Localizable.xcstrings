@@ -131,6 +131,16 @@
         }
       }
     },
+    "A sunset that swells with the bass": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Sonnenuntergang, der mit dem Bass anschwillt"
+          }
+        }
+      }
+    },
     "About": {
       "localizations": {
         "de": {
@@ -1101,6 +1111,16 @@
         }
       }
     },
+    "Sundown": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonnenuntergang"
+          }
+        }
+      }
+    },
     "Swarm": {
       "localizations": {
         "de": {
@@ -1171,6 +1191,16 @@
         }
       }
     },
+    "The last seconds of the bass wash down the tentacles": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die letzten Sekunden des Basses laufen die Tentakel hinab"
+          }
+        }
+      }
+    },
     "The name is kept on this phone; the password only if you say so, in the Keychain.": {
       "localizations": {
         "de": {
@@ -1237,6 +1267,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quallen-Kennung dieses Telefons"
+          }
+        }
+      }
+    },
+    "Tide": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gezeiten"
           }
         }
       }

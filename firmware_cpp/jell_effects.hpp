@@ -59,6 +59,17 @@ void effect_swarm(Canvas& canvas, float time, int slot);
 // the colour drifts from cool when quiet to warm when lively.
 void effect_whisper(Canvas& canvas, const AudioFrame& audio, float time);
 
+// --- The slow sound-reactive modes. They follow the three bands of the microphone's
+// filter bank rather than the raw level, so the music is visibly in the picture. ---
+
+// A sunset over the ring: the sun swells with the bass, the sky drifts with the pads,
+// the hats put sparks on the water. Warm, slow, made for a chill-out set.
+void effect_sundown(Canvas& canvas, const AudioFrame& audio, float time);
+
+// The last two seconds of the bass, running down the tentacles: what you hear now leaves
+// the ring and washes down. The ring itself breathes with the pads, the hats shimmer.
+void effect_tide(Canvas& canvas, const AudioFrame& audio, float time);
+
 // The whole jelly flashes "SOS" in red Morse code, over and over, on the shared clock.
 void effect_sos(Canvas& canvas, float time);
     

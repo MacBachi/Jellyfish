@@ -24,6 +24,10 @@ namespace {
 SharedState g_state;
 volatile uint32_t g_local_beat_count = 0;
 volatile float g_local_level = 0.0f;
+// The filter bank, for the apps' virtual jellies: they render the same sound-reactive modes.
+volatile float g_local_bass = 0.0f;
+volatile float g_local_mid = 0.0f;
+volatile float g_local_treble = 0.0f;
 
 // --- Global State ---
 // Initialize LEDs     
@@ -96,6 +100,14 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
     case JellConfig::DisplayMode::Mic_Drops:
         effect_micDrops(canvas, audio, time, beat);
+        break;
+
+    case JellConfig::DisplayMode::Sundown:
+        effect_sundown(canvas, audio, time);
+        break;
+
+    case JellConfig::DisplayMode::Tide:
+        effect_tide(canvas, audio, time);
         break;
 
     case JellConfig::DisplayMode::Palette:
@@ -191,6 +203,9 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         // loop at the microphone's buffer rate. The DMA fills while we render.
         const AudioFrame audio = mic.capture();
         g_local_level = audio.smoothed_level;
+        g_local_bass = audio.bass;
+        g_local_mid = audio.mid;
+        g_local_treble = audio.treble;
 
         // Master time: the AP's clock, which every station follows via time_offset_us.
         const int64_t master_us = (int64_t)time_us_64() + s.time_offset_us;

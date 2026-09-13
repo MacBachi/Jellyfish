@@ -28,7 +28,7 @@ final class AppModel: ObservableObject {
     @Published private(set) var slot = -1
     @Published private(set) var apID: String?
     @Published private(set) var roster: [RosterEntry] = []
-    @Published private(set) var level = 0.0
+    @Published private(set) var audio = AudioLevels()
     @Published private(set) var beatCount = 0
     @Published private(set) var lastBeatAt: Date?
     @Published private(set) var identStartUs: Int64 = 0
@@ -178,8 +178,8 @@ final class AppModel: ObservableObject {
         case .ident(let startUs):
             identStartUs = startUs
             Task { try? await Task.sleep(for: .seconds(2.5)); if self.identStartUs == startUs { self.identStartUs = 0 } }
-        case .level(let l):
-            level = l
+        case .level(let a):
+            audio = a
         case .mode(let m):
             if let mode = JellyMode(rawValue: m) { state.mode = mode }
         case .brightness(let v): state.brightness = v
@@ -251,7 +251,7 @@ final class AppModel: ObservableObject {
         let input = JellyEngine.Input(
             mode: state.mode, masterUs: masterNowUs, slot: slot, cyclePeriod: state.cyclePeriod,
             brightness: state.brightness, hueOffset: state.hueOffset, noodleFollow: state.noodleFollow,
-            level: level, beat: beat, identStartUs: identStartUs, isAP: false)
+            audio: audio, beat: beat, identStartUs: identStartUs, isAP: false)
         return engine.render(input)
     }
 

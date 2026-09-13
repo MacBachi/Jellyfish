@@ -77,3 +77,6 @@ extern volatile uint32_t g_local_beat_count;
 
 // Core 1 -> core 0: the current smoothed microphone level (0..1), for the LEVEL stream.
 extern volatile float g_local_level;
+extern volatile float g_local_bass;
+extern volatile float g_local_mid;
+extern volatile float g_local_treble;

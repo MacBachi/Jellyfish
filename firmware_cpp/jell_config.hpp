@@ -25,6 +25,8 @@ public:
         Playlist,
         Mic_NField,
         Mic_Drops,
+        Sundown,
+        Tide,
         Palette,
         Palette_Cycle,
         Ambient_Rainbow,

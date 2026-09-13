@@ -4,7 +4,7 @@ import Foundation
 enum JellyMode: Int, CaseIterable, Identifiable, Codable {
     case breathe = 0, glimmer, aurora, current, lantern, moonlight, drizzle, fireflies, swarm, whisper
     case playlist
-    case micField, drops
+    case micField, drops, sundown, tide
     case palette, paletteCycle
     case ambientRainbow, ambientDeepSea
     case micLevelCheck, ledChannelTest
@@ -22,7 +22,7 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
     var group: Group {
         switch self {
         case .breathe, .glimmer, .aurora, .current, .lantern, .moonlight, .drizzle, .fireflies, .swarm, .whisper, .playlist: return .calm
-        case .micField, .drops: return .sound
+        case .micField, .drops, .sundown, .tide: return .sound
         case .palette, .paletteCycle: return .colour
         case .ambientRainbow, .ambientDeepSea: return .ambient
         case .micLevelCheck, .ledChannelTest: return .test
@@ -45,6 +45,8 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
         case .playlist: return String(localized: "Playlist")
         case .micField: return String(localized: "Sound field")
         case .drops: return String(localized: "Drops")
+        case .sundown: return String(localized: "Sundown")
+        case .tide: return String(localized: "Tide")
         case .palette: return String(localized: "Palette")
         case .paletteCycle: return String(localized: "Palette cycle")
         case .ambientRainbow: return String(localized: "Rainbow")
@@ -70,6 +72,8 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
         case .playlist: return String(localized: "Wanders through the calm modes, all jellies together")
         case .micField: return String(localized: "The original sound-reactive field")
         case .drops: return String(localized: "Drops on every beat")
+        case .sundown: return String(localized: "A sunset that swells with the bass")
+        case .tide: return String(localized: "The last seconds of the bass wash down the tentacles")
         case .palette: return String(localized: "One colour per jelly")
         case .paletteCycle: return String(localized: "Colours rotate through the bloom")
         case .ambientRainbow: return String(localized: "Every colour, slowly")
@@ -96,6 +100,8 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
         case .playlist: return [200, 40, 300]
         case .micField: return [220, 300]
         case .drops: return [220, 190]
+        case .sundown: return [338, 30, 20]
+        case .tide: return [196, 234]
         case .palette: return [0, 60, 180, 270]
         case .paletteCycle: return [30, 120, 220, 310]
         case .ambientRainbow: return [0, 90, 180, 270]
@@ -111,6 +117,15 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
 enum JellyPalette {
     static let hues: [Double] = [0, 30, 60, 120, 180, 220, 270, 310]
     static func hue(forSlot slot: Int) -> Double { hues[max(slot, 0) % hues.count] }
+}
+
+/// The microphone as the AP hears it: the whole signal and the three bands of its filter
+/// bank, each already stretched and enveloped. The sound-reactive modes follow the bands.
+struct AudioLevels: Equatable {
+    var level: Double = 0
+    var bass: Double = 0
+    var mid: Double = 0
+    var treble: Double = 0
 }
 
 /// What the AP broadcasts in every STATE line.
@@ -143,7 +158,7 @@ enum InboundLine: Equatable {
     case slot(id: String, slot: Int)
     case beat
     case ident(startUs: Int64)
-    case level(Double)
+    case level(AudioLevels)
     case mode(Int)
     case brightness(Double)
     case hue(Double)
@@ -178,7 +193,10 @@ enum InboundLine: Equatable {
         case "IDENT":
             guard let t = args.first.flatMap({ Int64($0) }) else { return .unknown(raw) }
             return .ident(startUs: t)
-        case "LEVEL": return d(0).map { .level($0) } ?? .unknown(raw)
+        case "LEVEL":
+            guard let l = d(0) else { return .unknown(raw) }
+            // Firmware before the filter bank sends the level alone.
+            return .level(AudioLevels(level: l, bass: d(1) ?? l, mid: d(2) ?? l, treble: d(3) ?? l))
         case "MODE": return n(0).map { .mode($0) } ?? .unknown(raw)
         case "BRIGHT": return d(0).map { .brightness($0) } ?? .unknown(raw)
         case "HUE": return d(0).map { .hue($0) } ?? .unknown(raw)

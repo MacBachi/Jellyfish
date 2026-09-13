@@ -3,9 +3,31 @@
 #include "pico/time.h"
 #include "math.h"
 
+// How loud is this band right now, against what it has been doing? hi and lo follow the
+// band's loud and quiet ends; the current value is stretched between them. A band that
+// sits still (a room hum, or silence) keeps a wide floor under it and so stays dark.
+float AudioBand::update(float rms, float dt_s, float range_tau_s, float attack_s, float release_s)
+{
+    const float range_alpha = 1.0f - expf(-dt_s / range_tau_s);
+    if (rms > hi_) hi_ = rms; else hi_ += (rms - hi_) * range_alpha;
+    if (rms < lo_) lo_ = rms; else lo_ += (rms - lo_) * range_alpha;
+
+    const float span = fmaxf(hi_ - lo_, hi_ * 0.35f);
+    float v = span > 1e-4f ? (rms - lo_) / span : 0.0f;
+    v = v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+
+    const float tau = v > env_ ? attack_s : release_s;
+    env_ += (v - env_) * (1.0f - expf(-dt_s / tau));
+    return env_;
+}
+
 Microphone::Microphone(int32_t samp_size)
 {
     sample_size = samp_size;
+
+    // One-pole coefficients for the two corners of the filter bank.
+    k_bass = 1.0f - expf(-2.0f * (float)M_PI * BASS_CORNER_HZ / SAMPLE_RATE_HZ);
+    k_treble = 1.0f - expf(-2.0f * (float)M_PI * TREBLE_CORNER_HZ / SAMPLE_RATE_HZ);
 
     // Set up two buffers for ping-ponging with DMA
     buffer_0 = new int32_t[sample_size];
@@ -126,15 +148,30 @@ AudioFrame Microphone::capture()
     // Calculate the DC offset (mean)
     frame.mean = sum / frame.sample_count;
 
-    // Pass 2: Remove DC offset and find peak
+    // Pass 2: Remove DC offset, find peak, and split the signal into three bands. The
+    // samples are scaled down first: squaring 24-bit values overflows a float's precision.
     int32_t peak = 0;
     int64_t sum_of_squares = 0;
+    float bass_sq = 0.0f, mid_sq = 0.0f, treble_sq = 0.0f;
     for (int i = 0; i < frame.sample_count; i++)
     {
         samples[i] -= frame.mean;
         if (abs(samples[i]) > peak)
             peak = abs(samples[i]);
         sum_of_squares += (int64_t)samples[i] * samples[i];
+
+        const float x = (float)samples[i] * (1.0f / 65536.0f);
+        lp_bass_1 += (x - lp_bass_1) * k_bass;
+        lp_bass_2 += (lp_bass_1 - lp_bass_2) * k_bass;
+        lp_split_1 += (x - lp_split_1) * k_treble;
+        lp_split_2 += (lp_split_1 - lp_split_2) * k_treble;
+
+        const float b = lp_bass_2;            // below the bass corner
+        const float m = lp_split_2 - lp_bass_2; // between the two corners
+        const float t = x - lp_split_2;         // above the treble corner
+        bass_sq += b * b;
+        mid_sq += m * m;
+        treble_sq += t * t;
     }
 
     // Calculate RMS
@@ -185,6 +222,12 @@ AudioFrame Microphone::capture()
     else
         smoothed_peak = smoothed_peak * level_keep;
         
+    // The bands, each stretched and enveloped on its own.
+    const float inv_n = 1.0f / (float)frame.sample_count;
+    frame.bass = band_bass.update(sqrtf(bass_sq * inv_n), dt, RANGE_TRACK_TAU_S, BASS_ATTACK_S, BASS_RELEASE_S);
+    frame.mid = band_mid.update(sqrtf(mid_sq * inv_n), dt, RANGE_TRACK_TAU_S, MID_ATTACK_S, MID_RELEASE_S);
+    frame.treble = band_treble.update(sqrtf(treble_sq * inv_n), dt, RANGE_TRACK_TAU_S, TREBLE_ATTACK_S, TREBLE_RELEASE_S);
+
     //copy persistant mic data for returrn in frame
     frame.rms_min = rms_min;
     frame.rms_max = rms_max;
