@@ -22,12 +22,16 @@
 	<string>%@ · %lld Modi</string>
 	<key>%lld modes</key>
 	<string>%lld Modi</string>
+	<key>A bright spot that follows the lead line around the ring</key>
+	<string>Ein heller Punkt, der der Melodie um den Ring folgt</string>
 	<key>A gentle wave travelling up the tentacles</key>
 	<string>Eine sanfte Welle wandert die Tentakel hinauf</string>
 	<key>A pulse visiting one jelly after the other</key>
 	<string>Ein Puls besucht eine Qualle nach der anderen</string>
 	<key>A slow pulse from the bell down the tentacles</key>
 	<string>Ein langsamer Puls vom Schirm die Tentakel hinab</string>
+	<key>A sunset that swells with the bass</key>
+	<string>Ein Sonnenuntergang, der mit dem Bass anschwillt</string>
 	<key>About</key>
 	<string>Über</string>
 	<key>All %lld jellies run %@, the same as this app.</key>
@@ -52,8 +56,12 @@
 	<string>Blau- und Grüntöne, langsam</string>
 	<key>Breathe</key>
 	<string>Atmen</string>
+	<key>Breathes on the beat, not on every kick</key>
+	<string>Atmet im Takt, nicht bei jedem Schlag</string>
 	<key>Brightness</key>
 	<string>Helligkeit</string>
+	<key>Brightness dims the filaments</key>
+	<string>Helligkeit dimmt die Filamente</string>
 	<key>Build</key>
 	<string>Build</string>
 	<key>Calm</key>
@@ -96,6 +104,8 @@
 	<string>Tropfen</string>
 	<key>Drops on every beat</key>
 	<string>Tropfen bei jedem Beat</string>
+	<key>Every beat hands the pulse to the next jelly</key>
+	<string>Jeder Schlag reicht den Puls an die nächste Qualle weiter</string>
 	<key>Every colour, slowly</key>
 	<string>Alle Farben, langsam</string>
 	<key>Every jelly with the default firmware opens this network.</key>
@@ -166,6 +176,8 @@
 	<string>Neueste im Schwarm</string>
 	<key>Newest known</key>
 	<string>Neueste bekannte</string>
+	<key>No answer from the bloom</key>
+	<string>Keine Antwort vom Schwarm</string>
 	<key>No jelly has introduced itself yet.</key>
 	<string>Noch hat sich keine Qualle gemeldet.</string>
 	<key>No jellyfish yet? Try the demo bloom</key>
@@ -176,6 +188,8 @@
 	<string>Nicht verbunden</string>
 	<key>Not now</key>
 	<string>Jetzt nicht</string>
+	<key>Not on the jelly network</key>
+	<string>Nicht im Quallen-Netz</string>
 	<key>One colour per jelly</key>
 	<string>Eine Farbe pro Qualle</string>
 	<key>Palette</key>
@@ -190,12 +204,16 @@
 	<string>Playlist</string>
 	<key>Prints levels to the serial console</key>
 	<string>Gibt Pegel auf der seriellen Konsole aus</string>
+	<key>Pulse</key>
+	<string>Puls</string>
 	<key>Rainbow</key>
 	<string>Regenbogen</string>
 	<key>Red Morse code, all jellies in step</key>
 	<string>Rotes Morsezeichen, alle Quallen im Takt</string>
 	<key>Red, green, blue, one noodle at a time</key>
 	<string>Rot, Grün, Blau, eine Noodle nach der anderen</string>
+	<key>Relay</key>
+	<string>Staffel</string>
 	<key>Remember network name</key>
 	<string>Netznamen merken</string>
 	<key>Remember password</key>
@@ -204,6 +222,8 @@
 	<string>Auch das Passwort merken</string>
 	<key>Ring LEDs: %lld</key>
 	<string>Ring-LEDs: %lld</string>
+	<key>Rise</key>
+	<string>Steigerung</string>
 	<key>Roll call</key>
 	<string>Aufruf</string>
 	<key>SOS</key>
@@ -220,6 +240,8 @@
 	<string>Klangfeld</string>
 	<key>Stay on the jelly network in the background</key>
 	<string>Im Hintergrund im Quallen-Netz bleiben</string>
+	<key>Sundown</key>
+	<string>Sonnenuntergang</string>
 	<key>Swarm</key>
 	<string>Reigen</string>
 	<key>Switching</key>
@@ -234,6 +256,8 @@
 	<string>Die Qualle meldet keine Version: Firmware von vor %@. Seither hinzugekommene Modi gibt es dort vielleicht nicht.</string>
 	<key>The jelly runs %@, the same as this app.</key>
 	<string>Die Qualle läuft mit %@, genau wie diese App.</string>
+	<key>The last seconds of the bass wash down the tentacles</key>
+	<string>Die letzten Sekunden des Basses laufen die Tentakel hinab</string>
 	<key>The name is kept on this phone; the password only if you say so, in the Keychain.</key>
 	<string>Der Name bleibt auf diesem Telefon; das Passwort nur, wenn du es willst, im Schlüsselbund.</string>
 	<key>The original sound-reactive field</key>
@@ -248,10 +272,16 @@
 	<string>Dieses Telefon macht im Schwarm als eigene Qualle mit: Es bekommt einen Farb-Slot und zeigt dieselben Effekte im gemeinsamen Takt.</string>
 	<key>This phone's jelly id</key>
 	<string>Quallen-Kennung dieses Telefons</string>
+	<key>Tide</key>
+	<string>Gezeiten</string>
 	<key>Very dim, cool, hardly moving</key>
 	<string>Sehr gedämpft, kühl, kaum Bewegung</string>
 	<key>Virtual jelly</key>
 	<string>Virtuelle Qualle</string>
+	<key>Voice</key>
+	<string>Stimme</string>
+	<key>Walks from cool to gold as the music builds, and blooms on the drop</key>
+	<string>Wandert von Kühl nach Gold, während die Musik steigt, und blüht beim Einsatz auf</string>
 	<key>Wanders through the calm modes, all jellies together</key>
 	<string>Wandert durch die ruhigen Modi, alle Quallen gemeinsam</string>
 	<key>Warm amber with a hint of candle flicker</key>

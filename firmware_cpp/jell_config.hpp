@@ -170,7 +170,11 @@ public:
     static constexpr uint32_t NET_HELLO_RETRY_MS = 5000;     // station: ask for a colour slot until it has one
     static constexpr uint32_t NET_HELLO_KEEPALIVE_MS = 10000; // station: say hello now and then, so the roster stays fresh
     static constexpr uint32_t NET_MEMBER_TIMEOUT_MS = 35000;  // AP: members not heard for this long are left out of roster replays
-    static constexpr uint32_t NET_AP_SILENT_MS = 6000;       // station: this long without a STATE means the AP is gone, link or no link
+    static constexpr uint32_t NET_AP_SILENT_MS = 6000;
+    // An AP keeps looking for a second jelly network every so often. Two jellies powered
+    // while apart each become an AP, and without this they would never merge: the one
+    // whose MAC compares lower steps down and joins the other.
+    static constexpr uint32_t NET_AP_SCAN_PERIOD_MS = 30000;       // station: this long without a STATE means the AP is gone, link or no link
     static constexpr int NET_MAX_JELLIES = 16;               // roster size on the AP
 
     // Apps (phones) cannot receive broadcasts on iOS, so the AP also sends every line

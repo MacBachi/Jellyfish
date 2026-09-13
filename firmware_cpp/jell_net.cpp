@@ -79,6 +79,10 @@ namespace
     uint64_t hello_reply_due_us = 0;
     uint64_t ident_clear_us = 0;
     uint64_t last_state_rx_us = 0; // station: when the AP last spoke; its heartbeat is the keep-alive
+    uint64_t next_ap_scan_us = 0;  // AP: next look for a rival network
+    uint8_t ap_mac[6] = {};        // our own AP's MAC, so its beacon is not mistaken for a rival
+    volatile bool rival_seen = false; // set in the scan callback, acted on in poll()
+    uint8_t rival_bssid[6] = {};
     bool ssid_seen = false;
     bool state_dirty = false;   // AP: send a STATE soon
     uint32_t last_local_beats = 0;
@@ -363,15 +367,26 @@ namespace
             return 0;
 
         const size_t want = strlen(JellConfig::WIFI_SSID);
-        if (result->ssid_len == want && memcmp(result->ssid, JellConfig::WIFI_SSID, want) == 0)
+        if (result->ssid_len != want || memcmp(result->ssid, JellConfig::WIFI_SSID, want) != 0)
+            return 0;
+
+        if (::role == Net::Role::AccessPoint)
         {
-            if (!ssid_seen)
+            // Our own beacon comes back in the scan; anyone else on this name is a rival.
+            if (memcmp(result->bssid, ap_mac, 6) != 0 && !rival_seen)
             {
-                found_rssi = (int)result->rssi;
-                found_unlogged = true;
+                memcpy(rival_bssid, result->bssid, 6);
+                rival_seen = true;
             }
-            ssid_seen = true;
+            return 0;
         }
+
+        if (!ssid_seen)
+        {
+            found_rssi = (int)result->rssi;
+            found_unlogged = true;
+        }
+        ssid_seen = true;
         return 0;
     }
 
@@ -435,6 +450,24 @@ namespace
     }
 
     // The AP is gone: keep showing the last state on our own and start a new election.
+    // Two APs on one name: the lower MAC yields. Both sides apply the same rule, so
+    // exactly one of them ends up here.
+    void step_down(const uint8_t* rival)
+    {
+        log("second AP %02x:%02x:%02x:%02x:%02x:%02x on %s; ours is %02x:%02x:%02x:%02x:%02x:%02x, stepping down to join it",
+            rival[0], rival[1], rival[2], rival[3], rival[4], rival[5], JellConfig::WIFI_SSID,
+            ap_mac[0], ap_mac[1], ap_mac[2], ap_mac[3], ap_mac[4], ap_mac[5]);
+        dhcp_server_deinit(&dhcp);
+        cyw43_arch_disable_ap_mode();
+        for (Subscriber& s : subscribers)
+            s.used = false;
+        roster_count = 0;
+        state.is_ap = false;
+        state.slot = -1;
+        publish();
+        lost_ap(); // scans, finds the other AP, joins it
+    }
+
     void lost_ap()
     {
         state.follow_network_beats = false; // back to our own microphone until a new AP is found
@@ -446,8 +479,11 @@ namespace
 
     void become_ap()
     {
-        cyw43_arch_disable_sta_mode();
+        // The station interface stays up: the AP keeps scanning for a rival network.
         cyw43_arch_enable_ap_mode(JellConfig::WIFI_SSID, JellConfig::WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK);
+        cyw43_wifi_get_mac(&cyw43_state, CYW43_ITF_AP, ap_mac);
+        rival_seen = false;
+        next_ap_scan_us = time_us_64() + (uint64_t)JellConfig::NET_AP_SCAN_PERIOD_MS * 1000;
 
         ip_addr_t gw, mask;
         IP4_ADDR(ip_2_ip4(&gw), 192, 168, 4, 1);
@@ -1092,6 +1128,25 @@ void Net::poll()
         }
 
     case Role::AccessPoint:
+        if (rival_seen)
+        {
+            uint8_t rival[6];
+            memcpy(rival, rival_bssid, 6);
+            rival_seen = false;
+            if (memcmp(ap_mac, rival, 6) < 0)
+            {
+                step_down(rival);
+                break;
+            }
+            log("second AP %02x:%02x:%02x:%02x:%02x:%02x on %s; ours compares higher, it should join us",
+                rival[0], rival[1], rival[2], rival[3], rival[4], rival[5], JellConfig::WIFI_SSID);
+        }
+        if (now >= next_ap_scan_us && !cyw43_wifi_scan_active(&cyw43_state))
+        {
+            next_ap_scan_us = now + (uint64_t)JellConfig::NET_AP_SCAN_PERIOD_MS * 1000;
+            start_scan();
+        }
+
         if (now >= next_state_us
             || (state_dirty && now - last_state_sent_us >= (uint64_t)JellConfig::NET_STATE_MIN_GAP_MS * 1000))
         {

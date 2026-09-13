@@ -6,6 +6,11 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Fixed
+- Two jellies powered while apart each became an access point and stayed two networks with
+  the same name for good: an AP never scanned again. It now looks every 30 s; if a second
+  jelly network is on air, the AP whose MAC compares lower steps down and joins the other.
+
+### Fixed
 - A station could lose its USB console and, with it, the ability to be reflashed or heard,
   while its LEDs kept running: the WLAN scan callback printed from the driver's interrupt
   context, and the USB stack it went through is not re-entrant. Nothing prints from driver,
