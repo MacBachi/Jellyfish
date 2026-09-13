@@ -450,6 +450,8 @@ namespace
     }
 
     // The AP is gone: keep showing the last state on our own and start a new election.
+    void lost_ap();
+
     // Two APs on one name: the lower MAC yields. Both sides apply the same rule, so
     // exactly one of them ends up here.
     void step_down(const uint8_t* rival)
