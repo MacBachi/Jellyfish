@@ -5,6 +5,12 @@ entries start where the fork diverged.
 
 ## Unreleased
 
+### Fixed
+- Identify no longer lights every LED at full brightness whatever the brightness was set to.
+  A 94-LED ring on one full channel pulls around 2 A through the micro-USB socket and the
+  board's single 0.4 mm trace, which can drop the rail far enough to reset the jelly. It now
+  blinks at 30 %, or at the current brightness if that is already higher.
+
 ### Added
 - Six sound-reactive modes built on a proper analysis of the microphone. The signal is split
   into bass, mid, melody and treble by a filter bank whose state carries across the 7 ms
