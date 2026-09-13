@@ -329,7 +329,7 @@ function renderState(){
   const rows = [];
   const self = {id: st.id, role: st.role, slot: st.slot, ip: st.ip, version: st.version, modes: st.modes, age: 0, self: true};
   for (const m of [self, ...st.roster]) {
-    const stale = m.age > 90;
+    const stale = m.age > 35;
     const hue = PALETTE[Math.max(m.slot,0) % PALETTE.length];
     const bg = m.slot >= 0 ? hsl(hue,85,58) : 'rgba(255,255,255,.15)';
     const who = m.self ? 'This jelly' : m.role === 'APP' ? 'Phone ' + m.id : 'Jelly ' + m.id;

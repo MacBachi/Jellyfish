@@ -78,6 +78,7 @@ namespace
     uint64_t next_hello_us = 0;
     uint64_t hello_reply_due_us = 0;
     uint64_t ident_clear_us = 0;
+    uint64_t last_state_rx_us = 0; // station: when the AP last spoke; its heartbeat is the keep-alive
     bool ssid_seen = false;
     bool state_dirty = false;   // AP: send a STATE soon
     uint32_t last_local_beats = 0;
@@ -416,6 +417,7 @@ namespace
         have_offset = false;
         publish();
         log("joined as station, ip %s", my_ip());
+        last_state_rx_us = time_us_64();
         send_hello();
         next_hello_us = time_us_64() + (uint64_t)JellConfig::NET_HELLO_RETRY_MS * 1000;
     }
@@ -583,6 +585,7 @@ namespace
 
         if (role != Net::Role::Station)
             return; // the AP is the source of truth; other APs are a phase-C problem
+        last_state_rx_us = time_us_64();
 
         bool changed = false;
         constexpr int count = (int)JellConfig::DisplayMode::Count;
@@ -1039,6 +1042,16 @@ void Net::poll()
             if (status != CYW43_LINK_UP)
             {
                 log("link down (status %d), keeping last state, new election", status);
+                lost_ap();
+                break;
+            }
+
+            // The AP sends STATE every second. Six missed in a row means it is gone or
+            // rebooting even while the link still says up: better to look for it now than
+            // to sit on a dead network. If it is back, the scan finds it within seconds.
+            if (last_state_rx_us != 0 && now - last_state_rx_us > (uint64_t)JellConfig::NET_AP_SILENT_MS * 1000)
+            {
+                log("no STATE from the AP for %lu ms, new election", (unsigned long)((now - last_state_rx_us) / 1000));
                 lost_ap();
                 break;
             }

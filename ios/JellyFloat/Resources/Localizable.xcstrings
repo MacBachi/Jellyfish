@@ -871,6 +871,16 @@
         }
       }
     },
+    "No answer from the bloom": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Antwort vom Schwarm"
+          }
+        }
+      }
+    },
     "No jelly has introduced itself yet.": {
       "localizations": {
         "de": {
@@ -917,6 +927,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jetzt nicht"
+          }
+        }
+      }
+    },
+    "Not on the jelly network": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht im Quallen-Netz"
           }
         }
       }

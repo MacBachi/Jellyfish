@@ -8,6 +8,9 @@ import SwiftUI
 final class AppModel: ObservableObject {
     enum Connection: Equatable {
         case idle, joiningWiFi, connecting, connected, demo, failed(String)
+        /// Was connected, and the bloom has gone quiet or the phone has left its Wi-Fi.
+        /// The app keeps saying hello, so this heals by itself when the bloom is back.
+        case lost(String)
 
         var label: String {
             switch self {
@@ -17,6 +20,7 @@ final class AppModel: ObservableObject {
             case .connected: return String(localized: "In the bloom")
             case .demo: return String(localized: "Demo bloom")
             case .failed(let why): return why
+            case .lost(let why): return why
             }
         }
         var isLive: Bool { self == .connected || self == .demo }
@@ -110,14 +114,31 @@ final class AppModel: ObservableObject {
         helloTask = Task { [weak self] in
             while !Task.isCancelled {
                 self?.sendHello()
+                self?.checkLiveness()
                 try? await Task.sleep(for: .seconds(5))
             }
+        }
+    }
+
+    /// Silence is the only sign the app gets that the bloom is gone: the AP sends STATE every
+    /// second and unicasts it to subscribers, so eight seconds without a line means the jelly
+    /// stopped, or the phone is no longer on its Wi-Fi. The socket says which.
+    private func checkLiveness() {
+        var watching = connection == .connected
+        if case .lost = connection { watching = true }
+        guard watching else { return }
+        let silent = lastHeardAt.map { Date().timeIntervalSince($0) } ?? 0
+        if linkStatus.hasPrefix("waiting") || linkStatus.hasPrefix("failed") {
+            connection = .lost(String(localized: "Not on the jelly network"))
+        } else if silent > 8 {
+            connection = .lost(String(localized: "No answer from the bloom"))
         }
     }
 
     func stop() {
         helloTask?.cancel(); helloTask = nil
         transport?.disconnect(); transport = nil
+        if case .lost = connection { connection = .idle }
         if connection.isLive || connection == .connecting { connection = .idle }
         timeSync.reset()
         slot = -1
@@ -163,6 +184,7 @@ final class AppModel: ObservableObject {
     private func handle(_ raw: String, receivedAtUs: Int64) {
         lastHeardAt = Date()
         if connection == .connecting { connection = .connected }
+        if case .lost = connection { connection = .connected }
         switch InboundLine.parse(raw) {
         case .state(let s, let apTimeUs, let id):
             state = s

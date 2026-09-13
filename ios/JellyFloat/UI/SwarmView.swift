@@ -76,7 +76,7 @@ struct SwarmView: View {
     // MARK: rows
 
     private func rosterRow(_ e: RosterEntry, isSelf: Bool = false) -> some View {
-        let stale = !isSelf && Date().timeIntervalSince(e.lastSeen) > 90
+        let stale = !isSelf && Date().timeIntervalSince(e.lastSeen) > 35 // the AP's own roster timeout
         return HStack(spacing: 14) {
             Circle()
                 .fill(e.slot >= 0 ? Theme.color(hue: JellyPalette.hue(forSlot: e.slot), saturation: 0.85, value: 0.95) : Color.white.opacity(0.15))
