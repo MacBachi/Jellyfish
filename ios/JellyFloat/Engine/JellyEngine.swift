@@ -177,7 +177,8 @@ final class JellyEngine {
 
         if renderIdent(input) {
             shown = mode; fading = false; mix = 1
-            return output(brightness: 1, hueOffset: 0, noodleFollow: true, mix: 1)
+            // Bounded like the firmware: see JellConfig::IDENT_BRIGHTNESS.
+            return output(brightness: max(input.brightness, 0.30), hueOffset: 0, noodleFollow: true, mix: 1)
         }
 
         if mode != shown {

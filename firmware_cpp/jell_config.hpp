@@ -120,6 +120,12 @@ public:
     static constexpr float CYCLE_BLEND_S = 2.0f;
 
     // Identify: the AP jelly blinks red, all others blue, IDENT_BLINKS times in step.
+    // Identify used to light every LED at full, whatever the brightness was set to, and a
+    // 94-LED ring on one full channel pulls around 2 A through the micro-USB socket and the
+    // board's single 0.4 mm trace (see README "Power"). That is enough to drop the rail and
+    // reset the jelly. It now blinks at this level, or at the current brightness if that is
+    // already higher; the blinking is what identifies a jelly, not the glare.
+    static constexpr float IDENT_BRIGHTNESS = 0.30f;
     static constexpr float IDENT_BLINK_PERIOD_S = 0.5f;
     static constexpr int IDENT_BLINKS = 3;
 

@@ -3,6 +3,7 @@
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 #include <cmath>
+#include <algorithm>
 
 #include "jell_led.hpp"
 #include "jell_audio.hpp"
@@ -78,7 +79,8 @@ bool render_ident(const JellState& s, int64_t master_us)
 
     const bool on = (elapsed_us % period_us) < period_us / 2;
 
-    canvas.set_global(1.0f, 0.0f); // true red / blue regardless of the current hue offset
+    // True red / blue regardless of the current hue offset, and bounded: see IDENT_BRIGHTNESS.
+    canvas.set_global(std::max(s.brightness, JellConfig::IDENT_BRIGHTNESS), 0.0f);
     canvas.all_pixels_hsv(s.is_ap ? 0.0f : 240.0f, 1.0f, on ? 1.0f : 0.0f);
     canvas.all_noodles_level(on ? 1.0f : 0.0f);
     return true;
