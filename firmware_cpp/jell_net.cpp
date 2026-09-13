@@ -83,6 +83,9 @@ namespace
     uint8_t ap_mac[6] = {};        // our own AP's MAC, so its beacon is not mistaken for a rival
     volatile bool rival_seen = false; // set in the scan callback, acted on in poll()
     uint8_t rival_bssid[6] = {};
+    volatile uint32_t scan_results = 0;   // per scan, counted in the callback, reported from poll()
+    volatile uint32_t scan_ours = 0;      // how many of them carried our network name
+    bool ap_scan_running = false;
     bool ssid_seen = false;
     bool state_dirty = false;   // AP: send a STATE soon
     uint32_t last_local_beats = 0;
@@ -365,10 +368,12 @@ namespace
     {
         if (result == nullptr)
             return 0;
+        scan_results = scan_results + 1;
 
         const size_t want = strlen(JellConfig::WIFI_SSID);
         if (result->ssid_len != want || memcmp(result->ssid, JellConfig::WIFI_SSID, want) != 0)
             return 0;
+        scan_ours = scan_ours + 1;
 
         if (::role == Net::Role::AccessPoint)
         {
@@ -1143,9 +1148,18 @@ void Net::poll()
             log("second AP %02x:%02x:%02x:%02x:%02x:%02x on %s; ours compares higher, it should join us",
                 rival[0], rival[1], rival[2], rival[3], rival[4], rival[5], JellConfig::WIFI_SSID);
         }
+        if (ap_scan_running && !cyw43_wifi_scan_active(&cyw43_state))
+        {
+            ap_scan_running = false;
+            log("AP scan done: %lu networks, %lu named %s (one is our own beacon)",
+                (unsigned long)scan_results, (unsigned long)scan_ours, JellConfig::WIFI_SSID);
+        }
         if (now >= next_ap_scan_us && !cyw43_wifi_scan_active(&cyw43_state))
         {
             next_ap_scan_us = now + (uint64_t)JellConfig::NET_AP_SCAN_PERIOD_MS * 1000;
+            scan_results = 0;
+            scan_ours = 0;
+            ap_scan_running = true;
             start_scan();
         }
 
