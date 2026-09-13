@@ -179,6 +179,7 @@ public:
     // its own. An AP that merely restarted is back well within this, and a random election
     // in that window is how two jellies end up as two networks.
     static constexpr uint32_t NET_REJOIN_WAIT_MS = 60000;       // station: this long without a STATE means the AP is gone, link or no link
+    static constexpr uint32_t NET_SCAN_STUCK_MS = 20000;        // scanning: a scan the chip never reports finished is abandoned after this
     static constexpr int NET_MAX_JELLIES = 16;               // roster size on the AP
 
     // Apps (phones) cannot receive broadcasts on iOS, so the AP also sends every line

@@ -6,6 +6,16 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Fixed
+- A station dropped off the network one second after joining. The AP-silence watchdog compared
+  a timestamp taken at the top of the poll with one stamped while handling the STATE line in
+  the same poll; the difference wrapped and looked like two weeks of silence. Only a stamp that
+  is genuinely older counts now.
+- A station that lost its AP started scanning while still associated, and the chip never
+  reported such a scan as finished: the jelly sat in its "last listen" for good and neither
+  rejoined nor became an AP. It leaves the network before scanning, and a scan that has not
+  finished after 20 s is abandoned.
+
+### Fixed
 - A station that loses its AP now looks for it for a fixed 60 s before holding an election of
   its own. The random 10 to 120 s election right after an AP restart was how two jellies ended
   up as two networks with the same name.

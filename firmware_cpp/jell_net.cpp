@@ -396,12 +396,22 @@ namespace
         return 0;
     }
 
+    uint64_t scan_started_us = 0;
+
     void start_scan()
     {
         cyw43_wifi_scan_options_t opts = {};
         const int err = cyw43_wifi_scan(&cyw43_state, &opts, nullptr, on_scan_result);
         if (err != 0)
             log("scan start failed (%d)", err);
+        scan_started_us = time_us_64();
+    }
+
+    // A scan the chip never reports as finished would keep the election waiting forever.
+    bool scan_stuck(uint64_t now)
+    {
+        return scan_started_us != 0 && now > scan_started_us
+            && now - scan_started_us > (uint64_t)JellConfig::NET_SCAN_STUCK_MS * 1000;
     }
 
     // ------------------------------------------------------------------ role transitions
@@ -489,6 +499,8 @@ namespace
         state.time_offset_us = 0;
         state.ident_start_master_us = 0;
         publish();
+        // Still associated, the chip never finishes a scan: leave first, then look around.
+        cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
         set_scanning();
     }
 
@@ -1082,8 +1094,10 @@ void Net::poll()
                     final_scan_started = true;
                 }
             }
-            else if (!cyw43_wifi_scan_active(&cyw43_state))
+            else if (!cyw43_wifi_scan_active(&cyw43_state) || scan_stuck(now))
             {
+                if (cyw43_wifi_scan_active(&cyw43_state))
+                    log("final scan did not finish in %lu ms, becoming AP anyway", (unsigned long)JellConfig::NET_SCAN_STUCK_MS);
                 become_ap();
             }
         }
@@ -1092,8 +1106,10 @@ void Net::poll()
             log("waiting time over, one last listen before becoming AP");
             final_scan = true;
         }
-        else if (!cyw43_wifi_scan_active(&cyw43_state))
+        else if (!cyw43_wifi_scan_active(&cyw43_state) || scan_stuck(now))
         {
+            if (cyw43_wifi_scan_active(&cyw43_state))
+                log("scan did not finish in %lu ms, starting another", (unsigned long)JellConfig::NET_SCAN_STUCK_MS);
             start_scan();
         }
         break;
@@ -1124,7 +1140,10 @@ void Net::poll()
             // The AP sends STATE every second. Six missed in a row means it is gone or
             // rebooting even while the link still says up: better to look for it now than
             // to sit on a dead network. If it is back, the scan finds it within seconds.
-            if (last_state_rx_us != 0 && now - last_state_rx_us > (uint64_t)JellConfig::NET_AP_SILENT_MS * 1000)
+            // last_state_rx_us is stamped while handling the queued lines above, i.e. after
+            // `now` was taken: only a genuinely older stamp counts, or the difference wraps.
+            if (last_state_rx_us != 0 && now > last_state_rx_us
+                && now - last_state_rx_us > (uint64_t)JellConfig::NET_AP_SILENT_MS * 1000)
             {
                 log("no STATE from the AP for %lu ms, new election", (unsigned long)((now - last_state_rx_us) / 1000));
                 lost_ap();
