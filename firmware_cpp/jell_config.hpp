@@ -174,7 +174,11 @@ public:
     // An AP keeps looking for a second jelly network every so often. Two jellies powered
     // while apart each become an AP, and without this they would never merge: the one
     // whose MAC compares lower steps down and joins the other.
-    static constexpr uint32_t NET_AP_SCAN_PERIOD_MS = 30000;       // station: this long without a STATE means the AP is gone, link or no link
+    static constexpr uint32_t NET_AP_SCAN_PERIOD_MS = 30000;
+    // A station that loses its AP looks for it this long before it holds an election of
+    // its own. An AP that merely restarted is back well within this, and a random election
+    // in that window is how two jellies end up as two networks.
+    static constexpr uint32_t NET_REJOIN_WAIT_MS = 60000;       // station: this long without a STATE means the AP is gone, link or no link
     static constexpr int NET_MAX_JELLIES = 16;               // roster size on the AP
 
     // Apps (phones) cannot receive broadcasts on iOS, so the AP also sends every line

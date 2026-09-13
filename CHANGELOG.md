@@ -6,6 +6,11 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Fixed
+- A station that loses its AP now looks for it for a fixed 60 s before holding an election of
+  its own. The random 10 to 120 s election right after an AP restart was how two jellies ended
+  up as two networks with the same name.
+
+### Fixed
 - Two jellies powered while apart each became an access point and stayed two networks with
   the same name for good: an AP never scanned again. It now looks every 30 s; if a second
   jelly network is on air, the AP whose MAC compares lower steps down and joins the other.

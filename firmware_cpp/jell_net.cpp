@@ -81,6 +81,7 @@ namespace
     uint64_t last_state_rx_us = 0; // station: when the AP last spoke; its heartbeat is the keep-alive
     uint64_t next_ap_scan_us = 0;  // AP: next look for a rival network
     uint8_t ap_mac[6] = {};        // our own AP's MAC, so its beacon is not mistaken for a rival
+    bool rejoining = false;           // lost an AP: the next scanning phase waits a fixed 60 s, no dice
     volatile bool rival_seen = false; // set in the scan callback, acted on in poll()
     uint8_t rival_bssid[6] = {};
     volatile uint32_t scan_results = 0;   // per scan, counted in the callback, reported from poll()
@@ -416,7 +417,13 @@ namespace
         final_scan_started = false;
 
         const uint32_t span_ms = JellConfig::NET_ELECTION_MAX_MS - JellConfig::NET_ELECTION_MIN_MS;
-        const uint32_t wait_ms = JellConfig::NET_ELECTION_MIN_MS + get_rand_32() % (span_ms + 1);
+        uint32_t wait_ms = JellConfig::NET_ELECTION_MIN_MS + get_rand_32() % (span_ms + 1);
+        if (rejoining)
+        {
+            // Not a cold start: the network we were on has probably just restarted.
+            wait_ms = JellConfig::NET_REJOIN_WAIT_MS;
+            rejoining = false;
+        }
         scan_deadline_us = time_us_64() + (uint64_t)wait_ms * 1000;
 
         log("election: listening for %s, becoming AP in %lu ms unless one appears",
@@ -477,6 +484,7 @@ namespace
 
     void lost_ap()
     {
+        rejoining = true;
         state.follow_network_beats = false; // back to our own microphone until a new AP is found
         state.time_offset_us = 0;
         state.ident_start_master_us = 0;
@@ -1151,7 +1159,7 @@ void Net::poll()
         if (ap_scan_running && !cyw43_wifi_scan_active(&cyw43_state))
         {
             ap_scan_running = false;
-            log("AP scan done: %lu networks, %lu named %s (one is our own beacon)",
+            log("AP scan done: %lu networks, %lu named %s (the chip hides our own)",
                 (unsigned long)scan_results, (unsigned long)scan_ours, JellConfig::WIFI_SSID);
         }
         if (now >= next_ap_scan_us && !cyw43_wifi_scan_active(&cyw43_state))
