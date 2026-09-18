@@ -25,3 +25,7 @@ ios/build/
 ios/build-sim/
 ios/Generated/
 ios/DerivedData/
+
+# Power board (PlatformIO) and local tooling
+powerboard/.pio/
+.claude/

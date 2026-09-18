@@ -318,12 +318,22 @@ the App Store listing, with the texts in both languages under `ios/AppStore/meta
 for App Review; `PRIVACY.md` is the privacy policy the listing links to. The app collects nothing and
 never connects to the internet.
 
+## The power board
+
+Optional, for a bloom that hangs where its plugs are hard to reach: an ESP32 board with eight relays
+switches the USB supply of each jelly. It opens its own network `⚡️` and serves a page in the look of
+the jellies' page at <http://192.168.5.1>: tap a port to switch it, **Restart** to take a jelly's power
+away for three seconds, names for the ports. After power-up the ports come on one after another, two
+seconds apart, so the jellies do not all pull their inrush current at once. Wiring, build and the API
+are in [`powerboard/README.md`](powerboard/README.md).
+
 ## Repository layout
 
 | Path | Content |
 |---|---|
 | `firmware_cpp/` | the firmware: `JellyFloatOS.cpp` (main, both cores), `jell_net` (WLAN, election, protocol), `jell_web` + `web/` (the web page), `jell_effects` (modes), `jell_canvas` / `jell_led` (frame buffer, WS2812 output, crossfade), `jell_audio` (I2S microphone), `jell_state` (core-to-core state), `jell_config.hpp` (everything tunable), `jell_findmy` (Find My), `reset/` (the factory-reset image), `tools/elf_size.py` (flash and RAM report), `tools/power_sim/` (supply current per mode) |
 | `tools/findmy/` | Find My: the key generator page (plain JavaScript P-224), its cross-check against Python, and `locate.py` to read the reports |
+| `powerboard/` | the power board: ESP32 firmware (PlatformIO), its web page, and a mock of the board for working on the page |
 | `pcb/` | KiCad project and JLCPCB production files for the Jellyboard |
 | `3D print files/` | base, ribs, pillar, loops, fabric plug |
 | `ios/` | the JellyFloat iPhone app (SwiftUI, English and German); `AppStore/` holds the listing texts, screenshots and the submission guide |

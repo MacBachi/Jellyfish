@@ -5,6 +5,11 @@ entries start where the fork diverged.
 
 ## Unreleased
 
+### Added
+- The power board (`powerboard/`): firmware for an ESP32 board with eight relays that switches the
+  USB supply of each jelly. Own network `⚡️`, a page in the look of the jellies' page with a switch,
+  a restart and a name per port, and a staggered start after power-up: one port every two seconds.
+
 ### Fixed
 - A ring sometimes showed the new picture only up to some LED and the old one beyond it,
   mostly on a mode change. Each pixel was computed between two pushes to the PIO, which left

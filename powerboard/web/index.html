@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#031c34">
+<title>Power</title>
+<style>
+:root{--cyan:#4fe3ff;--magenta:#ff5ed1;--amber:#ffc259;--ink:rgba(255,255,255,.92);--dim:rgba(255,255,255,.55);--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.10)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:#080818}
+body{margin:0;min-height:100vh;color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(#031c34,#080818 70%) fixed}
+main{max-width:640px;margin:0 auto;padding:8px 16px 40px}
+header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 0 6px}
+h1{margin:0;font-size:30px;font-weight:600;letter-spacing:-.3px}
+h1 span{color:var(--amber);text-shadow:0 0 18px rgba(255,194,89,.55)}
+h2{margin:22px 0 10px;font-size:12px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
+.pill{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;font-weight:500;white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.pill.on i{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.pill.lost{color:var(--amber)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px}
+button{font:inherit;color:var(--ink);background:rgba(255,255,255,.10);border:1px solid var(--line);border-radius:14px;padding:10px 14px;cursor:pointer}
+button:active{background:rgba(255,255,255,.18)}
+button.amber{background:rgba(255,194,89,.20);border-color:rgba(255,194,89,.45)}
+.row{display:flex;gap:12px;margin-top:14px}
+.row button{flex:1}
+
+/* the rail: a quiet picture of which ports carry power, left to right */
+.rail{display:flex;gap:6px;margin:10px 0 16px}
+.rail i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.12);transition:background .4s,box-shadow .4s}
+.rail i.on{background:var(--amber);box-shadow:0 0 10px rgba(255,194,89,.6)}
+.rail i.wait{background:linear-gradient(90deg,rgba(255,194,89,.15),rgba(255,194,89,.6),rgba(255,194,89,.15));background-size:200% 100%;animation:run 1.2s linear infinite}
+@keyframes run{to{background-position:-200% 0}}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(min-width:560px){.grid{grid-template-columns:repeat(4,1fr)}}
+.port{position:relative;display:flex;flex-direction:column;min-height:148px;padding:14px;border-radius:20px;border:1px solid var(--line);background:var(--card);cursor:pointer;user-select:none;-webkit-user-select:none;transition:box-shadow .35s,border-color .35s,background .35s,opacity .3s}
+.port.on{border-color:rgba(255,194,89,.75);background:linear-gradient(160deg,rgba(255,194,89,.16),rgba(255,255,255,.04) 60%);box-shadow:0 0 18px rgba(255,194,89,.22)}
+.port.wait{border-color:rgba(255,194,89,.35)}
+.port:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.port .top{display:flex;align-items:center;justify-content:space-between}
+.port .num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:rgba(255,255,255,.10);color:var(--dim);transition:background .35s,color .35s}
+.port.on .num{background:var(--amber);color:rgba(0,0,0,.72)}
+.port .bolt{font-size:18px;opacity:.18;transition:opacity .35s,filter .35s}
+.port.on .bolt{opacity:1;filter:drop-shadow(0 0 6px rgba(255,194,89,.8))}
+.port b{display:block;margin-top:auto;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.port b.none{color:var(--dim);font-weight:500}
+.port small{display:block;font-size:12px;color:var(--dim);margin-top:2px;font-variant-numeric:tabular-nums}
+.port.on small{color:var(--amber)}
+.port .acts{display:flex;gap:6px;margin-top:10px}
+.port .acts button{flex:1;padding:6px 0;font-size:12px;border-radius:10px;color:var(--dim)}
+.port .acts button:active{color:var(--ink)}
+main.lost .port,main.lost .rail{opacity:.45}
+
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:14px;margin:4px 0}
+.kv span:first-child{color:var(--dim)}
+.kv span:last-child{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.hint{font-size:12px;color:var(--dim);margin:10px 0 0}
+
+dialog{width:min(340px,calc(100vw - 48px));padding:18px;color:var(--ink);background:#0b2038;border:1px solid var(--line);border-radius:22px}
+dialog::backdrop{background:rgba(3,10,24,.7);backdrop-filter:blur(3px)}
+dialog h3{margin:0 0 4px;font-size:17px;font-weight:600}
+dialog p{margin:0 0 12px;font-size:12px;color:var(--dim)}
+dialog input{width:100%;font:inherit;font-size:16px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:10px}
+dialog input:focus{outline:none;border-color:var(--amber)}
+</style>
+</head>
+<body>
+<main id="main">
+  <header>
+    <h1><span>⚡</span> Power</h1>
+    <div class="pill" id="pill"><i></i><span id="pilltext">connecting</span></div>
+  </header>
+  <div class="rail" id="rail"></div>
+  <div class="grid" id="grid"></div>
+  <div class="row">
+    <button class="amber" id="allon">All on, one by one</button>
+    <button id="alloff">All off</button>
+  </div>
+
+  <h2>Board</h2>
+  <div class="card">
+    <div class="kv"><span>Network</span><span>⚡️</span></div>
+    <div class="kv"><span>Address</span><span id="addr">–</span></div>
+    <div class="kv"><span>Devices on this network</span><span id="clients">–</span></div>
+    <div class="kv"><span>Running for</span><span id="uptime">–</span></div>
+    <div class="kv"><span>Start-up</span><span id="stagger">–</span></div>
+    <div class="kv"><span>Firmware</span><span id="version">–</span></div>
+  </div>
+  <p class="hint">Tap a port to switch it. Restart takes the power away for a few seconds, which is what a jelly that no longer answers needs. After the board itself is powered up, every port comes on again, one after another.</p>
+</main>
+
+<dialog id="dlg">
+  <form method="dialog" id="dlgform">
+    <h3 id="dlgtitle">Name</h3>
+    <p>Which jelly hangs on this port? Leave empty to clear.</p>
+    <input id="dlgname" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
+    <div class="row"><button type="button" id="dlgcancel">Cancel</button><button class="amber" type="submit">Save</button></div>
+  </form>
+</dialog>
+
+<script>
+const $ = id => document.getElementById(id);
+let state = null, lastOk = 0, fetchedAt = 0, holdUntil = 0, renaming = 0;
+
+function post(path, args) {
+  holdUntil = Date.now() + 600;   // let the answer win over a poll that was already on its way
+  return fetch(path, {method: 'POST', body: new URLSearchParams(args)})
+    .then(r => r.ok ? r.json() : Promise.reject(r.status)).then(take).catch(() => {});
+}
+function take(s) { state = s; lastOk = fetchedAt = Date.now(); render(); }
+
+function secs(ms) { return Math.max(1, Math.ceil(ms / 1000)); }
+function ago(s) {
+  if (s < 90) return s + ' s';
+  if (s < 5400) return Math.round(s / 60) + ' min';
+  if (s < 129600) return (s / 3600).toFixed(1) + ' h';
+  return Math.round(s / 86400) + ' days';
+}
+
+function build(n) {
+  const grid = $('grid'), rail = $('rail');
+  for (let ch = 1; ch <= n; ch++) {
+    rail.appendChild(document.createElement('i'));
+    const el = document.createElement('div');
+    el.className = 'port'; el.tabIndex = 0; el.setAttribute('role', 'switch');
+    el.innerHTML = '<div class="top"><div class="num">' + ch + '</div><div class="bolt">⚡</div></div>' +
+      '<b></b><small></small><div class="acts"><button data-a="cycle">Restart</button><button data-a="name">Name</button></div>';
+    const toggle = () => {
+      const p = state.ports[ch - 1], on = !(p.on || p.pending || p.cycling);
+      Object.assign(p, {on, pending: false, cycling: false}); render();
+      post('/api/relay', {ch, on: on ? 1 : 0});
+    };
+    el.addEventListener('click', e => {
+      const a = e.target.dataset && e.target.dataset.a;
+      if (a === 'cycle') { Object.assign(state.ports[ch - 1], {on: false, cycling: true, pending: false, in_ms: state.cycle_ms}); fetchedAt = Date.now(); render(); post('/api/cycle', {ch}); }
+      else if (a === 'name') rename(ch);
+      else toggle();
+    });
+    el.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && e.target === el) { e.preventDefault(); toggle(); } });
+    grid.appendChild(el);
+  }
+}
+
+function render() {
+  if (!state) return;
+  const grid = $('grid'), rail = $('rail');
+  if (!grid.children.length) build(state.ports.length);
+  const drift = Date.now() - fetchedAt;
+  let on = 0;
+  state.ports.forEach((p, i) => {
+    const el = grid.children[i], waiting = p.pending || p.cycling;
+    if (p.on) on++;
+    el.className = 'port' + (p.on ? ' on' : waiting ? ' wait' : '');
+    el.setAttribute('aria-checked', p.on);
+    el.setAttribute('aria-label', 'Port ' + p.ch + (p.name ? ', ' + p.name : ''));
+    const b = el.querySelector('b');
+    b.textContent = p.name || 'Port ' + p.ch; b.className = p.name ? '' : 'none';
+    const left = secs(p.in_ms - drift);
+    el.querySelector('small').textContent = p.on ? 'On' : p.cycling ? 'Back in ' + left + ' s' : p.pending ? 'On in ' + left + ' s' : 'Off';
+    rail.children[i].className = p.on ? 'on' : waiting ? 'wait' : '';
+  });
+  const lost = Date.now() - lastOk > 4000;
+  $('main').classList.toggle('lost', lost);
+  $('pill').className = 'pill' + (lost ? ' lost' : on ? ' on' : '');
+  $('pilltext').textContent = lost ? 'no answer' : on + ' of ' + state.ports.length + ' on';
+  $('clients').textContent = state.clients;
+  $('uptime').textContent = ago(state.uptime + Math.round(drift / 1000));
+  $('stagger').textContent = 'one port every ' + state.stagger_ms / 1000 + ' s';
+  $('version').textContent = state.version;
+  $('addr').textContent = location.host || '–';
+}
+
+function rename(ch) {
+  renaming = ch;
+  $('dlgtitle').textContent = 'Port ' + ch;
+  $('dlgname').value = state.ports[ch - 1].name;
+  $('dlg').showModal(); $('dlgname').select();
+}
+$('dlgcancel').onclick = () => $('dlg').close();
+$('dlgform').onsubmit = () => { const name = $('dlgname').value.trim(); state.ports[renaming - 1].name = name; render(); post('/api/name', {ch: renaming, name}); };
+
+$('allon').onclick = () => post('/api/all', {on: 1});
+$('alloff').onclick = () => { state.ports.forEach(p => Object.assign(p, {on: false, pending: false, cycling: false})); render(); post('/api/all', {on: 0}); };
+
+function poll() {
+  if (Date.now() < holdUntil) return;
+  fetch('/api/status', {cache: 'no-store'}).then(r => r.json()).then(s => { if (Date.now() >= holdUntil) take(s); }).catch(() => {});
+}
+setInterval(poll, 1000); setInterval(render, 250); poll();
+</script>
+</body>
+</html>
