@@ -117,6 +117,16 @@ public:
     // Palette_Cycle: every jelly moves one palette step further every DEFAULT_CYCLE_PERIOD_S
     // seconds (changeable at runtime), blending over the last CYCLE_BLEND_S seconds of a period.
     static constexpr float DEFAULT_CYCLE_PERIOD_S = 10.0f;
+
+    // --- Sound sensitivity ---
+    // SENS is bloom-wide (like BRIGHT) and scales every microphone-driven value; TRIM is one
+    // jelly's own correction on top, kept in that jelly's flash. Both multiply the level.
+    static constexpr float DEFAULT_SENSITIVITY = 1.0f;
+    static constexpr float SENS_MIN = 0.1f;
+    static constexpr float SENS_MAX = 3.0f;
+    static constexpr float DEFAULT_TRIM = 1.0f;
+    static constexpr float TRIM_MIN = 0.25f;
+    static constexpr float TRIM_MAX = 4.0f;
     static constexpr float CYCLE_BLEND_S = 2.0f;
 
     // Identify: the AP jelly blinks red, all others blue, IDENT_BLINKS times in step.
@@ -204,6 +214,12 @@ public:
     static constexpr uint32_t WATCHDOG_REASON_CORE1 = 0xC0DE0001u; // scratch[0] codes, printed at boot
     static constexpr uint32_t WATCHDOG_REASON_AP_DEAD = 0xC0DE0002u;
     static constexpr uint32_t WATCHDOG_REASON_FLASH = 0xC0DE0003u;
+
+    // The bloom's look is remembered in flash (jell_settings.cpp) so a restarted jelly does
+    // not come up bright in the default mode. Written only after the values stopped changing
+    // for SETTINGS_SETTLE_MS and at most once per SETTINGS_MIN_INTERVAL_MS.
+    static constexpr uint32_t SETTINGS_SETTLE_MS = 10000;
+    static constexpr uint32_t SETTINGS_MIN_INTERVAL_MS = 60000;
 };
 
 // Checked here, after the class is complete, because a constexpr member function

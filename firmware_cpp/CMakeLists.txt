@@ -50,6 +50,7 @@ add_executable(JellyFloatOS
         jell_net.cpp
         jell_web.cpp
         jell_findmy.cpp
+        jell_settings.cpp
         dhcpserver.c
 )
 
@@ -124,7 +125,8 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/memmap_jelly.ld" "${JELL_LD}")
 pico_set_linker_script(JellyFloatOS "${CMAKE_CURRENT_BINARY_DIR}/memmap_jelly.ld")
 
 # The factory-reset image: erases the Find My sector and nothing else. A separate UF2,
-# never part of a normal update; see reset/JellyFloatReset.cpp.
+# never part of a normal update; see reset/JellyFloatReset.cpp. It also erases the
+# settings sector (the last one), so a reset jelly forgets the remembered look and trim.
 add_executable(JellyFloatReset reset/JellyFloatReset.cpp)
 pico_set_program_name(JellyFloatReset "JellyFloatReset")
 pico_set_program_version(JellyFloatReset "${JELL_VERSION}")

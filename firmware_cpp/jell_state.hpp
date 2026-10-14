@@ -13,6 +13,7 @@ struct JellState
     float hue_offset = JellConfig::DEFAULT_HUE_OFFSET;          // degrees added to every hue
     float cycle_period_s = JellConfig::DEFAULT_CYCLE_PERIOD_S;  // Palette_Cycle period
     bool noodle_follow = JellConfig::DEFAULT_NOODLE_FOLLOW;     // brightness dims the noodles too
+    float sensitivity = JellConfig::DEFAULT_SENSITIVITY;        // SENS: bloom-wide microphone gain
     int slot = 0;                        // colour slot of this jelly; AP = 0, -1 = none assigned yet
     bool is_ap = true;                   // until the network says otherwise this jelly is on its own
     bool follow_network_beats = false;   // station: drops fire on beat_count, not on its own microphone
@@ -77,6 +78,14 @@ extern volatile uint32_t g_local_beat_count;
 
 // Core 1 -> core 0: frames rendered so far. Core 0 feeds the watchdog only while this moves.
 extern volatile uint32_t g_core1_frames;
+
+// Core 0 asks core 1 to pause between two frames (a flash write must not interrupt an LED
+// push); core 1 answers with parked while it waits.
+extern volatile bool g_core1_park;
+extern volatile bool g_core1_parked;
+
+// This jelly's own microphone trim (TRIM), restored from flash; multiplies the level.
+extern volatile float g_trim;
 
 // Core 1 -> core 0: the current smoothed microphone level (0..1), for the LEVEL stream.
 extern volatile float g_local_level;

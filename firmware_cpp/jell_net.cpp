@@ -11,6 +11,7 @@
 #include "pico/cyw43_arch.h"
 #include "pico/unique_id.h"
 #include "hardware/watchdog.h"
+#include "jell_settings.hpp"
 #include "pico/rand.h"
 #include "lwip/udp.h"
 #include "lwip/pbuf.h"
@@ -93,6 +94,12 @@ namespace
     bool ssid_seen = false;
     bool state_dirty = false;   // AP: send a STATE soon
     uint32_t last_local_beats = 0;
+    volatile uint32_t dropped_datagrams = 0;    // receive queue full, counted in the lwIP callback
+    uint32_t reported_datagram_drops = 0;
+    int join_failures = 0;                      // joins that failed in a row since the last success
+    int send_fail_streak = 0;                   // AP: broadcasts that failed in a row
+    uint64_t next_ap_check_us = 0;              // AP: next self-check of the interface
+    int ap_restarts = 0;                        // AP: interface restarts in a row without a successful send
     int led_state = -1;
 
     // ---- time sync (station) ----
@@ -379,12 +386,6 @@ namespace
     volatile bool found_unlogged = false;
     volatile uint32_t dropped_web_commands = 0; // counted in lwIP context, reported from poll()
     uint32_t reported_drops = 0;
-    volatile uint32_t dropped_datagrams = 0;    // receive queue full, counted in the lwIP callback
-    uint32_t reported_datagram_drops = 0;
-    int join_failures = 0;                      // joins that failed in a row since the last success
-    int send_fail_streak = 0;                   // AP: broadcasts that failed in a row
-    uint64_t next_ap_check_us = 0;              // AP: next self-check of the interface
-    int ap_restarts = 0;                        // AP: interface restarts in a row without a successful send
 
     int on_scan_result(void*, const cyw43_ev_scan_result_t* result)
     {
@@ -588,6 +589,18 @@ namespace
         next_state_us = time_us_64() + 200000; // first heartbeat shortly after
     }
 
+    // The AP's own interface stopped working: bring it down and up again. Stations notice
+    // the gap and rejoin; the roster is rebuilt from their hellos.
+    void restart_ap_interface()
+    {
+        dhcp_server_deinit(&dhcp);
+        cyw43_arch_disable_ap_mode();
+        for (Subscriber& sub : subscribers)
+            sub.used = false;
+        send_fail_streak = 0;
+        become_ap();
+    }
+
     // ------------------------------------------------------------------ roster (AP)
 
     Member* roster_find(const char* id)
@@ -709,6 +722,7 @@ namespace
         {
             state.mode = (JellConfig::DisplayMode)mode;
             publish();
+            Settings::note(state);
             state_dirty = true;
         }
         if (announce)
@@ -784,7 +798,10 @@ namespace
         }
 
         if (changed)
+        {
             publish();
+            Settings::note(state);
+        }
     }
 
     void start_ident(int64_t start_master_us)
@@ -859,6 +876,7 @@ void Net::handle_line(const char* line, bool local)
         {
             state.brightness = v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
             publish();
+            Settings::note(state);
             state_dirty = true;
             if (local)
             {
@@ -876,6 +894,7 @@ void Net::handle_line(const char* line, bool local)
             if (v < 0.0f) v += 360.0f;
             state.hue_offset = v;
             publish();
+            Settings::note(state);
             state_dirty = true;
             if (local)
             {
@@ -889,8 +908,9 @@ void Net::handle_line(const char* line, bool local)
         float v;
         if (next_float(args, v))
         {
-            state.cycle_period_s = v < 1.0f ? 1.0f : v;
+            state.cycle_period_s = v < 1.0f ? 1.0f : (v > 3600.0f ? 3600.0f : v);
             publish();
+            Settings::note(state);
             state_dirty = true;
             if (local)
             {
@@ -906,6 +926,7 @@ void Net::handle_line(const char* line, bool local)
         {
             state.noodle_follow = v != 0;
             publish();
+            Settings::note(state);
             state_dirty = true;
             if (local)
             {
@@ -1022,6 +1043,9 @@ void Net::init()
         (int)JellConfig::DisplayMode::Count);
 
     state = JellState{};
+    float trim = JellConfig::DEFAULT_TRIM;
+    if (Settings::load(state, trim))
+        g_trim = trim;
     publish();
 
     if (cyw43_arch_init_with_country(COUNTRY) != 0)
@@ -1282,10 +1306,7 @@ void Net::poll()
                 }
                 log("AP interface %s (%d sends failed in a row), restarting it",
                     link_down ? "link down" : "not sending", send_fail_streak);
-                dhcp_server_deinit(&dhcp);
-                cyw43_arch_disable_ap_mode();
-                send_fail_streak = 0;
-                become_ap();
+                restart_ap_interface();
                 break;
             }
         }

@@ -107,7 +107,9 @@ data (some are charge-only). Nothing has to be installed.
    while holding it, then let go. A drive named `RP2350` appears. If it does not, the cable is charge-only
    or the button was not held.
 3. Copy the `.uf2` file onto that drive. The drive vanishes by itself a moment later: the jelly now runs
-   the new firmware. Nothing is stored on the jelly between runs, so there is nothing to migrate or reset.
+   the new firmware. The jelly keeps only two small things in flash across updates: its Find My key, if
+   set up, and the bloom's last look (mode, brightness, hue, cycle, filament switch, sensitivity) plus its
+   own microphone trim, so nothing needs migrating.
 4. Plug the jelly into its USB power supply. The Pico's onboard LED blinks fast while it looks for a jelly
    network and goes solid after up to two minutes: this jelly now runs the network. Switch on further
    jellies after that; they blink slowly once they have joined.
@@ -289,9 +291,10 @@ clients need a server; the script is the lightest way that still works.
 That is final: the sector is locked and further keys are refused, with or without a button press. The
 card's other button, "Permanently disable Find My", writes a sentinel instead of a key and locks just the
 same, for jellies that should never be findable. Only the factory-reset image undoes either:
-`JellyFloatReset.uf2` from the release, flashed like the firmware, erases the key sector (the onboard
-LED blinks three times slowly when it is done), after which the normal firmware goes back on and setup
-starts over. It is a separate file on purpose and never part of a firmware update.
+`JellyFloatReset.uf2` from the release, flashed like the firmware, erases the key sector and the sector
+with the remembered look and trim (the onboard LED blinks three times slowly when it is done), after which
+the normal firmware goes back on and setup starts over. It is a separate file on purpose and never part of
+a firmware update.
 
 **How it works.** `firmware_cpp/jell_findmy.cpp` keeps a 40-byte record (magic, state, key, checksum)
 in the fourth flash sector from the end, outside the program image, which the linker script keeps clear

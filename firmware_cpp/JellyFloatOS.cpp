@@ -12,6 +12,7 @@
 #include "jell_config.hpp"
 #include "jell_effects.hpp"
 #include "jell_state.hpp"
+#include "jell_settings.hpp"
 #include "jell_beat.hpp"
 #include "jell_net.hpp"
 #include "jell_findmy.hpp"
@@ -26,6 +27,9 @@ namespace {
 SharedState g_state;
 volatile uint32_t g_local_beat_count = 0;
 volatile uint32_t g_core1_frames = 0;
+volatile bool g_core1_park = false;
+volatile bool g_core1_parked = false;
+volatile float g_trim = JellConfig::DEFAULT_TRIM;
 volatile float g_local_level = 0.0f;
 // The filter bank, for the apps' virtual jellies: they render the same sound-reactive modes.
 volatile float g_local_bass = 0.0f;
@@ -222,6 +226,16 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
     while (true)
     {
+        // Core 0 writes flash now and then; wait here, between frames, so the lockout never
+        // lands in the middle of an LED push.
+        if (g_core1_park)
+        {
+            g_core1_parked = true;
+            while (g_core1_park)
+                tight_loop_contents();
+            g_core1_parked = false;
+        }
+
         const JellState s = g_state.read();
 
         // Every mode captures audio: it keeps the adaptive range calibrated and paces the
@@ -415,6 +429,7 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
         Net::poll();
         FindMy::poll();
+        Settings::poll();
 
         // Feed the watchdog only while core 1 still produces frames. A stalled core 1 is
         // logged once, then the watchdog is left to bite.

@@ -6,6 +6,11 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- Every jelly remembers the bloom's look in flash: mode, brightness, hue, cycle, filament switch
+  and sound sensitivity, plus its own microphone trim. A jelly that restarts and ends up as the
+  AP brings the look back instead of waking up bright in the default mode. Written only after
+  the values have stopped changing for 10 s and at most once a minute; the factory-reset image
+  erases it along with the Find My key.
 - A hardware watchdog. Core 0 feeds it from the main loop, and only while core 1 keeps
   rendering, so a jelly whose network stack or LED loop has stopped restarts itself within
   8 s instead of hanging bright and frozen until someone pulls the plug. The boot banner
