@@ -78,6 +78,7 @@ final class DemoJelly: JellyTransport {
         case "SENS": if let v = arg(1).flatMap(Double.init) { state.sensitivity = min(max(v, 0.1), 3); emitState() }
         case "TRIM": if let id = arg(1), let v = arg(2).flatMap(Double.init) { trims[id] = min(max(v, 0.25), 4) }
         case "IDENT": emit("IDENT \(apTimeUs + 200_000)")
+        case "BLINK": if let id = arg(1) { emit("IDENT \(apTimeUs + 200_000) \(id)") }
         case "HELLO":
             if parts.count >= 3, let id = arg(1) {
                 let slot = slotsByID[id] ?? (slotsByID.count + 5)

@@ -195,7 +195,8 @@ enum InboundLine: Equatable {
     /// A beat; numbered with the AP's running count since 1.2.0, bare before.
     case beat(count: Int?)
     case tempo(periodUs: Int64, anchorUs: Int64, confidence: Double)
-    case ident(startUs: Int64)
+    /// Identify blink; with an id only that jelly blinks.
+    case ident(startUs: Int64, id: String?)
     case level(AudioLevels)
     case mode(Int)
     case brightness(Double)
@@ -240,7 +241,7 @@ enum InboundLine: Equatable {
             return .tempo(periodUs: p, anchorUs: a, confidence: min(max(c, 0), 1))
         case "IDENT":
             guard let t = args.first.flatMap({ Int64($0) }) else { return .unknown(raw) }
-            return .ident(startUs: t)
+            return .ident(startUs: t, id: args.count > 1 ? args[1] : nil)
         case "LEVEL":
             guard let l = d(0) else { return .unknown(raw) }
             // Firmware before the filter bank sends the level alone.
@@ -270,6 +271,7 @@ enum OutboundLine {
     static func sensitivity(_ v: Double) -> String { String(format: "SENS %.2f", v) }
     static func trim(id: String, _ v: Double) -> String { String(format: "TRIM %@ %.2f", id, v) }
     static let identify = "IDENT"
+    static func blink(_ id: String) -> String { "BLINK \(id)" }
     static let rollCall = "HELLO"
     static let beat = "BEAT"
     static func hello(id: String, slot: Int) -> String { "HELLO \(id) APP \(slot) app \(BuildInfo.appVersion) \(BuildInfo.modeCount)" }

@@ -201,6 +201,7 @@ nc -lu 4210                     # in a second terminal: watch heartbeats, beats 
 | `HUE deg` | shift every colour by this many degrees |
 | `CYCLE s` | period of the palette cycle mode |
 | `IDENT` | the AP jelly blinks red three times, all others blue |
+| `BLINK <id>` | only that jelly blinks (red if it runs the network, blue otherwise). Send it to any jelly; the AP announces it as `IDENT <start> <id>`. |
 | `HELLO` | roll call: every jelly answers `HELLO <id> <AP\|STA> <slot> <ip> <version> <modes>` |
 | `SENS <0.1..3>` | sound sensitivity for the whole bloom, like `BRIGHT`: a gain on every microphone-driven value. Carried in STATE. |
 | `TRIM <id> <0.25..4>` | one jelly's own correction on top of `SENS`, for a microphone that hears louder or softer than the others. The jelly keeps it in flash. |

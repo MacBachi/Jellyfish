@@ -1072,10 +1072,13 @@ void Net::handle_line(const char* line, bool local)
     }
     else if (strcmp(verb, "IDENT") == 0)
     {
+        // IDENT <start> [<id>]: blink at that master time; with an id only that jelly does.
         uint64_t t;
         if (next_u64(args, t))
         {
-            start_ident((int64_t)t);
+            char id[8];
+            if (!next_word(args, id, sizeof id) || strcmp(id, my_id) == 0)
+                start_ident((int64_t)t);
         }
         else if (state.is_ap)
         {
@@ -1084,6 +1087,28 @@ void Net::handle_line(const char* line, bool local)
             snprintf(out, sizeof out, "IDENT %llu", (unsigned long long)start);
             send_line(out);
             start_ident((int64_t)start);
+        }
+    }
+    else if (strcmp(verb, "BLINK") == 0)
+    {
+        // BLINK <id>: identify one jelly. The AP stamps the start and tells everyone; only
+        // the addressed jelly blinks. A station passes a local request (its web page) on.
+        char id[8];
+        if (next_word(args, id, sizeof id))
+        {
+            if (state.is_ap)
+            {
+                const uint64_t start = time_us_64() + 200000;
+                snprintf(out, sizeof out, "IDENT %llu %s", (unsigned long long)start, id);
+                send_line(out);
+                if (strcmp(id, my_id) == 0)
+                    start_ident((int64_t)start);
+            }
+            else if (local)
+            {
+                snprintf(out, sizeof out, "BLINK %s", id);
+                send_line(out);
+            }
         }
     }
     else if (strcmp(verb, "STATE") == 0)

@@ -241,6 +241,26 @@
         }
       }
     },
+    "Blink": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blinken"
+          }
+        }
+      }
+    },
+    "Blink jelly %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qualle %@ blinken lassen"
+          }
+        }
+      }
+    },
     "Bloom": {
       "localizations": {
         "de": {

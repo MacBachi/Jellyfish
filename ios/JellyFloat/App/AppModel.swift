@@ -167,6 +167,8 @@ final class AppModel: ObservableObject {
         send(OutboundLine.trim(id: jelly.id, clamped))
     }
     func identify() { send(OutboundLine.identify) }
+    /// Only this jelly blinks; the AP stamps the start and tells the bloom.
+    func blink(_ jelly: RosterEntry) { send(OutboundLine.blink(jelly.id)) }
     func rollCall() { send(OutboundLine.rollCall) }
     func sendBeat() { send(OutboundLine.beat) }
 
@@ -210,7 +212,9 @@ final class AppModel: ObservableObject {
             beatCount = count ?? beatCount + 1; lastBeatAt = Date(); pendingBeat = true
         case .tempo(let periodUs, let anchorUs, let confidence):
             networkTempo = NetworkTempo(periodUs: periodUs, anchorMasterUs: anchorUs, confidence: confidence, receivedAt: Date())
-        case .ident(let startUs):
+        case .ident(let startUs, let id):
+            // A blink for one jelly is not for the virtual jelly on this phone.
+            if let id, id != settings.jellyID { break }
             identStartUs = startUs
             Task { try? await Task.sleep(for: .seconds(2.5)); if self.identStartUs == startUs { self.identStartUs = 0 } }
         case .level(let a):

@@ -87,6 +87,13 @@ struct SwarmView: View {
                 HStack(spacing: 6) {
                     (isSelf ? Text("This phone") : (e.role == .app ? Text("Phone \(e.id)") : Text("Jelly \(e.id)"))).font(.headline).foregroundStyle(Theme.ink)
                     chip(roleName(e.role), tint: e.role == .ap ? Theme.magenta.opacity(0.35) : .white.opacity(0.1))
+                    Spacer(minLength: 4)
+                    if !isSelf && e.role != .app {
+                        // only this jelly blinks
+                        Button { model.blink(e) } label: { Label("Blink", systemImage: "lightbulb.max").labelStyle(.iconOnly) }
+                            .buttonStyle(.bordered).tint(Theme.magenta).controlSize(.small)
+                            .accessibilityLabel(Text("Blink jelly \(e.id)"))
+                    }
                 }
                 HStack(spacing: 6) {
                     versionChip(e, isSelf: isSelf)

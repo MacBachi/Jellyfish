@@ -347,10 +347,11 @@ function renderState(){
     const addr = m.ip && m.ip !== '?' ? (m.role === 'APP' ? m.ip : `<a class="iplink" href="http://${m.ip}/">${m.ip}</a>`) : 'address unknown';
     const meta = m.self ? (st.role === 'AP' ? `serving this page at ${st.ip}` : st.ip) : `${addr} · ${stale ? 'last heard ' : ''}${m.age < 5 ? 'just now' : m.age + ' s ago'}`;
     // microphone: how loud it hears right now, its own floor and ceiling, and its trim (jellies only)
+    const blink = m.role !== 'APP' ? ` <button class="tiny" title="blink" onclick="cmd('BLINK ${m.id}')">&#9673;</button>` : '';
     const mic = m.role !== 'APP' && m.trim > 0
       ? `<div class="meta mic">mic ${Math.round(m.level * 100)} % · floor ${Math.round(m.floor / 1000)}k · ceiling ${Math.round(m.ceil / 1000)}k · trim <button class="tiny" onclick="trim('${m.id}',${m.trim},-1)">&minus;</button> ×${m.trim.toFixed(2)} <button class="tiny" onclick="trim('${m.id}',${m.trim},1)">+</button></div>`
       : '';
-    rows.push(`<div class="card member${stale ? ' stale' : ''}"><div class="slot" style="background:${bg};box-shadow:0 0 8px ${m.slot >= 0 ? hsl(hue,85,58) : 'transparent'}">${m.slot >= 0 ? m.slot : '?'}</div><div><div class="who">${who} ${roleChip}</div><div class="meta">${ver} ${m.modes > 0 ? `<span class="small">${m.modes} modes</span>` : ''}</div><div class="meta">${meta}</div>${mic}</div></div>`);
+    rows.push(`<div class="card member${stale ? ' stale' : ''}"><div class="slot" style="background:${bg};box-shadow:0 0 8px ${m.slot >= 0 ? hsl(hue,85,58) : 'transparent'}">${m.slot >= 0 ? m.slot : '?'}</div><div><div class="who">${who} ${roleChip}${blink}</div><div class="meta">${ver} ${m.modes > 0 ? `<span class="small">${m.modes} modes</span>` : ''}</div><div class="meta">${meta}</div>${mic}</div></div>`);
   }
   if (st.roster.length === 0) rows.push(`<div class="card empty">${st.role === 'AP' ? 'Nobody has answered yet. Tap roll call.' : 'Only the jelly that runs the network keeps the list.'}</div>`);
   $('roster').innerHTML = rows.join('');

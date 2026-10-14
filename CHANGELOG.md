@@ -6,6 +6,8 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- Blink a single jelly: `BLINK <id>`, a button next to each jelly in the roster of the web
+  page and the app. Only that jelly blinks; the rest keep playing.
 - Mode 26, Relay 4/4: the pulse walks from jelly to jelly once per bar instead of on every beat
   and lingers on each jelly, so the walk is easy to follow. The beat-by-beat Relay is now
   called Relay 1/4; its number stays 18.
