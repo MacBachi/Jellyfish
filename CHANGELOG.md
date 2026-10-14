@@ -6,6 +6,11 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- The AP shares the tempo it hears (`TEMPO` line, once a second: beat period, the master
+  time of a beat, confidence). Stations run Pulse and every other tempo-driven mode on it
+  instead of their own guess, so the bloom breathes together and a jelly that joins or
+  rejoins is in step at once. After the AP falls silent the shared tempo keeps running
+  for a while and fades, and the jelly's own tracker takes over.
 - Every jelly remembers the bloom's look in flash: mode, brightness, hue, cycle, filament switch
   and sound sensitivity, plus its own microphone trim. A jelly that restarts and ends up as the
   AP brings the look back instead of waking up bright in the default mode. Written only after

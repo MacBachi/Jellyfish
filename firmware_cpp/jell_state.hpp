@@ -18,7 +18,11 @@ struct JellState
     bool is_ap = true;                   // until the network says otherwise this jelly is on its own
     bool follow_network_beats = false;   // station: drops fire on beat_count, not on its own microphone
     int64_t time_offset_us = 0;          // master_us = time_us_64() + time_offset_us
-    uint32_t beat_count = 0;             // bumped by core 0 for every BEAT received from the AP
+    uint32_t beat_count = 0;             // the bloom's beat count: the AP's, adopted by every station
+    uint32_t tempo_period_us = 0;        // the AP's tempo, from its TEMPO line; 0 = none known
+    int64_t tempo_anchor_master_us = 0;  // master time of one of the AP's beats
+    float tempo_conf = 0.0f;             // the AP's confidence in that tempo
+    uint64_t tempo_rx_local_us = 0;      // local time the last TEMPO arrived (for the fade)
     int64_t ident_start_master_us = 0;   // 0 = not identifying, else the master time the blinking started
 };
 
@@ -97,3 +101,4 @@ extern volatile float g_local_rise;
 extern volatile float g_local_quiet;
 extern volatile float g_local_phase;
 extern volatile float g_local_conf;
+extern volatile float g_local_tempo_period_s; // 0 until the tracker has a period

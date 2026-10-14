@@ -40,6 +40,7 @@ volatile float g_local_rise = 0.0f;
 volatile float g_local_quiet = 0.0f;
 volatile float g_local_phase = 0.0f;
 volatile float g_local_conf = 0.0f;
+volatile float g_local_tempo_period_s = 0.0f;
 
 // --- Global State ---
 // Initialize LEDs     
@@ -240,7 +241,7 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
         // Every mode captures audio: it keeps the adaptive range calibrated and paces the
         // loop at the microphone's buffer rate. The DMA fills while we render.
-        const AudioFrame audio = mic.capture();
+        AudioFrame audio = mic.capture();
         g_local_level = audio.smoothed_level;
         g_local_bass = audio.bass;
         g_local_mid = audio.mid;
@@ -250,10 +251,31 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         g_local_quiet = audio.quiet;
         g_local_phase = audio.tempo_phase;
         g_local_conf = audio.tempo_conf;
+        g_local_tempo_period_s = audio.tempo_bpm > 1.0f ? 60.0f / audio.tempo_bpm : 0.0f;
 
         // Master time: the AP's clock, which every station follows via time_offset_us.
         const int64_t master_us = (int64_t)time_us_64() + s.time_offset_us;
         const float time = (float)master_us * 1e-6f;
+
+        // The bloom's tempo, when the AP has told us one: its phase runs on master time, so
+        // every jelly breathes together, and a jelly that just joined is in step at once.
+        // After the AP goes quiet the confidence fades and our own tracker takes over.
+        if (s.tempo_period_us != 0)
+        {
+            const int64_t period = (int64_t)s.tempo_period_us;
+            int64_t into = (master_us - s.tempo_anchor_master_us) % period;
+            if (into < 0) into += period;
+            const float age_s = (float)(time_us_64() - s.tempo_rx_local_us) * 1e-6f;
+            const float fade = age_s < JellConfig::TEMPO_HOLD_S
+                ? 1.0f : expf(-(age_s - JellConfig::TEMPO_HOLD_S) / JellConfig::TEMPO_FADE_TAU_S);
+            const float net_conf = s.tempo_conf * fade;
+            if (net_conf > audio.tempo_conf)
+            {
+                audio.tempo_phase = (float)into / (float)period;
+                audio.tempo_bpm = 6e7f / (float)period;
+                audio.tempo_conf = net_conf;
+            }
+        }
 
         const JellConfig::DisplayMode mode = effective_mode(s, master_us); // jell_state.hpp
 

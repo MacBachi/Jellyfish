@@ -127,6 +127,12 @@ public:
     static constexpr float DEFAULT_TRIM = 1.0f;
     static constexpr float TRIM_MIN = 0.25f;
     static constexpr float TRIM_MAX = 4.0f;
+
+    // The AP shares its tempo (TEMPO line: period, the master time of a beat, confidence).
+    // A station keeps using it after the AP went quiet: fully for TEMPO_HOLD_S, then with
+    // fading confidence, until its own tracker is the more confident one.
+    static constexpr float TEMPO_HOLD_S = 2.0f;
+    static constexpr float TEMPO_FADE_TAU_S = 8.0f;
     static constexpr float CYCLE_BLEND_S = 2.0f;
 
     // Identify: the AP jelly blinks red, all others blue, IDENT_BLINKS times in step.

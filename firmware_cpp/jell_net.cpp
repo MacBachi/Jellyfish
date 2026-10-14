@@ -200,7 +200,7 @@ namespace
         send_to_subscribers_locked(line);
         cyw43_arch_lwip_end();
 
-        if (strncmp(line, "STATE", 5) != 0)
+        if (strncmp(line, "STATE", 5) != 0 && strncmp(line, "TEMPO", 5) != 0)
             log("tx %s", line);
     }
 
@@ -280,6 +280,18 @@ namespace
         last_state_sent_us = time_us_64();
         next_state_us = last_state_sent_us + (uint64_t)JellConfig::NET_STATE_PERIOD_MS * 1000;
         state_dirty = false;
+
+        // The tempo our microphone hears, as period, the master time of a beat, confidence.
+        // Stations run their tempo-driven modes on it (jell_state.hpp).
+        const float period_s = g_local_tempo_period_s;
+        if (period_s > 0.0f)
+        {
+            const uint64_t period_us = (uint64_t)(period_s * 1e6f);
+            const uint64_t anchor_us = time_us_64() - (uint64_t)(g_local_phase * (float)period_us);
+            snprintf(line, sizeof line, "TEMPO %lu %llu %.2f",
+                     (unsigned long)period_us, (unsigned long long)anchor_us, g_local_conf);
+            send_line(line);
+        }
     }
 
     // HELLO <id> <role> <slot> <ip> <version> <modes>. Older firmware sends only the first
@@ -553,6 +565,8 @@ namespace
     {
         rejoining = true;
         state.follow_network_beats = false; // back to our own microphone until a new AP is found
+        // The AP's tempo keeps running on our own clock (jell_state.hpp) until it fades.
+        state.tempo_anchor_master_us -= state.time_offset_us;
         state.time_offset_us = 0;
         state.ident_start_master_us = 0;
         publish();
@@ -579,6 +593,7 @@ namespace
         state.follow_network_beats = false;
         state.slot = 0;
         state.time_offset_us = 0;
+        state.tempo_period_us = 0; // the AP's own tracker is the bloom's tempo now
         publish();
 
         roster_count = 0;
@@ -875,7 +890,7 @@ void Net::handle_line(const char* line, bool local)
     while (*args == ' ')
         args++;
 
-    if (!local && strcmp(verb, "STATE") != 0)
+    if (!local && strcmp(verb, "STATE") != 0 && strcmp(verb, "TEMPO") != 0)
         log("rx %s", line);
 
     char out[NET_LINE_MAX];
@@ -977,6 +992,21 @@ void Net::handle_line(const char* line, bool local)
         {
             uint64_t n;
             state.beat_count = next_u64(args, n) ? (uint32_t)n : state.beat_count + 1;
+            publish();
+        }
+    }
+    else if (strcmp(verb, "TEMPO") == 0)
+    {
+        // TEMPO <period_us> <anchor_master_us> <conf>, from the AP, once per STATE.
+        uint64_t period, anchor;
+        float conf;
+        if (!state.is_ap && next_u64(args, period) && next_u64(args, anchor) && next_float(args, conf)
+            && period >= 200000 && period <= 3000000)
+        {
+            state.tempo_period_us = (uint32_t)period;
+            state.tempo_anchor_master_us = (int64_t)anchor;
+            state.tempo_conf = conf < 0.0f ? 0.0f : (conf > 1.0f ? 1.0f : conf);
+            state.tempo_rx_local_us = time_us_64();
             publish();
         }
     }
