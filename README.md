@@ -202,8 +202,11 @@ nc -lu 4210                     # in a second terminal: watch heartbeats, beats 
 | `CYCLE s` | period of the palette cycle mode |
 | `IDENT` | the AP jelly blinks red three times, all others blue |
 | `HELLO` | roll call: every jelly answers `HELLO <id> <AP\|STA> <slot> <ip> <version> <modes>` |
+| `SENS <0.1..3>` | sound sensitivity for the whole bloom, like `BRIGHT`: a gain on every microphone-driven value. Carried in STATE. |
+| `TRIM <id> <0.25..4>` | one jelly's own correction on top of `SENS`, for a microphone that hears louder or softer than the others. The jelly keeps it in flash. |
 | `TEMPO <period_us> <anchor_us> <conf>` | sent by the AP with every STATE: the tempo its microphone hears, as beat period, the master time of one beat and a confidence 0..1. Stations run Pulse and the other tempo-driven modes on it, so the bloom breathes together and a jelly that joins is in step at once. |
 | `BEAT [<n>]` | a beat. The AP sends one for every beat its microphone hears, numbered with its running count, so all jellies agree on which beat this is (Relay walks on it) and a lost packet heals with the next. Send a bare `BEAT` to the AP to trigger one by hand. |
+| `HELLO <id> <role> <slot> <ip> [<version> <modes> [<level> <floor> <ceil> <trim>]]` | who is here. Jellies send one every 10 s; since 1.2.0 the last four fields are the microphone's calibration, which the roster on the web page shows. |
 | `HELLO <id> APP <slot> <ip> [<version> <modes>]` | register as an app: get a colour slot and unicast copies of everything the AP sends (STATE, BEAT, IDENT, SLOT) plus a `LEVEL 0..1` microphone stream, for 15 s per HELLO. The AP answers with its own `HELLO` and one for every jelly it has heard from lately, and passes later jelly `HELLO`s on, so the app has the whole roster. Phones need this because iOS does not let apps receive broadcasts. |
 
 The USB serial console prints the election, role changes, every command sent or received, and the time

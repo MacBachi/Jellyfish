@@ -41,6 +41,8 @@ volatile float g_local_quiet = 0.0f;
 volatile float g_local_phase = 0.0f;
 volatile float g_local_conf = 0.0f;
 volatile float g_local_tempo_period_s = 0.0f;
+volatile float g_local_floor = 0.0f;
+volatile float g_local_ceiling = 0.0f;
 
 // --- Global State ---
 // Initialize LEDs     
@@ -252,6 +254,8 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         g_local_phase = audio.tempo_phase;
         g_local_conf = audio.tempo_conf;
         g_local_tempo_period_s = audio.tempo_bpm > 1.0f ? 60.0f / audio.tempo_bpm : 0.0f;
+        g_local_floor = audio.rms_min;
+        g_local_ceiling = audio.rms_max;
 
         // Master time: the AP's clock, which every station follows via time_offset_us.
         const int64_t master_us = (int64_t)time_us_64() + s.time_offset_us;

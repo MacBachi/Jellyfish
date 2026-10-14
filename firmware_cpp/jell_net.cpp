@@ -117,6 +117,10 @@ namespace
         char version[16];  // as announced in HELLO; "?" when the jelly runs firmware that predates version reporting
         int modes;         // number of modes the jelly knows; 0 when unknown
         uint64_t last_seen_us;
+        float level;       // microphone calibration as last announced in HELLO (1.2.0+), 0 when unknown
+        float floor;
+        float ceil;
+        float trim;
     };
     Member roster[JellConfig::NET_MAX_JELLIES];
     int roster_count = 0;
@@ -296,17 +300,23 @@ namespace
 
     // HELLO <id> <role> <slot> <ip> <version> <modes>. Older firmware sends only the first
     // four fields and ignores the rest when it receives them.
+    // HELLO <id> <role> <slot> <ip> <version> <modes> [<level> <floor> <ceil> <trim>]: the
+    // last four, since 1.2.0, are the microphone's calibration so the roster can show
+    // whether the jellies hear alike.
     void format_hello(char* line, size_t n, const char* id, const char* their_role, int slot,
-                      const char* ip, const char* version, int modes)
+                      const char* ip, const char* version, int modes,
+                      float level, float floor, float ceil, float trim)
     {
-        snprintf(line, n, "HELLO %s %s %d %s %s %d", id, their_role, slot, ip, version, modes);
+        snprintf(line, n, "HELLO %s %s %d %s %s %d %.2f %.0f %.0f %.2f", id, their_role, slot, ip, version, modes,
+                 level, floor, ceil, trim);
     }
 
     void send_hello()
     {
         char line[NET_LINE_MAX];
         format_hello(line, sizeof line, my_id, state.is_ap ? "AP" : "STA", state.slot, my_ip(),
-                     JellConfig::VERSION, (int)JellConfig::DisplayMode::Count);
+                     JellConfig::VERSION, (int)JellConfig::DisplayMode::Count,
+                     g_local_level, g_local_floor, g_local_ceiling, g_trim);
         send_line(line);
     }
 
@@ -315,7 +325,8 @@ namespace
     {
         char line[NET_LINE_MAX];
         format_hello(line, sizeof line, my_id, "AP", state.slot, my_ip(),
-                     JellConfig::VERSION, (int)JellConfig::DisplayMode::Count);
+                     JellConfig::VERSION, (int)JellConfig::DisplayMode::Count,
+                     g_local_level, g_local_floor, g_local_ceiling, g_trim);
         send_to(line, ip, port);
 
         const uint64_t now = time_us_64();
@@ -324,7 +335,8 @@ namespace
             const Member& m = roster[i];
             if (now - m.last_seen_us > (uint64_t)JellConfig::NET_MEMBER_TIMEOUT_MS * 1000)
                 continue;
-            format_hello(line, sizeof line, m.id, m.is_app ? "APP" : "STA", m.slot, m.ip, m.version, m.modes);
+            format_hello(line, sizeof line, m.id, m.is_app ? "APP" : "STA", m.slot, m.ip, m.version, m.modes,
+                         m.level, m.floor, m.ceil, m.trim);
             send_to(line, ip, port);
         }
     }
@@ -627,7 +639,8 @@ namespace
         return nullptr;
     }
 
-    void roster_seen(const char* id, bool is_station, bool is_app, const char* ip, const char* version, int modes)
+    void roster_seen(const char* id, bool is_station, bool is_app, const char* ip, const char* version, int modes,
+                     float level, float floor, float ceil, float trim)
     {
         Member* m = roster_find(id);
         if (m == nullptr)
@@ -671,6 +684,10 @@ namespace
         strncpy(m->version, version, sizeof m->version - 1);
         m->version[sizeof m->version - 1] = 0;
         m->modes = modes;
+        m->level = level;
+        m->floor = floor;
+        m->ceil = ceil;
+        m->trim = trim;
 
         if (is_station || is_app)
         {
@@ -975,6 +992,45 @@ void Net::handle_line(const char* line, bool local)
             }
         }
     }
+    else if (strcmp(verb, "SENS") == 0)
+    {
+        // Bloom-wide microphone gain, like BRIGHT: the AP carries it in STATE.
+        float v;
+        if (next_float(args, v))
+        {
+            state.sensitivity = v < JellConfig::SENS_MIN ? JellConfig::SENS_MIN : (v > JellConfig::SENS_MAX ? JellConfig::SENS_MAX : v);
+            publish();
+            Settings::note(state);
+            state_dirty = true;
+            if (local)
+            {
+                snprintf(out, sizeof out, "SENS %.2f", state.sensitivity);
+                send_line(out);
+            }
+        }
+    }
+    else if (strcmp(verb, "TRIM") == 0)
+    {
+        // TRIM <id> <factor>: one jelly's own correction on top of SENS, kept in its flash.
+        // A local command (web page, button) is passed on so the addressed jelly hears it.
+        char id[8];
+        float v;
+        if (next_word(args, id, sizeof id) && next_float(args, v))
+        {
+            v = v < JellConfig::TRIM_MIN ? JellConfig::TRIM_MIN : (v > JellConfig::TRIM_MAX ? JellConfig::TRIM_MAX : v);
+            if (strcmp(id, my_id) == 0)
+            {
+                g_trim = v;
+                Settings::note_trim(v);
+                log("my microphone trim is now %.2f", v);
+            }
+            if (local)
+            {
+                snprintf(out, sizeof out, "TRIM %s %.2f", id, v);
+                send_line(out);
+            }
+        }
+    }
     else if (strcmp(verb, "BEAT") == 0)
     {
         // "BEAT <n>" carries the AP's running count, so every jelly agrees on which beat this
@@ -1043,6 +1099,9 @@ void Net::handle_line(const char* line, bool local)
                 strcpy(version, "?");
             if (!next_int(args, modes))
                 modes = 0;
+            float level = 0.0f, floor = 0.0f, ceil = 0.0f, trim = 0.0f; // 1.2.0 and later
+            if (!(next_float(args, level) && next_float(args, floor) && next_float(args, ceil) && next_float(args, trim)))
+                level = floor = ceil = trim = 0.0f;
 
             if (state.is_ap && strcmp(id, my_id) != 0)
             {
@@ -1050,7 +1109,7 @@ void Net::handle_line(const char* line, bool local)
                 // of everything we send, because phones can't receive broadcasts.
                 const bool is_app = strcmp(their_role, "APP") == 0;
                 const bool is_station = strcmp(their_role, "STA") == 0;
-                roster_seen(id, is_station, is_app, ip, version, modes);
+                roster_seen(id, is_station, is_app, ip, version, modes, level, floor, ceil, trim);
                 if (is_app && current_rx_us != 0)
                 {
                     subscriber_seen(&current_from, current_from_port);
@@ -1182,6 +1241,7 @@ size_t Net::write_status_json(char* buf, size_t n)
         (int)JellConfig::DisplayMode::Count, (int)state.mode, (int)effective_mode(state, master_us),
         state.brightness, state.hue_offset, state.cycle_period_s, state.slot);
     put(",\"noodleFollow\":%s", state.noodle_follow ? "true" : "false");
+    put(",\"sens\":%.2f,\"trim\":%.2f,\"floor\":%.0f,\"ceil\":%.0f", state.sensitivity, g_trim, g_local_floor, g_local_ceiling);
     put(",\"level\":%.2f,\"ident\":%s,\"uptime\":%lu", g_local_level,
         state.ident_start_master_us != 0 ? "true" : "false", (unsigned long)(now / 1000000));
     put(",\"ring\":%d,\"tentacles\":%d,\"tentacleLeds\":%d,\"noodles\":%d",
@@ -1200,7 +1260,10 @@ size_t Net::write_status_json(char* buf, size_t n)
         put(first ? "{\"id\":" : ",{\"id\":"); str(m.id);
         put(",\"role\":\"%s\",\"slot\":%d,\"ip\":", m.is_app ? "APP" : "STA", m.slot); str(m.ip);
         put(",\"version\":"); str(m.version);
-        put(",\"modes\":%d,\"age\":%lu}", m.modes, (unsigned long)(age_us / 1000000));
+        put(",\"modes\":%d,\"age\":%lu", m.modes, (unsigned long)(age_us / 1000000));
+        if (m.trim > 0.0f)
+            put(",\"level\":%.2f,\"floor\":%.0f,\"ceil\":%.0f,\"trim\":%.2f", m.level, m.floor, m.ceil, m.trim);
+        put("}");
         first = false;
     }
     put("]}");

@@ -102,3 +102,5 @@ extern volatile float g_local_quiet;
 extern volatile float g_local_phase;
 extern volatile float g_local_conf;
 extern volatile float g_local_tempo_period_s; // 0 until the tracker has a period
+extern volatile float g_local_floor;          // the microphone's calibration, raw counts
+extern volatile float g_local_ceiling;

@@ -6,6 +6,10 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- Sound sensitivity for the whole bloom (`SENS`, a slider on the web page) and a trim per jelly
+  (`TRIM <id> <factor>`, −/+ next to each jelly in the roster), for microphones that hear louder
+  or softer than the others. Every jelly announces how loud it hears and its own floor and
+  ceiling in its hello, and the roster shows them, so you can see whether the jellies agree.
 - The AP shares the tempo it hears (`TEMPO` line, once a second: beat period, the master
   time of a beat, confidence). Stations run Pulse and every other tempo-driven mode on it
   instead of their own guess, so the bloom breathes together and a jelly that joins or
