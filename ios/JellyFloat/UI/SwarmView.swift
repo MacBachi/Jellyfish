@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SwarmView: View {
     @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var updates: FirmwareUpdates
 
     var body: some View {
         ScrollView {
@@ -34,6 +35,10 @@ struct SwarmView: View {
             .padding(16)
         }
         .background(Theme.background)
+        .task(id: model.jellies.map { "\($0.id)@\($0.ip)" }.joined(separator: ",")) {
+            updates.reload()
+            for j in model.jellies { await updates.check(j) }
+        }
     }
 
     // MARK: firmware overview
@@ -57,6 +62,20 @@ struct SwarmView: View {
                     Text(newest.text).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.magenta)
                 }
             }
+            HStack {
+                Text("On this phone").font(.subheadline).foregroundStyle(Theme.inkDim)
+                Spacer()
+                Text(updates.newestVersion.map { $0.text } ?? String(localized: "nothing yet")).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+            }
+            Button { Task { await updates.downloadLatest() } } label: {
+                Label("Download the newest firmware", systemImage: "arrow.down.circle").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered).tint(Theme.cyan).disabled(updates.downloading)
+            if let status = updates.downloadStatus {
+                Text(status).font(.caption).foregroundStyle(Theme.inkDim).fixedSize(horizontal: false, vertical: true)
+            }
+            Text("Download while the phone is on the internet; send it to the jellies on the jelly network, from each jelly's row above.")
+                .font(.caption2).foregroundStyle(Theme.inkDim).fixedSize(horizontal: false, vertical: true)
             Divider().overlay(Color.white.opacity(0.15))
             Text(model.firmwareSummary).font(.caption).foregroundStyle(Theme.inkDim).fixedSize(horizontal: false, vertical: true)
             let mismatched = model.jellies.filter { !$0.missingModes.isEmpty }
@@ -101,6 +120,7 @@ struct SwarmView: View {
                 }
                 detailLine(e, isSelf: isSelf, stale: stale)
                     .font(.caption).foregroundStyle(Theme.inkDim)
+                if !isSelf && e.role != .app { updateLine(e) }
                 if let trim = e.micTrim, let level = e.micLevel, let floor = e.micFloor, let ceiling = e.micCeiling {
                     // the microphone's calibration (1.2.0): what it hears, its own range, its trim
                     HStack(spacing: 6) {
@@ -117,6 +137,45 @@ struct SwarmView: View {
         }
         .opacity(stale ? 0.6 : 1)
         .glassCard(padding: 12)
+    }
+
+    /// Over-the-air update for one jelly: the button, its progress, or why it cannot.
+    @ViewBuilder
+    private func updateLine(_ e: RosterEntry) -> some View {
+        if let p = updates.progress[e.id], p.phase != .done {
+            switch p.phase {
+            case .checking:
+                Text("Asking the jelly…").font(.caption).foregroundStyle(Theme.inkDim)
+            case .sending:
+                HStack(spacing: 8) {
+                    ProgressView(value: p.fraction).tint(Theme.cyan)
+                    Text(verbatim: "\(Int(p.fraction * 100)) %").font(.caption).monospacedDigit().foregroundStyle(Theme.inkDim)
+                }
+            case .verifying:
+                Text("Checking the signature…").font(.caption).foregroundStyle(Theme.inkDim)
+            case .restarting:
+                Text("Restarting with the new firmware…").font(.caption).foregroundStyle(Theme.cyan)
+            case .failed(let message):
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(message).font(.caption).foregroundStyle(Theme.amber).fixedSize(horizontal: false, vertical: true)
+                    Button("Try again") { Task { await updates.check(e) ; if let info = updates.jellyInfo[e.id], let img = updates.image(for: info.variant) { await updates.update(e, with: img) } } }
+                        .font(.caption).buttonStyle(.bordered).tint(Theme.amber).controlSize(.small)
+                }
+            case .done:
+                EmptyView()
+            }
+        } else if updates.notCapable.contains(e.id) {
+            Text("Needs one update over USB before it can update over the air.").font(.caption2).foregroundStyle(Theme.inkDim)
+        } else if let info = updates.jellyInfo[e.id], let img = updates.image(for: info.variant) {
+            Button { Task { await updates.update(e, with: img) } } label: {
+                if img.version > FirmwareVersion(info.version) {
+                    Label("Update to \(img.version.text)", systemImage: "arrow.up.circle")
+                } else {
+                    Label("Install \(img.version.text) again", systemImage: "arrow.clockwise.circle")
+                }
+            }
+            .font(.caption).buttonStyle(.bordered).tint(Theme.cyan).controlSize(.small)
+        }
     }
 
     @ViewBuilder

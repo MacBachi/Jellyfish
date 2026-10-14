@@ -221,6 +221,26 @@
         }
       }
     },
+    "Asking GitHub…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frage GitHub …"
+          }
+        }
+      }
+    },
+    "Asking the jelly…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frage die Qualle …"
+          }
+        }
+      }
+    },
     "Aurora": {
       "localizations": {
         "de": {
@@ -347,6 +367,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kanaltest"
+          }
+        }
+      }
+    },
+    "Checking the signature…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prüfe die Signatur …"
           }
         }
       }
@@ -501,6 +531,46 @@
         }
       }
     },
+    "Download failed. Is the phone on the internet?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download fehlgeschlagen. Ist das Telefon im Internet?"
+          }
+        }
+      }
+    },
+    "Download the newest firmware": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neueste Firmware laden"
+          }
+        }
+      }
+    },
+    "Download while the phone is on the internet; send it to the jellies on the jelly network, from each jelly's row above.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laden, solange das Telefon im Internet ist; danach im Quallen-Netz bei jeder Qualle oben aufspielen."
+          }
+        }
+      }
+    },
+    "Downloading %@: %lld of %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lade %@: %lld von %lld"
+          }
+        }
+      }
+    },
     "Drizzle": {
       "localizations": {
         "de": {
@@ -591,6 +661,16 @@
         }
       }
     },
+    "Firmware %@ is on this phone.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware %@ ist auf diesem Telefon."
+          }
+        }
+      }
+    },
     "Follows the room's sound, slowly": {
       "localizations": {
         "de": {
@@ -647,6 +727,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Im Schwarm"
+          }
+        }
+      }
+    },
+    "Install %@ again": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ neu aufspielen"
           }
         }
       }
@@ -801,6 +891,16 @@
         }
       }
     },
+    "Lost the connection to the jelly. Try again; it resumes.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verbindung zur Qualle verloren. Nochmal versuchen, es geht dort weiter."
+          }
+        }
+      }
+    },
     "Mic level": {
       "localizations": {
         "de": {
@@ -847,6 +947,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fast dunkel, mit Funken, die aufglühen und vergehen"
+          }
+        }
+      }
+    },
+    "Needs one update over USB before it can update over the air.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Braucht einmal ein Update per USB, danach geht es über WLAN."
           }
         }
       }
@@ -967,6 +1077,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nicht im Quallen-Netz"
+          }
+        }
+      }
+    },
+    "On this phone": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf diesem Telefon"
           }
         }
       }
@@ -1111,6 +1231,26 @@
         }
       }
     },
+    "Release %@ has no firmware for updates over the air.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Release %@ enthält keine Firmware für Updates über WLAN."
+          }
+        }
+      }
+    },
+    "Release %@ is not signed yet.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Release %@ ist noch nicht signiert."
+          }
+        }
+      }
+    },
     "Remember network name": {
       "localizations": {
         "de": {
@@ -1137,6 +1277,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Auch das Passwort merken"
+          }
+        }
+      }
+    },
+    "Restarting with the new firmware…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startet mit der neuen Firmware …"
           }
         }
       }
@@ -1311,6 +1461,26 @@
         }
       }
     },
+    "The jelly did not answer.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Qualle hat nicht geantwortet."
+          }
+        }
+      }
+    },
+    "The jelly refused the update.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Qualle hat das Update abgelehnt."
+          }
+        }
+      }
+    },
     "The jelly reports no version: firmware from before %@. Modes added since may not exist there.": {
       "localizations": {
         "de": {
@@ -1381,6 +1551,26 @@
         }
       }
     },
+    "This jelly is a %@ build; the image is %@.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Qualle hat den Bau %@, das Abbild ist %@."
+          }
+        }
+      }
+    },
+    "This jelly needs one update over USB first.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Qualle braucht zuerst ein Update per USB."
+          }
+        }
+      }
+    },
     "This phone": {
       "localizations": {
         "de": {
@@ -1417,6 +1607,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gezeiten"
+          }
+        }
+      }
+    },
+    "Try again": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nochmal versuchen"
+          }
+        }
+      }
+    },
+    "Update to %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf %@ aktualisieren"
           }
         }
       }
@@ -1627,6 +1837,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "nicht auf %lld Quallen"
+          }
+        }
+      }
+    },
+    "nothing yet": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "noch nichts"
           }
         }
       }

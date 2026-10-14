@@ -6,6 +6,12 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- Updates over the air, from the app. One last USB update per jelly installs two program
+  partitions (`tools/ota/ota_prepare.sh`); after that the app downloads signed firmware from the
+  newest release and sends it to each jelly, which writes it into its spare partition, checks the
+  ECDSA signature and restarts into it on trial, falling back to the old firmware if the new one
+  does not come up. An interrupted transfer changes nothing and resumes. Releases carry the
+  94-LED variant and `.bin` files now; `tools/ota/release_sign.sh` signs them.
 - Blink a single jelly: `BLINK <id>`, a button next to each jelly in the roster of the web
   page and the app. Only that jelly blinks; the rest keep playing.
 - Mode 26, Relay 4/4: the pulse walks from jelly to jelly once per bar instead of on every beat

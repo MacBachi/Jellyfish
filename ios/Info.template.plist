@@ -26,6 +26,17 @@
 	<string>__GITREV__</string>
 	<key>JellyVersion</key>
 	<string>__VERSION__</string>
+	<!-- Updates are sent to the jellies over plain HTTP on the jelly network (192.168.4.x). -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<!-- Firmware images can also be copied into the app with the Finder (file sharing). -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<false/>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>JellyFloat talks to your jellyfish over the local Wi-Fi network.</string>
 	<key>UILaunchScreen</key>

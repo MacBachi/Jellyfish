@@ -263,6 +263,35 @@ takes one command line, handled exactly like a line from the network; `POST /api
 twelve times a second and the state once a second over a kept-alive connection. Everything under
 `firmware_cpp/web/` is compiled into the firmware at build time, so a page change is a firmware build.
 
+## Updates over the air
+
+From 1.2.0 a jelly can take new firmware over the jelly network, from the JellyFloat app. Once per
+jelly it needs one last update over USB, which installs a partition table with two program
+partitions, A and B:
+
+    tools/ota/ota_prepare.sh JellyFloatOS-v1.2.0-ring94-GRB-tRGB.uf2
+
+(the `.uf2` for that jelly's variant; it keeps the Find My key and the remembered settings). The
+console then says `ota: running from partition 0`.
+
+**In the app**, the Jellies tab: "Download the newest firmware" while the phone has internet, then
+on the jelly network "Update to …" next to each jelly. The app sends the image in 4 KB pieces; the
+jelly writes them into the partition it is not running from and keeps playing. Only when the image
+is complete and its signature matches does it restart into it, on trial: the new firmware confirms
+itself once its LEDs and radio run, and the old partition is retired. If it never gets that far,
+the watchdog restarts the jelly and the bootrom falls back to the old firmware. A broken
+connection during the transfer changes nothing; the next attempt resumes where it stopped.
+
+**Signatures.** Release images are signed with an ECDSA P-256 key that lives only on the
+maintainer's Mac (`~/.jellyfloat/ota-signing-key.pem`); the firmware carries the public half
+(`firmware_cpp/ota/ota_pubkey.h`) and refuses anything else. The CI publishes the `.bin` files with
+each release; `tools/ota/release_sign.sh v1.2.0` signs them and attaches the `.sig` files.
+
+**Protocol**, for scripts: `GET /api/ota.json` (capable, running and target partition, state,
+bytes written), `POST /api/ota/begin` with `<size> <signature as 128 hex digits>`, `POST
+/api/ota/chunk` with a 4-byte little-endian offset followed by up to 4096 bytes, in order, and
+`POST /api/ota/finish`.
+
 ## Find My
 
 Every jelly can be a tag in Apple's Find My network, the way [OpenHaystack](https://github.com/seemoo-lab/openhaystack)
