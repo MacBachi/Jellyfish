@@ -1312,6 +1312,21 @@ void Net::poll()
         log("mic: level %.2f floor %.0f ceil %.0f gain %.2f bass %.2f mid %.2f treble %.2f",
             g_local_level, g_local_floor, g_local_ceiling, state.sensitivity * g_trim,
             g_local_bass, g_local_mid, g_local_treble);
+        // Tempo: our own tracker against the AP's (stations), and which one the modes use.
+        const float own_period = g_local_tempo_period_s;
+        if (state.tempo_period_us != 0)
+        {
+            const float age_s = (float)(now - state.tempo_rx_local_us) * 1e-6f;
+            log("tempo: own %.0f bpm conf %.2f, AP's %.0f bpm conf %.2f (%.1f s old), using %s",
+                own_period > 0.0f ? 60.0f / own_period : 0.0f, g_local_conf,
+                6e7f / (float)state.tempo_period_us, state.tempo_conf, age_s,
+                state.tempo_conf > g_local_conf ? "the AP's" : "our own");
+        }
+        else
+        {
+            log("tempo: own %.0f bpm conf %.2f, no tempo from an AP",
+                own_period > 0.0f ? 60.0f / own_period : 0.0f, g_local_conf);
+        }
     }
 
     // Beats from our own microphone count whenever we are not following an AP (as the AP,
