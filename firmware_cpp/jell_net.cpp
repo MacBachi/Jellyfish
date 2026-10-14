@@ -12,6 +12,7 @@
 #include "pico/unique_id.h"
 #include "hardware/watchdog.h"
 #include "jell_settings.hpp"
+#include "jell_ota.hpp"
 #include "pico/rand.h"
 #include "lwip/udp.h"
 #include "lwip/pbuf.h"
@@ -1266,6 +1267,8 @@ size_t Net::write_status_json(char* buf, size_t n)
     put("{\"id\":"); str(my_id);
     put(",\"role\":\"%s\",\"ip\":\"%s\",\"version\":", role_name, my_ip()); str(JellConfig::VERSION);
     put(",\"rev\":"); str(JellConfig::GIT_REV);
+    put(",\"variant\":"); str(JellConfig::VARIANT);
+    put(",\"ota\":%s", OTA::capable() ? "true" : "false");
     put(",\"modes\":%d,\"mode\":%d,\"shown\":%d,\"bright\":%.2f,\"hue\":%.0f,\"cycle\":%.1f,\"slot\":%d",
         (int)JellConfig::DisplayMode::Count, (int)state.mode, (int)effective_mode(state, master_us),
         state.brightness, state.hue_offset, state.cycle_period_s, state.slot);

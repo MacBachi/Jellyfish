@@ -22,7 +22,7 @@ namespace
     static_assert(sizeof(Record) == 40, "record layout");
     constexpr char MAGIC[4] = {'J', 'F', 'M', '1'};
 
-    const Record* stored() { return reinterpret_cast<const Record*>(XIP_BASE + SECTOR_OFFSET); }
+    const Record* stored() { return reinterpret_cast<const Record*>(XIP_NOCACHE_NOALLOC_NOTRANSLATE_BASE + SECTOR_OFFSET); }
 
     uint32_t checksum(const Record& r)
     {

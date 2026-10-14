@@ -188,6 +188,19 @@ public:
 #endif
     static constexpr const char* VERSION = JELL_VERSION;
     static constexpr const char* GIT_REV = JELL_GIT_REV;
+#ifndef JELL_VARIANT
+#define JELL_VARIANT "local"
+#endif
+    // Which build this is (default, ring39-GRB-tRGB, ring94-GRB-tRGB, ...): an update must
+    // come from the same variant, see jell_ota.cpp and the app.
+    static constexpr const char* VARIANT = JELL_VARIANT;
+
+    // Over-the-air update: the flash holds the partition table (first 8 KB), two program
+    // partitions A and B (firmware_cpp/ota/pt.json), and above them the four sectors the
+    // firmware keeps its own data in (Find My, BTstack, settings). Physical flash offsets.
+    static constexpr uint32_t OTA_PART_A_OFFSET = 8u * 1024;
+    static constexpr uint32_t OTA_PART_SIZE = 1984u * 1024;
+    static constexpr uint32_t OTA_PART_B_OFFSET = OTA_PART_A_OFFSET + OTA_PART_SIZE;
 
     static constexpr uint16_t NET_PORT = 4210;               // UDP, one text line per datagram
 

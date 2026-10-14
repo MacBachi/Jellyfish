@@ -30,7 +30,7 @@ namespace
     constexpr char MAGIC[4] = {'J', 'S', 'E', 'T'};
     constexpr uint8_t VERSION = 1;
 
-    const Record* stored() { return reinterpret_cast<const Record*>(XIP_BASE + SECTOR_OFFSET); }
+    const Record* stored() { return reinterpret_cast<const Record*>(XIP_NOCACHE_NOALLOC_NOTRANSLATE_BASE + SECTOR_OFFSET); }
 
     uint32_t checksum(const Record& r)
     {

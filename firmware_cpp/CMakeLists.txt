@@ -51,6 +51,7 @@ add_executable(JellyFloatOS
         jell_web.cpp
         jell_findmy.cpp
         jell_settings.cpp
+        jell_ota.cpp
         dhcpserver.c
 )
 
@@ -118,11 +119,26 @@ target_link_libraries(JellyFloatOS
 if ("${PICO_FLASH_SIZE_BYTES}" STREQUAL "")
     set(PICO_FLASH_SIZE_BYTES "(4 * 1024 * 1024)")
 endif()
+# Over-the-air updates: the program runs from partition A or B (firmware_cpp/ota/pt.json),
+# each 1984 KB, mapped to 0x10000000 by the bootrom. Same image for both.
 file(READ "${PICO_SDK_PATH}/src/rp2_common/pico_crt0/rp2350/memmap_default.ld" JELL_LD)
 string(REPLACE "INCLUDE \"pico_flash_region.ld\""
-       "FLASH(rx) : ORIGIN = 0x10000000, LENGTH = (${PICO_FLASH_SIZE_BYTES} - 4 * 4096)" JELL_LD "${JELL_LD}")
+       "FLASH(rx) : ORIGIN = 0x10000000, LENGTH = 1984K" JELL_LD "${JELL_LD}")
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/memmap_jelly.ld" "${JELL_LD}")
 pico_set_linker_script(JellyFloatOS "${CMAKE_CURRENT_BINARY_DIR}/memmap_jelly.ld")
+
+# BTstack's flash bank sits outside the partitions: read it through the untranslated window.
+set_source_files_properties("${PICO_SDK_PATH}/src/rp2_common/pico_btstack/btstack_flash_bank.c"
+        PROPERTIES COMPILE_OPTIONS "-include;${CMAKE_CURRENT_LIST_DIR}/jell_notranslate.h")
+
+# Over-the-air updates: SHA-256 and ECDSA P-256 from mbedtls (mbedtls_config.h here) to
+# check the signature of a new image, the bootrom for try-before-you-buy.
+target_link_libraries(JellyFloatOS pico_mbedtls pico_bootrom)
+if (NOT DEFINED JELL_VARIANT OR "${JELL_VARIANT}" STREQUAL "")
+    set(JELL_VARIANT "local")
+endif()
+target_compile_definitions(JellyFloatOS PRIVATE "JELL_VARIANT=\"${JELL_VARIANT}\"")
+message(STATUS "JellyFloatOS: variant ${JELL_VARIANT}")
 
 # The factory-reset image: erases the Find My sector and nothing else. A separate UF2,
 # never part of a normal update; see reset/JellyFloatReset.cpp. It also erases the

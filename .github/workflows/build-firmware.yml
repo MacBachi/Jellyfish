@@ -28,8 +28,10 @@ on:
         default: ""
 
 jobs:
-  # Two variants of every build: the default ring, and the user's first jelly with a 39-LED
-  # ring in GRB with RGB tentacles. The default job also produces the Find My reset image.
+  # Three variants of every build: the default ring, the first jelly with a 39-LED ring in GRB
+  # with RGB tentacles, and the 94-LED GRB ring with RGB tentacles most jellies have. The
+  # default job also produces the Find My reset image. Each artifact holds the .uf2 for USB
+  # and the .bin for over-the-air updates (signed locally, see tools/ota/ota_sign.py).
   build:
     strategy:
       fail-fast: false
@@ -39,6 +41,8 @@ jobs:
             extra_args: ""
           - variant: ring39-GRB-tRGB
             extra_args: "-DJELL_RING_LEDS=39 -DJELL_RING_ORDER=GRB -DJELL_TENTACLE_ORDER=RGB"
+          - variant: ring94-GRB-tRGB
+            extra_args: "-DJELL_RING_LEDS=94 -DJELL_RING_ORDER=GRB -DJELL_TENTACLE_ORDER=RGB"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -79,7 +83,9 @@ jobs:
             [ -n "$SSID" ] && args="$args -DJELL_WIFI_SSID=$SSID" && suffix="$suffix-custom-wifi"
             [ -n "$PASSWORD" ] && args="$args -DJELL_WIFI_PASSWORD=$PASSWORD"
           fi
-          args="$args -DJELL_GIT_REV=${GITHUB_SHA::7}"
+          variant="$VARIANT"
+          [ "$VARIANT" = "default" ] && [ -n "$suffix" ] && variant="custom${suffix}"
+          args="$args -DJELL_GIT_REV=${GITHUB_SHA::7} -DJELL_VARIANT=$variant"
           echo "args=$args" >> "$GITHUB_OUTPUT"
           echo "suffix=$suffix" >> "$GITHUB_OUTPUT"
           echo "cmake args: $args"
@@ -98,7 +104,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: JellyFloatOS${{ steps.opts.outputs.suffix }}
-          path: firmware_cpp/build/JellyFloatOS.uf2
+          path: |
+            firmware_cpp/build/JellyFloatOS.uf2
+            firmware_cpp/build/JellyFloatOS.bin
 
       - name: Upload the Find My reset image
         if: matrix.variant == 'default'
@@ -140,6 +148,12 @@ jobs:
           name: JellyFloatOS-ring39-GRB-tRGB
           path: release-files/ring39
 
+      - name: Download 94-LED ring firmware
+        uses: actions/download-artifact@v4
+        with:
+          name: JellyFloatOS-ring94-GRB-tRGB
+          path: release-files/ring94
+
       - name: Download the Find My reset image
         uses: actions/download-artifact@v4
         with:
@@ -150,14 +164,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          mv release-files/default/JellyFloatOS.uf2 "release-files/JellyFloatOS-$GITHUB_REF_NAME.uf2"
-          mv release-files/ring39/JellyFloatOS.uf2 "release-files/JellyFloatOS-$GITHUB_REF_NAME-ring39-GRB-tRGB.uf2"
+          for v in default ring39-GRB-tRGB ring94-GRB-tRGB; do
+            dir="release-files/${v%%-*}"; [ "$v" = default ] && dir=release-files/default
+            name="JellyFloatOS-$GITHUB_REF_NAME"; [ "$v" != default ] && name="$name-$v"
+            mv "$dir/JellyFloatOS.uf2" "release-files/$name.uf2"
+            mv "$dir/JellyFloatOS.bin" "release-files/$name.bin"
+          done
           mv release-files/reset/JellyFloatReset.uf2 "release-files/JellyFloatReset-$GITHUB_REF_NAME.uf2"
+          # The .bin files are for over-the-air updates; they need a .sig next to them, made on
+          # the maintainer's Mac with tools/ota/release_sign.sh (the key never leaves it).
           if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             # A second run for the same tag (GitHub sometimes sends two events): just refresh the files.
-            gh release upload "$GITHUB_REF_NAME" release-files/*.uf2 --repo "$GITHUB_REPOSITORY" --clobber
+            gh release upload "$GITHUB_REF_NAME" release-files/*.uf2 release-files/*.bin --repo "$GITHUB_REPOSITORY" --clobber
           else
-            gh release create "$GITHUB_REF_NAME" release-files/*.uf2 \
+            gh release create "$GITHUB_REF_NAME" release-files/*.uf2 release-files/*.bin \
               --repo "$GITHUB_REPOSITORY" \
               --title "JellyFloatOS $GITHUB_REF_NAME" \
               --generate-notes

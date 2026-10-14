@@ -13,6 +13,7 @@
 #include "jell_effects.hpp"
 #include "jell_state.hpp"
 #include "jell_settings.hpp"
+#include "jell_ota.hpp"
 #include "jell_beat.hpp"
 #include "jell_net.hpp"
 #include "jell_findmy.hpp"
@@ -422,6 +423,7 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
     multicore_launch_core1(core1_entry);
 
     // Radio and role election; the LEDs are already running on core 1 by now.
+    OTA::init();    // which partition we run from, and whether this boot is on trial
     Net::init();
     FindMy::init(); // needs the radio: BLE advertising if a key is stored
 
@@ -461,6 +463,7 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         Net::poll();
         FindMy::poll();
         Settings::poll();
+        OTA::poll();
 
         // Feed the watchdog only while core 1 still produces frames. A stalled core 1 is
         // logged once, then the watchdog is left to bite.
