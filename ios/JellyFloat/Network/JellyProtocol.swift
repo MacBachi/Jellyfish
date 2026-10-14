@@ -153,6 +153,16 @@ struct JellyState: Equatable {
     var cyclePeriod: Double = 10
     /// Whether the brightness setting also dims the filament LEDs. The firmware's default is off.
     var noodleFollow: Bool = false
+    /// Bloom-wide microphone gain (SENS), 0.1...3; firmware before 1.2.0 does not send it.
+    var sensitivity: Double = 1
+}
+
+/// The AP's tempo, from its TEMPO line: the phase runs on master time (JellyFloatOS core 1).
+struct NetworkTempo: Equatable {
+    var periodUs: Int64
+    var anchorMasterUs: Int64
+    var confidence: Double
+    var receivedAt: Date
 }
 
 struct RosterEntry: Identifiable, Equatable {
@@ -166,14 +176,22 @@ struct RosterEntry: Identifiable, Equatable {
     var firmware: String? = nil
     /// How many modes the jelly knows (mode numbers 0..<modeCount); nil when it did not say.
     var modeCount: Int? = nil
+    /// The microphone's calibration from a 1.2.0 hello: how loud it hears (0...1), its floor and
+    /// ceiling in raw counts, and its own trim. nil from older firmware and from phones.
+    var micLevel: Double? = nil
+    var micFloor: Double? = nil
+    var micCeiling: Double? = nil
+    var micTrim: Double? = nil
 }
 
 /// One line received from the network, already parsed.
 enum InboundLine: Equatable {
-    case state(JellyState, apTimeUs: Int64, apID: String)
+    case state(JellyState, apTimeUs: Int64, apID: String, beatCount: Int?)
     case hello(RosterEntry)
     case slot(id: String, slot: Int)
-    case beat
+    /// A beat; numbered with the AP's running count since 1.2.0, bare before.
+    case beat(count: Int?)
+    case tempo(periodUs: Int64, anchorUs: Int64, confidence: Double)
     case ident(startUs: Int64)
     case level(AudioLevels)
     case mode(Int)
@@ -181,6 +199,7 @@ enum InboundLine: Equatable {
     case hue(Double)
     case cycle(Double)
     case noodleFollow(Bool)
+    case sensitivity(Double)
     case unknown(String)
 
     static func parse(_ raw: String, at date: Date = Date()) -> InboundLine {
@@ -194,19 +213,28 @@ enum InboundLine: Equatable {
             guard let m = n(0), let b = d(1), let h = d(2), let c = d(3), let t = args.count > 4 ? Int64(args[4]) : nil, args.count > 5 else { return .unknown(raw) }
             let mode = JellyMode(rawValue: m) ?? .micField
             let follow = args.count > 6 ? args[6] != "0" : true
-            return .state(JellyState(mode: mode, brightness: b, hueOffset: h, cyclePeriod: c, noodleFollow: follow),
-                          apTimeUs: t, apID: args[5])
+            // 1.2.0 appends the AP's beat count and the bloom's sensitivity.
+            return .state(JellyState(mode: mode, brightness: b, hueOffset: h, cyclePeriod: c, noodleFollow: follow,
+                                     sensitivity: d(8) ?? 1),
+                          apTimeUs: t, apID: args[5], beatCount: n(7))
         case "HELLO":
             // HELLO <id> <role> <slot> [<ip> [<version> <modes>]]; "?" and 0 stand for "not known".
             guard args.count >= 3, let role = RosterEntry.Role(rawValue: args[1].uppercased()), let s = n(2) else { return .unknown(raw) }
             let ip = args.count > 3 && args[3] != "?" ? args[3] : ""
             let firmware = args.count > 4 && args[4] != "?" ? args[4] : nil
             let modes = n(5).flatMap { $0 > 0 ? $0 : nil }
-            return .hello(RosterEntry(id: args[0], role: role, slot: s, ip: ip, lastSeen: date, firmware: firmware, modeCount: modes))
+            // 1.2.0 jellies append their microphone calibration: level floor ceiling trim.
+            let hasMic = role != .app && args.count > 9 && (d(9) ?? 0) > 0
+            return .hello(RosterEntry(id: args[0], role: role, slot: s, ip: ip, lastSeen: date, firmware: firmware, modeCount: modes,
+                                      micLevel: hasMic ? d(6) : nil, micFloor: hasMic ? d(7) : nil,
+                                      micCeiling: hasMic ? d(8) : nil, micTrim: hasMic ? d(9) : nil))
         case "SLOT":
             guard args.count >= 2, let s = n(1) else { return .unknown(raw) }
             return .slot(id: args[0], slot: s)
-        case "BEAT": return .beat
+        case "BEAT": return .beat(count: n(0))
+        case "TEMPO":
+            guard let p = args.count > 0 ? Int64(args[0]) : nil, let a = args.count > 1 ? Int64(args[1]) : nil, let c = d(2), p > 0 else { return .unknown(raw) }
+            return .tempo(periodUs: p, anchorUs: a, confidence: min(max(c, 0), 1))
         case "IDENT":
             guard let t = args.first.flatMap({ Int64($0) }) else { return .unknown(raw) }
             return .ident(startUs: t)
@@ -221,6 +249,7 @@ enum InboundLine: Equatable {
         case "HUE": return d(0).map { .hue($0) } ?? .unknown(raw)
         case "CYCLE": return d(0).map { .cycle($0) } ?? .unknown(raw)
         case "NOODLE": return n(0).map { .noodleFollow($0 != 0) } ?? .unknown(raw)
+        case "SENS": return d(0).map { .sensitivity($0) } ?? .unknown(raw)
         default: return .unknown(raw)
         }
     }
@@ -235,6 +264,8 @@ enum OutboundLine {
     static func hue(_ v: Double) -> String { String(format: "HUE %.0f", v) }
     static func cycle(_ v: Double) -> String { String(format: "CYCLE %.1f", v) }
     static func noodleFollow(_ on: Bool) -> String { "NOODLE \(on ? 1 : 0)" }
+    static func sensitivity(_ v: Double) -> String { String(format: "SENS %.2f", v) }
+    static func trim(id: String, _ v: Double) -> String { String(format: "TRIM %@ %.2f", id, v) }
     static let identify = "IDENT"
     static let rollCall = "HELLO"
     static let beat = "BEAT"

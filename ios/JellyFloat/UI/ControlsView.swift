@@ -19,6 +19,12 @@ struct ControlsView: View {
                     Slider(value: Binding(get: { model.state.hueOffset }, set: { model.setHue($0) }), in: 0...359).tint(.clear)
                 }
             }
+            // sound sensitivity, bloom-wide; per-jelly trims live in the Jellies tab
+            VStack(alignment: .leading, spacing: 6) {
+                HStack { Label("Sound sensitivity", systemImage: "waveform").font(.subheadline.weight(.medium)); Spacer(); Text(verbatim: String(format: "×%.2f", model.state.sensitivity)).monospacedDigit().foregroundStyle(Theme.inkDim) }
+                Slider(value: Binding(get: { model.state.sensitivity }, set: { model.setSensitivity($0) }), in: 0.1...3)
+                    .tint(Theme.cyan)
+            }
             // cycle
             HStack {
                 Label("Colour cycle", systemImage: "arrow.triangle.2.circlepath").font(.subheadline.weight(.medium))

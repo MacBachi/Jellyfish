@@ -140,6 +140,7 @@ final class JellyEngine {
     private var relayHere = 0.0
     private var relayNeighbour = 0.0
     private var relaySeenBeats = 0
+    private var relayPrimed = false   // the first frame adopts the count instead of firing on it
     private var fireflyPool = [Spark](repeating: Spark(), count: 6)
     private var whisperEMA = 0.0
     private var testState = 0
@@ -508,6 +509,7 @@ final class JellyEngine {
     // Every beat hands the pulse to the next colour slot, so it walks around the room.
     private func relay(_ time: Double, audio: AudioLevels, dt: Double, slot: Int, beatCount: Int) {
         let stations = 4
+        if !relayPrimed { relaySeenBeats = beatCount; relayPrimed = true }
         if beatCount != relaySeenBeats {
             let active = ((beatCount % stations) + stations) % stations
             let mine = ((max(slot, 0) % stations) + stations) % stations

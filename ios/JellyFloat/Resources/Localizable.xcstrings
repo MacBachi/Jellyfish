@@ -1181,6 +1181,16 @@
         }
       }
     },
+    "Sound sensitivity": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klangempfindlichkeit"
+          }
+        }
+      }
+    },
     "Stay on the jelly network in the background": {
       "localizations": {
         "de": {
@@ -1477,6 +1487,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "alle %lld s"
+          }
+        }
+      }
+    },
+    "hears %lld %  ·  floor %lldk  ·  ceiling %lldk": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "hört %lld %  ·  Boden %lldk  ·  Decke %lldk"
           }
         }
       }

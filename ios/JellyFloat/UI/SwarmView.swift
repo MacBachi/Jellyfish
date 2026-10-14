@@ -94,6 +94,17 @@ struct SwarmView: View {
                 }
                 detailLine(e, isSelf: isSelf, stale: stale)
                     .font(.caption).foregroundStyle(Theme.inkDim)
+                if let trim = e.micTrim, let level = e.micLevel, let floor = e.micFloor, let ceiling = e.micCeiling {
+                    // the microphone's calibration (1.2.0): what it hears, its own range, its trim
+                    HStack(spacing: 6) {
+                        Text("hears \(Int(level * 100)) %  ·  floor \(Int(floor / 1000))k  ·  ceiling \(Int(ceiling / 1000))k")
+                        Spacer(minLength: 4)
+                        Button { model.setTrim(of: e, trim / 1.12) } label: { Image(systemName: "minus.circle") }
+                        Text(verbatim: String(format: "×%.2f", trim)).monospacedDigit()
+                        Button { model.setTrim(of: e, trim * 1.12) } label: { Image(systemName: "plus.circle") }
+                    }
+                    .font(.caption).foregroundStyle(Theme.inkDim).buttonStyle(.plain)
+                }
             }
             Spacer()
         }

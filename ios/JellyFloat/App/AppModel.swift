@@ -34,6 +34,8 @@ final class AppModel: ObservableObject {
     @Published private(set) var roster: [RosterEntry] = []
     @Published private(set) var audio = AudioLevels()
     @Published private(set) var beatCount = 0
+    /// The AP's tempo (TEMPO line), nil until it sent one.
+    @Published var networkTempo: NetworkTempo? = nil
     @Published private(set) var lastBeatAt: Date?
     @Published private(set) var identStartUs: Int64 = 0
     @Published private(set) var lastHeardAt: Date?
@@ -157,6 +159,13 @@ final class AppModel: ObservableObject {
     func setHue(_ v: Double) { state.hueOffset = v; throttled("HUE") { self.send(OutboundLine.hue(v)) } }
     func setCycle(_ v: Double) { state.cyclePeriod = v; throttled("CYCLE") { self.send(OutboundLine.cycle(v)) } }
     func setNoodleFollow(_ on: Bool) { state.noodleFollow = on; send(OutboundLine.noodleFollow(on)) }
+    func setSensitivity(_ v: Double) { state.sensitivity = v; throttled("SENS") { self.send(OutboundLine.sensitivity(v)) } }
+    /// One jelly's microphone trim: the AP passes the line on, the addressed jelly keeps it.
+    func setTrim(of jelly: RosterEntry, _ v: Double) {
+        let clamped = min(max(v, 0.25), 4)
+        if let i = roster.firstIndex(where: { $0.id == jelly.id }) { roster[i].micTrim = clamped }
+        send(OutboundLine.trim(id: jelly.id, clamped))
+    }
     func identify() { send(OutboundLine.identify) }
     func rollCall() { send(OutboundLine.rollCall) }
     func sendBeat() { send(OutboundLine.beat) }
@@ -186,17 +195,21 @@ final class AppModel: ObservableObject {
         if connection == .connecting { connection = .connected }
         if case .lost = connection { connection = .connected }
         switch InboundLine.parse(raw) {
-        case .state(let s, let apTimeUs, let id):
+        case .state(let s, let apTimeUs, let id, let count):
             state = s
             apID = id
             timeSync.update(apTimeUs: apTimeUs, receivedAtUs: receivedAtUs)
+            // Adopt the AP's count when it is ahead of ours, or far behind (the AP restarted).
+            if let count { let ahead = count - beatCount; if ahead > 0 || ahead < -8 { beatCount = count } }
             touchRoster(RosterEntry(id: id, role: .ap, slot: 0, ip: "192.168.4.1", lastSeen: Date()))
         case .hello(let entry):
             touchRoster(entry)
         case .slot(let id, let n):
             if id == settings.jellyID { slot = n }
-        case .beat:
-            beatCount += 1; lastBeatAt = Date(); pendingBeat = true
+        case .beat(let count):
+            beatCount = count ?? beatCount + 1; lastBeatAt = Date(); pendingBeat = true
+        case .tempo(let periodUs, let anchorUs, let confidence):
+            networkTempo = NetworkTempo(periodUs: periodUs, anchorMasterUs: anchorUs, confidence: confidence, receivedAt: Date())
         case .ident(let startUs):
             identStartUs = startUs
             Task { try? await Task.sleep(for: .seconds(2.5)); if self.identStartUs == startUs { self.identStartUs = 0 } }
@@ -208,6 +221,7 @@ final class AppModel: ObservableObject {
         case .hue(let v): state.hueOffset = v
         case .cycle(let v): state.cyclePeriod = v
         case .noodleFollow(let on): state.noodleFollow = on
+        case .sensitivity(let v): state.sensitivity = v
         case .unknown: break
         }
     }
@@ -220,6 +234,7 @@ final class AppModel: ObservableObject {
             // A STATE line names the AP without version or address: keep what a HELLO told us.
             if e.firmware == nil { e.firmware = roster[i].firmware; e.modeCount = roster[i].modeCount }
             if e.ip.isEmpty { e.ip = roster[i].ip }
+            if e.micTrim == nil { e.micLevel = roster[i].micLevel; e.micFloor = roster[i].micFloor; e.micCeiling = roster[i].micCeiling; e.micTrim = roster[i].micTrim }
             roster[i] = e
         } else {
             roster.append(e)
@@ -270,10 +285,25 @@ final class AppModel: ObservableObject {
     /// One frame of the virtual jelly. Call from the drawing timeline.
     func renderFrame() -> JellyFrame {
         let beat = pendingBeat; pendingBeat = false
+        let now = masterNowUs
+        // The AP's tempo, with the phase running on master time like on the jellies: smooth
+        // instead of the 10 Hz steps of the LEVEL stream, and in step with the bloom. After
+        // the AP falls silent it fades over a few seconds (jell_config.hpp TEMPO_*).
+        var a = audio
+        if let t = networkTempo {
+            let age = Date().timeIntervalSince(t.receivedAt)
+            let fade = age < 2 ? 1.0 : exp(-(age - 2) / 8)
+            let conf = t.confidence * fade
+            if conf > a.tempoConfidence {
+                let into = ((now - t.anchorMasterUs) % t.periodUs + t.periodUs) % t.periodUs
+                a.tempoPhase = Double(into) / Double(t.periodUs)
+                a.tempoConfidence = conf
+            }
+        }
         let input = JellyEngine.Input(
-            mode: state.mode, masterUs: masterNowUs, slot: slot, cyclePeriod: state.cyclePeriod,
+            mode: state.mode, masterUs: now, slot: slot, cyclePeriod: state.cyclePeriod,
             brightness: state.brightness, hueOffset: state.hueOffset, noodleFollow: state.noodleFollow,
-            audio: audio, beat: beat, beatCount: beatCount, identStartUs: identStartUs, isAP: false)
+            audio: a, beat: beat, beatCount: beatCount, identStartUs: identStartUs, isAP: false)
         return engine.render(input)
     }
 
