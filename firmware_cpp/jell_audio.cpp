@@ -2,12 +2,13 @@
 #include "i2s_microphone.pio.h"
 #include "pico/time.h"
 #include "math.h"
+#include "jell_config.hpp"
 #include <algorithm>
 
 // How loud is this band right now, against what it has been doing? hi and lo follow the
 // band's loud and quiet ends; the current value is stretched between them. A band that
 // sits still (a room hum, or silence) keeps a wide floor under it and so stays dark.
-float AudioBand::update(float rms, float dt_s, float range_tau_s, float attack_s, float release_s)
+float AudioBand::update(float rms, float dt_s, float range_tau_s, float attack_s, float release_s, float gain)
 {
     const float range_alpha = 1.0f - expf(-dt_s / range_tau_s);
     if (rms > hi_) hi_ = rms; else hi_ += (rms - hi_) * range_alpha;
@@ -16,6 +17,8 @@ float AudioBand::update(float rms, float dt_s, float range_tau_s, float attack_s
     const float span = fmaxf(hi_ - lo_, hi_ * 0.35f);
     float v = span > 1e-4f ? (rms - lo_) / span : 0.0f;
     v = v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+    if (gain != 1.0f && gain > 0.0f)
+        v = powf(v, 1.0f / gain);
 
     const float tau = v > env_ ? attack_s : release_s;
     env_ += (v - env_) * (1.0f - expf(-dt_s / tau));
@@ -102,7 +105,7 @@ void Microphone::audio_input_init(PIO pio, uint sm, uint pin_bclk, uint pin_din)
         true);
 }
 
-AudioFrame Microphone::capture()
+AudioFrame Microphone::capture(float gain)
 {
     // Wait until the current DMA transfer has completed
     dma_channel_wait_for_finish_blocking(dma_chan);
@@ -196,27 +199,25 @@ AudioFrame Microphone::capture()
         dt = MAX_FRAME_GAP_S;
     frame.dt_s = dt;
 
-    const float range_alpha = 1.0f - expf(-dt / RANGE_TRACK_TAU_S);
     const float level_keep = expf(-dt / LEVEL_DECAY_TAU_S);
 
-    if (frame.rms > rms_max)
-        rms_max = frame.rms;
-    else
-        rms_max += (frame.rms - rms_max) * range_alpha;
-
-    if (frame.rms < rms_min)
+    // This jelly's own range (see the constants in jell_config.hpp): the floor follows
+    // the quiet moments down fast and creeps up slowly, the ceiling jumps to the loud
+    // moments and decays slowly. The level is where this frame sits between the two.
+    if (!calibrated_)
+    {
         rms_min = frame.rms;
-    else
-        rms_min += (frame.rms - rms_min) * range_alpha;
-
-    frame.level = (frame.rms - rms_min) / (rms_max - rms_min);
-
-    // Clamp the adaptive range
-    if (rms_min > 64000.0f)
-        rms_min = 64000.0f;
-
-    if (rms_max < 90000.0f)
-        rms_max = 90000.0f;
+        rms_max = frame.rms + JellConfig::LEVEL_MIN_SPAN_COUNTS;
+        calibrated_ = true;
+    }
+    rms_min += (frame.rms - rms_min)
+        * (1.0f - expf(-dt / (frame.rms < rms_min ? JellConfig::LEVEL_FLOOR_FALL_TAU_S : JellConfig::LEVEL_FLOOR_RISE_TAU_S)));
+    rms_max += (frame.rms - rms_max)
+        * (1.0f - expf(-dt / (frame.rms > rms_max ? JellConfig::LEVEL_CEIL_RISE_TAU_S : JellConfig::LEVEL_CEIL_FALL_TAU_S)));
+    const float ceiling = fmaxf(rms_max, fmaxf(rms_min * JellConfig::LEVEL_MIN_RATIO,
+                                               rms_min + JellConfig::LEVEL_MIN_SPAN_COUNTS));
+    frame.level = (frame.rms - rms_min) / (ceiling - rms_min) * gain;
+    frame.level = frame.level < 0.0f ? 0.0f : (frame.level > 1.0f ? 1.0f : frame.level);
 
     if (frame.level > smoothed_level)
         smoothed_level = frame.level;
@@ -234,10 +235,10 @@ AudioFrame Microphone::capture()
         
     // The bands, each stretched and enveloped on its own.
     const float inv_n = 1.0f / (float)frame.sample_count;
-    frame.bass = band_bass.update(sqrtf(bass_sq * inv_n), dt, RANGE_TRACK_TAU_S, BASS_ATTACK_S, BASS_RELEASE_S);
-    frame.mid = band_mid.update(sqrtf(mid_sq * inv_n), dt, RANGE_TRACK_TAU_S, MID_ATTACK_S, MID_RELEASE_S);
-    frame.melody = band_melody.update(sqrtf(melody_sq * inv_n), dt, RANGE_TRACK_TAU_S, MELODY_ATTACK_S, MELODY_RELEASE_S);
-    frame.treble = band_treble.update(sqrtf(treble_sq * inv_n), dt, RANGE_TRACK_TAU_S, TREBLE_ATTACK_S, TREBLE_RELEASE_S);
+    frame.bass = band_bass.update(sqrtf(bass_sq * inv_n), dt, RANGE_TRACK_TAU_S, BASS_ATTACK_S, BASS_RELEASE_S, gain);
+    frame.mid = band_mid.update(sqrtf(mid_sq * inv_n), dt, RANGE_TRACK_TAU_S, MID_ATTACK_S, MID_RELEASE_S, gain);
+    frame.melody = band_melody.update(sqrtf(melody_sq * inv_n), dt, RANGE_TRACK_TAU_S, MELODY_ATTACK_S, MELODY_RELEASE_S, gain);
+    frame.treble = band_treble.update(sqrtf(treble_sq * inv_n), dt, RANGE_TRACK_TAU_S, TREBLE_ATTACK_S, TREBLE_RELEASE_S, gain);
 
     // A build-up: the last few seconds standing above the last half minute.
     rise_fast_ += (frame.level - rise_fast_) * (1.0f - expf(-dt / RISE_FAST_TAU_S));

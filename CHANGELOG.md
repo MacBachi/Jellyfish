@@ -24,6 +24,13 @@ entries start where the fork diverged.
   USB supply of each jelly. Own network `⚡️`, a page in the look of the jellies' page with a switch,
   a restart and a name per port, and a staggered start after power-up: one port every two seconds.
 
+### Changed
+- How loud a sound counts is now measured against each jelly's own recent range: a floor that
+  follows the quiet moments and a ceiling that follows the loud ones, both over about a
+  minute. The old fixed clamps made the level depend on the sound pressure at the microphone,
+  so the jelly nearest the speaker reacted most and the far ones hardly at all. A silent room
+  still stays dark.
+
 ### Fixed
 - Relay never pulsed on the AP or on a jelly on its own, and stations disagreed about whose
   turn it was: each counted the beats it happened to receive since boot. The AP now numbers

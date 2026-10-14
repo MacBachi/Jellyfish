@@ -128,6 +128,19 @@ public:
     static constexpr float TRIM_MIN = 0.25f;
     static constexpr float TRIM_MAX = 4.0f;
 
+    // The overall level is measured against this jelly's own recent range: a floor that
+    // follows the quiet moments and creeps up slowly, a ceiling that jumps to the loud ones
+    // and decays slowly. Every jelly thus reads its own room the same way, however far
+    // from the speaker it hangs. The ceiling never comes closer to the floor than the ratio
+    // and the span below, so a silent room does not light up on its own noise (26000 raw
+    // counts is the span the fixed clamps of 1.1.0 implied).
+    static constexpr float LEVEL_FLOOR_FALL_TAU_S = 2.0f;
+    static constexpr float LEVEL_FLOOR_RISE_TAU_S = 60.0f;
+    static constexpr float LEVEL_CEIL_RISE_TAU_S = 0.3f;
+    static constexpr float LEVEL_CEIL_FALL_TAU_S = 45.0f;
+    static constexpr float LEVEL_MIN_RATIO = 2.0f;
+    static constexpr float LEVEL_MIN_SPAN_COUNTS = 26000.0f;
+
     // The AP shares its tempo (TEMPO line: period, the master time of a beat, confidence).
     // A station keeps using it after the AP went quiet: fully for TEMPO_HOLD_S, then with
     // fading confidence, until its own tracker is the more confident one.

@@ -241,7 +241,7 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
         // Every mode captures audio: it keeps the adaptive range calibrated and paces the
         // loop at the microphone's buffer rate. The DMA fills while we render.
-        AudioFrame audio = mic.capture();
+        AudioFrame audio = mic.capture(s.sensitivity * g_trim);
         g_local_level = audio.smoothed_level;
         g_local_bass = audio.bass;
         g_local_mid = audio.mid;

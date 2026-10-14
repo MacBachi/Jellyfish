@@ -42,7 +42,8 @@ struct AudioFrame
 class AudioBand
 {
 public:
-    float update(float rms, float dt_s, float range_tau_s, float attack_s, float release_s);
+    // gain > 1 lifts the quiet end (applied as a gamma on the 0..1 envelope), < 1 damps it.
+    float update(float rms, float dt_s, float range_tau_s, float attack_s, float release_s, float gain = 1.0f);
 
 private:
     float hi_ = 0.0f;
@@ -66,12 +67,14 @@ public:
               uint pin_bclk,
               uint pin_din);
 
-    AudioFrame capture();
+    // gain multiplies the normalised level and lifts the bands: SENS times this jelly's TRIM.
+    AudioFrame capture(float gain = 1.0f);
 
     int get_sample_size() const;
 
-    float rms_min = 64000.0f;
-    float rms_max = 90000.0f;
+    float rms_min = 0.0f;   // the floor: where the quiet moments sit (raw counts)
+    float rms_max = 0.0f;   // the ceiling: where the loud moments reach
+    bool calibrated_ = false; // the first frame seeds both
     float smoothed_peak = 0.0f;
     float smoothed_level = 0.0f;
 
