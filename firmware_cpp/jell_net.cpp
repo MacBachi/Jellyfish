@@ -791,6 +791,7 @@ namespace
         {
             state.mode = (JellConfig::DisplayMode)mode;
             changed = true;
+            log("mode %d from the AP", mode);
         }
         if (state.brightness != bright) { state.brightness = bright; changed = true; }
         if (state.hue_offset != hue) { state.hue_offset = hue; changed = true; }
@@ -1025,8 +1026,10 @@ void Net::handle_line(const char* line, bool local)
                 Settings::note_trim(v);
                 log("my microphone trim is now %.2f", v);
             }
-            if (local)
+            else if (local || state.is_ap)
             {
+                // From the web page or a button, or from an app (which can only reach the
+                // AP): pass it on so the addressed jelly hears it.
                 snprintf(out, sizeof out, "TRIM %s %.2f", id, v);
                 send_line(out);
             }
