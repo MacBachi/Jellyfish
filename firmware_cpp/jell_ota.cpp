@@ -43,7 +43,7 @@ namespace
     bool g_buy_pending = false;    // booted on trial, not confirmed yet
     uint64_t g_boot_us = 0;
 
-    volatile State g_state = State::Idle;
+    volatile State g_ota = State::Idle;
     const char* volatile g_error = "";
     uint32_t g_size = 0;
     uint8_t g_sig[64];
@@ -73,7 +73,7 @@ namespace
     void fail(const char* why)
     {
         g_error = why;
-        g_state = State::Failed;
+        g_ota = State::Failed;
         printf("ota: failed: %s\n", why);
     }
 
@@ -156,7 +156,7 @@ namespace
     {
         const uint32_t off = g_chunk_off;
         const uint32_t len = g_chunk_len;
-        if (g_state != State::Receiving || off != g_written || off + len > g_size)
+        if (g_ota != State::Receiving || off != g_written || off + len > g_size)
         {
             g_chunk_ready = false;
             return; // refused in chunk() already; nothing to do
@@ -174,14 +174,14 @@ namespace
 
     void verify_and_reboot()
     {
-        if (g_state != State::Receiving)
+        if (g_ota != State::Receiving)
             return;
         if (g_written != g_size)
         {
             fail("image incomplete");
             return;
         }
-        g_state = State::Verifying;
+        g_ota = State::Verifying;
         const uint8_t* image = raw_flash(target_offset());
         printf("ota: %lu bytes in partition %d, checking the signature\n", (unsigned long)g_size, target_partition());
 
@@ -211,7 +211,7 @@ namespace
         }
 
         printf("ota: signature good, rebooting into partition %d on trial\n", target_partition());
-        g_state = State::Rebooting;
+        g_ota = State::Rebooting;
         g_reboot_at_us = time_us_64() + 800000; // let the status answer go out first
     }
 
@@ -274,7 +274,7 @@ void OTA::poll()
         g_finish_requested = false;
         verify_and_reboot();
     }
-    if (g_state == State::Rebooting && time_us_64() >= g_reboot_at_us)
+    if (g_ota == State::Rebooting && time_us_64() >= g_reboot_at_us)
     {
         rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE | REBOOT2_FLAG_NO_RETURN_ON_SUCCESS, 10,
                    XIP_BASE + target_offset(), 0);
@@ -288,7 +288,7 @@ bool OTA::begin(const char* args)
         g_error = "no partition table; update this jelly over USB once";
         return false;
     }
-    if (g_state == State::Verifying || g_state == State::Rebooting || g_chunk_ready)
+    if (g_ota == State::Verifying || g_ota == State::Rebooting || g_chunk_ready)
         return false;
     char* end;
     const unsigned long size = strtoul(args, &end, 10);
@@ -312,14 +312,14 @@ bool OTA::begin(const char* args)
     g_size = (uint32_t)size;
     g_written = 0;
     g_error = "";
-    g_state = State::Receiving;
+    g_ota = State::Receiving;
     printf("ota: receiving %lu bytes for partition %d\n", size, target_partition());
     return true;
 }
 
 bool OTA::chunk(uint32_t offset, const uint8_t* data, uint32_t len)
 {
-    if (g_state != State::Receiving || g_chunk_ready)
+    if (g_ota != State::Receiving || g_chunk_ready)
         return false;
     if (len == 0 || len > CHUNK || offset != g_written || offset % CHUNK != 0 || offset + len > g_size)
         return false;
@@ -332,7 +332,7 @@ bool OTA::chunk(uint32_t offset, const uint8_t* data, uint32_t len)
 
 bool OTA::finish()
 {
-    if (g_state != State::Receiving)
+    if (g_ota != State::Receiving)
         return false;
     g_finish_requested = true;
     return true;
@@ -344,7 +344,7 @@ size_t OTA::write_json(char* buf, size_t n)
         "{\"capable\":%s,\"running\":%d,\"target\":%d,\"trial\":%s,\"state\":\"%s\",\"written\":%lu,\"size\":%lu,"
         "\"busy\":%s,\"error\":\"%s\",\"version\":\"%s\",\"variant\":\"%s\"}",
         capable() ? "true" : "false", g_running, capable() ? target_partition() : -1, g_buy_pending ? "true" : "false",
-        state_name(g_state), (unsigned long)g_written, (unsigned long)g_size, g_chunk_ready ? "true" : "false",
+        state_name(g_ota), (unsigned long)g_written, (unsigned long)g_size, g_chunk_ready ? "true" : "false",
         g_error, JellConfig::VERSION, JellConfig::VARIANT);
     return w < 0 ? 0 : ((size_t)w < n ? (size_t)w : n - 1);
 }
