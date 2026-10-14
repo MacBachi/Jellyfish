@@ -174,12 +174,19 @@ public:
     // An AP keeps looking for a second jelly network every so often. Two jellies powered
     // while apart each become an AP, and without this they would never merge: the one
     // whose MAC compares lower steps down and joins the other.
-    static constexpr uint32_t NET_AP_SCAN_PERIOD_MS = 30000;
+    // 0 = never: measured 2026-09-13, an AP-mode scan does not report networks with our own
+    // name (0 of 17..46 per scan), so the rival check cannot fire; the jittered rejoin wait
+    // is what keeps two APs from forming. Set a period to re-enable the experiment.
+    static constexpr uint32_t NET_AP_SCAN_PERIOD_MS = 0;
     // A station that loses its AP looks for it this long before it holds an election of
     // its own. An AP that merely restarted is back well within this, and a random election
     // in that window is how two jellies end up as two networks.
-    static constexpr uint32_t NET_REJOIN_WAIT_MS = 60000;       // station: this long without a STATE means the AP is gone, link or no link
+    static constexpr uint32_t NET_REJOIN_WAIT_MS = 60000;       // after a lost AP: look for it this long (plus jitter) before any election
+    static constexpr uint32_t NET_REJOIN_JITTER_MS = 20000;     // random extra, so stations that lost the same AP do not become APs together
+    static constexpr int NET_JOIN_MAX_FAILURES = 3;             // joins that fail in a row before the jelly gives up on that network for now
     static constexpr uint32_t NET_SCAN_STUCK_MS = 20000;        // scanning: a scan the chip never reports finished is abandoned after this
+    static constexpr uint32_t NET_AP_CHECK_MS = 5000;           // AP: how often it checks its own interface
+    static constexpr int NET_AP_SEND_FAIL_MAX = 10;             // AP: broadcasts failing in a row before the interface is restarted
     static constexpr int NET_MAX_JELLIES = 16;               // roster size on the AP
 
     // Apps (phones) cannot receive broadcasts on iOS, so the AP also sends every line

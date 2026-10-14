@@ -10,6 +10,7 @@
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "pico/unique_id.h"
+#include "hardware/watchdog.h"
 #include "pico/rand.h"
 #include "lwip/udp.h"
 #include "lwip/pbuf.h"
@@ -178,7 +179,15 @@ namespace
         IP4_ADDR(ip_2_ip4(&bcast), 192, 168, 4, 255);
         const err_t err = send_datagram(line, &bcast, JellConfig::NET_PORT);
         if (err != ERR_OK)
+        {
             log("send failed (%d): %s", (int)err, line);
+            send_fail_streak++;
+        }
+        else
+        {
+            send_fail_streak = 0;
+            ap_restarts = 0;
+        }
         send_to_subscribers_locked(line);
         cyw43_arch_lwip_end();
 
@@ -336,6 +345,10 @@ namespace
             slot.local = false;
             rx_head = next;
         }
+        else
+        {
+            dropped_datagrams = dropped_datagrams + 1;
+        }
         pbuf_free(p);
     }
 
@@ -364,6 +377,12 @@ namespace
     volatile bool found_unlogged = false;
     volatile uint32_t dropped_web_commands = 0; // counted in lwIP context, reported from poll()
     uint32_t reported_drops = 0;
+    volatile uint32_t dropped_datagrams = 0;    // receive queue full, counted in the lwIP callback
+    uint32_t reported_datagram_drops = 0;
+    int join_failures = 0;                      // joins that failed in a row since the last success
+    int send_fail_streak = 0;                   // AP: broadcasts that failed in a row
+    uint64_t next_ap_check_us = 0;              // AP: next self-check of the interface
+    int ap_restarts = 0;                        // AP: interface restarts in a row without a successful send
 
     int on_scan_result(void*, const cyw43_ev_scan_result_t* result)
     {
@@ -419,26 +438,58 @@ namespace
     // Start (or restart) the election: listen for an existing network for a random
     // 10..120 s, joining it as soon as it shows up. Only if nothing appears in that time,
     // and one more full scan afterwards, does this jelly become the AP.
-    void set_scanning()
+    // keep_deadline: a join attempt failed; carry on with the election already running
+    // instead of starting a fresh wait, so a network that refuses us cannot keep us
+    // scanning forever.
+    void set_scanning(bool keep_deadline = false)
     {
         role = Net::Role::Scanning;
         ssid_seen = false;
         final_scan = false;
         final_scan_started = false;
 
+        const uint64_t now = time_us_64();
+        if (keep_deadline && scan_deadline_us > now)
+        {
+            log("election continues, %lu ms left", (unsigned long)((scan_deadline_us - now) / 1000));
+            start_scan();
+            return;
+        }
+
         const uint32_t span_ms = JellConfig::NET_ELECTION_MAX_MS - JellConfig::NET_ELECTION_MIN_MS;
         uint32_t wait_ms = JellConfig::NET_ELECTION_MIN_MS + get_rand_32() % (span_ms + 1);
         if (rejoining)
         {
-            // Not a cold start: the network we were on has probably just restarted.
-            wait_ms = JellConfig::NET_REJOIN_WAIT_MS;
+            // Not a cold start: the network we were on has probably just restarted. The
+            // jitter keeps the stations that lost the same AP from all becoming APs at once.
+            wait_ms = JellConfig::NET_REJOIN_WAIT_MS + get_rand_32() % (JellConfig::NET_REJOIN_JITTER_MS + 1);
             rejoining = false;
         }
-        scan_deadline_us = time_us_64() + (uint64_t)wait_ms * 1000;
+        scan_deadline_us = now + (uint64_t)wait_ms * 1000;
 
         log("election: listening for %s, becoming AP in %lu ms unless one appears",
             JellConfig::WIFI_SSID, (unsigned long)wait_ms);
         start_scan();
+    }
+
+    // A join did not work out: leave whatever half-state the chip is in (a scan while still
+    // associated never finishes) and go on scanning. After a few failures in a row the
+    // network is probably not for us right now; hold a normal election instead.
+    void join_failed(const char* why)
+    {
+        cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
+        join_failures++;
+        if (join_failures < JellConfig::NET_JOIN_MAX_FAILURES)
+        {
+            log("join failed (%s), scanning again", why);
+            set_scanning(true);
+        }
+        else
+        {
+            log("join failed (%s) %d times, giving up on this network for now", why, join_failures);
+            join_failures = 0;
+            set_scanning(false);
+        }
     }
 
     void set_joining()
@@ -447,8 +498,9 @@ namespace
                                                       CYW43_AUTH_WPA2_AES_PSK);
         if (err != 0)
         {
-            log("connect_async failed (%d), scanning again", err);
-            set_scanning();
+            char why[24];
+            snprintf(why, sizeof why, "connect_async %d", err);
+            join_failed(why);
             return;
         }
         role = Net::Role::Joining;
@@ -464,6 +516,7 @@ namespace
         state.slot = -1;
         state.time_offset_us = 0;
         have_offset = false;
+        join_failures = 0;
         publish();
         log("joined as station, ip %s", my_ip());
         last_state_rx_us = time_us_64();
@@ -548,16 +601,36 @@ namespace
         Member* m = roster_find(id);
         if (m == nullptr)
         {
-            if (roster_count >= JellConfig::NET_MAX_JELLIES)
+            if (roster_count < JellConfig::NET_MAX_JELLIES)
             {
-                log("roster full, ignoring %s", id);
-                return;
+                m = &roster[roster_count];
+                m->slot = roster_count + 1; // slot 0 is the AP itself
+                roster_count++;
             }
-            m = &roster[roster_count];
+            else
+            {
+                // Full: a member nobody has heard from for NET_MEMBER_TIMEOUT_MS hands its
+                // slot to the newcomer (a phone reconnecting under a new id would otherwise
+                // fill the roster for good).
+                const uint64_t now = time_us_64();
+                Member* oldest = nullptr;
+                for (int i = 0; i < roster_count; i++)
+                {
+                    const uint64_t age = now > roster[i].last_seen_us ? now - roster[i].last_seen_us : 0;
+                    if (age > (uint64_t)JellConfig::NET_MEMBER_TIMEOUT_MS * 1000
+                        && (oldest == nullptr || roster[i].last_seen_us < oldest->last_seen_us))
+                        oldest = &roster[i];
+                }
+                if (oldest == nullptr)
+                {
+                    log("roster full, ignoring %s", id);
+                    return;
+                }
+                log("roster full, %s takes slot %d from silent %s", id, oldest->slot, oldest->id);
+                m = oldest;
+            }
             strncpy(m->id, id, sizeof m->id - 1);
             m->id[sizeof m->id - 1] = 0;
-            m->slot = roster_count + 1; // slot 0 is the AP itself
-            roster_count++;
             log("new %s %s gets slot %d, version %s, %d modes", is_app ? "app" : "jelly", id, m->slot, version, modes);
         }
         m->last_seen_us = time_us_64();
@@ -1058,6 +1131,11 @@ void Net::poll()
         log("queue full, dropped %lu web command(s)", (unsigned long)(dropped_web_commands - reported_drops));
         reported_drops = dropped_web_commands;
     }
+    if (dropped_datagrams != reported_datagram_drops)
+    {
+        log("queue full, dropped %lu datagram(s)", (unsigned long)(dropped_datagrams - reported_datagram_drops));
+        reported_datagram_drops = dropped_datagrams;
+    }
 
     // Received lines first, so a command never waits on the state machine below.
     while (rx_tail != rx_head)
@@ -1121,8 +1199,9 @@ void Net::poll()
                 set_station();
             else if (status < 0 || now >= join_deadline_us)
             {
-                log("join failed (status %d), scanning again", status);
-                set_scanning();
+                char why[24];
+                snprintf(why, sizeof why, status < 0 ? "status %d" : "timeout, status %d", status);
+                join_failed(why);
             }
             break;
         }
@@ -1175,13 +1254,41 @@ void Net::poll()
             log("second AP %02x:%02x:%02x:%02x:%02x:%02x on %s; ours compares higher, it should join us",
                 rival[0], rival[1], rival[2], rival[3], rival[4], rival[5], JellConfig::WIFI_SSID);
         }
-        if (ap_scan_running && !cyw43_wifi_scan_active(&cyw43_state))
+        if (ap_scan_running && (!cyw43_wifi_scan_active(&cyw43_state) || scan_stuck(now)))
         {
             ap_scan_running = false;
             log("AP scan done: %lu networks, %lu named %s (the chip hides our own)",
                 (unsigned long)scan_results, (unsigned long)scan_ours, JellConfig::WIFI_SSID);
         }
-        if (now >= next_ap_scan_us && !cyw43_wifi_scan_active(&cyw43_state))
+
+        // Self-check: an AP whose broadcasts keep failing, or whose interface reports the
+        // link down, restarts the interface; if that does not help either, the watchdog
+        // takes the whole jelly down and up again. Its stations rejoin on their own.
+        if (now >= next_ap_check_us)
+        {
+            next_ap_check_us = now + (uint64_t)JellConfig::NET_AP_CHECK_MS * 1000;
+            const bool link_down = !netif_is_link_up(&cyw43_state.netif[CYW43_ITF_AP]);
+            if (link_down || send_fail_streak >= JellConfig::NET_AP_SEND_FAIL_MAX)
+            {
+                ap_restarts++;
+                if (ap_restarts >= 2)
+                {
+                    log("AP interface still dead after a restart, rebooting");
+                    watchdog_hw->scratch[0] = JellConfig::WATCHDOG_REASON_AP_DEAD;
+                    sleep_ms(50);
+                    watchdog_reboot(0, 0, 0);
+                }
+                log("AP interface %s (%d sends failed in a row), restarting it",
+                    link_down ? "link down" : "not sending", send_fail_streak);
+                dhcp_server_deinit(&dhcp);
+                cyw43_arch_disable_ap_mode();
+                send_fail_streak = 0;
+                become_ap();
+                break;
+            }
+        }
+
+        if (JellConfig::NET_AP_SCAN_PERIOD_MS != 0 && now >= next_ap_scan_us && !cyw43_wifi_scan_active(&cyw43_state))
         {
             next_ap_scan_us = now + (uint64_t)JellConfig::NET_AP_SCAN_PERIOD_MS * 1000;
             scan_results = 0;

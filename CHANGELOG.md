@@ -6,11 +6,27 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- A hardware watchdog. Core 0 feeds it from the main loop, and only while core 1 keeps
+  rendering, so a jelly whose network stack or LED loop has stopped restarts itself within
+  8 s instead of hanging bright and frozen until someone pulls the plug. The boot banner
+  reports a watchdog restart and why.
 - The power board (`powerboard/`): firmware for an ESP32 board with eight relays that switches the
   USB supply of each jelly. Own network `⚡️`, a page in the look of the jellies' page with a switch,
   a restart and a name per port, and a staggered start after power-up: one port every two seconds.
 
 ### Fixed
+- Stations that lost the same AP all became APs at the same moment: the 60 s rejoin wait had
+  no spread. It is now 60 to 80 s at random, so one of them wins and the others join it.
+- A join that failed restarted the election from scratch, so a network that kept refusing
+  us could keep a jelly scanning for good. The election now carries on where it was; after
+  three failed joins in a row the jelly holds a normal election instead. The chip is told to
+  leave the network on every failure path, which a scan while still associated needs.
+- The AP checks its own interface every 5 s: when broadcasts keep failing or the link is
+  reported down it restarts the interface, and if that does not help it reboots. The AP's
+  rival scan is off by default (an AP-mode scan cannot see networks with its own name).
+- The roster never freed a slot, so a phone reconnecting under new ids could fill it and
+  leave a jelly without a colour slot for good. A member silent for 35 s now hands its slot
+  to a newcomer. Datagrams dropped because the receive queue was full are counted and logged.
 - A ring sometimes showed the new picture only up to some LED and the old one beyond it,
   mostly on a mode change. Each pixel was computed between two pushes to the PIO, which left
   gaps on the data line; a strip whose reset threshold is short latched in such a gap. The

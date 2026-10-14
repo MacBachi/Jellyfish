@@ -172,7 +172,9 @@ Every jelly runs the same firmware. On power-up it listens for the jelly network
 seconds. If it hears one it joins as a station; if not, it listens through one more scan and then becomes
 the access point itself. So: switch the first jelly on, wait for its onboard LED to go solid, then switch
 on the rest. If the AP jelly falls silent for 6 seconds, the others keep their last state, look for it
-for a fixed 60 seconds (long enough for a reboot), and only then hold a new election.
+for 60 to 80 seconds (long enough for a reboot, with a random spread so they do not all become APs at
+once), and only then hold a new election. A hardware watchdog restarts a jelly whose network or LEDs
+have stopped; the boot banner says so.
 
 - Network name is the jellyfish emoji 🪼, password `FroschUndMaus`. Both can be changed at build time, see above.
 - Joining the network is the only access control. Anyone on it can control the bloom.
