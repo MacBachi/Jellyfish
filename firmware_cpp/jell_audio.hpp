@@ -74,7 +74,8 @@ public:
 
     float rms_min = 0.0f;   // the floor: where the quiet moments sit (raw counts)
     float rms_max = 0.0f;   // the ceiling: where the loud moments reach
-    bool calibrated_ = false; // the first frame seeds both
+    bool calibrated_ = false; // seeded once the switch-on thump has passed
+    float uptime_s_ = 0.0f;   // seconds of capture so far
     float smoothed_peak = 0.0f;
     float smoothed_level = 0.0f;
 

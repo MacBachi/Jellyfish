@@ -140,6 +140,7 @@ public:
     static constexpr float LEVEL_CEIL_FALL_TAU_S = 45.0f;
     static constexpr float LEVEL_MIN_RATIO = 2.0f;
     static constexpr float LEVEL_MIN_SPAN_COUNTS = 26000.0f;
+    static constexpr float LEVEL_SETTLE_S = 1.0f;             // the microphone's switch-on thump is not calibration
 
     // The AP shares its tempo (TEMPO line: period, the master time of a beat, confidence).
     // A station keeps using it after the AP went quiet: fully for TEMPO_HOLD_S, then with

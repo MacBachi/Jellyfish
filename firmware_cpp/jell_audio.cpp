@@ -204,11 +204,14 @@ AudioFrame Microphone::capture(float gain)
     // This jelly's own range (see the constants in jell_config.hpp): the floor follows
     // the quiet moments down fast and creeps up slowly, the ceiling jumps to the loud
     // moments and decays slowly. The level is where this frame sits between the two.
+    uptime_s_ += dt;
     if (!calibrated_)
     {
+        // The first second after power-up is the microphone settling (a thump of a million
+        // counts); seeding the ceiling with it would keep the jelly dull for a minute.
         rms_min = frame.rms;
         rms_max = frame.rms + JellConfig::LEVEL_MIN_SPAN_COUNTS;
-        calibrated_ = true;
+        calibrated_ = uptime_s_ >= JellConfig::LEVEL_SETTLE_S;
     }
     rms_min += (frame.rms - rms_min)
         * (1.0f - expf(-dt / (frame.rms < rms_min ? JellConfig::LEVEL_FLOOR_FALL_TAU_S : JellConfig::LEVEL_FLOOR_RISE_TAU_S)));
