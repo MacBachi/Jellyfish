@@ -20,6 +20,11 @@ entries start where the fork diverged.
   a restart and a name per port, and a staggered start after power-up: one port every two seconds.
 
 ### Fixed
+- Relay never pulsed on the AP or on a jelly on its own, and stations disagreed about whose
+  turn it was: each counted the beats it happened to receive since boot. The AP now numbers
+  its beats (`BEAT <n>`) and carries the count in STATE, every jelly adopts it, and a jelly
+  counts its own microphone's beats whenever it is not following an AP. Entering Relay no
+  longer fires a pulse on the count it finds.
 - Stations that lost the same AP all became APs at the same moment: the 60 s rejoin wait had
   no spread. It is now 60 to 80 s at random, so one of them wins and the others join it.
 - A join that failed restarted the election from scratch, so a network that kept refusing

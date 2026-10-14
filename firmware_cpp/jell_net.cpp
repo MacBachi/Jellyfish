@@ -272,9 +272,10 @@ namespace
     void send_state()
     {
         char line[NET_LINE_MAX];
-        snprintf(line, sizeof line, "STATE %d %.2f %.0f %.1f %llu %s %d",
+        snprintf(line, sizeof line, "STATE %d %.2f %.0f %.1f %llu %s %d %lu %.2f",
                  (int)state.mode, state.brightness, state.hue_offset, state.cycle_period_s,
-                 (unsigned long long)time_us_64(), my_id, state.noodle_follow ? 1 : 0);
+                 (unsigned long long)time_us_64(), my_id, state.noodle_follow ? 1 : 0,
+                 (unsigned long)state.beat_count, state.sensitivity);
         send_line(line);
         last_state_sent_us = time_us_64();
         next_state_us = last_state_sent_us + (uint64_t)JellConfig::NET_STATE_PERIOD_MS * 1000;
@@ -770,6 +771,30 @@ namespace
             changed = true;
         }
 
+        // Trailing fields, added in 1.2.0: the AP's beat count (adopted when it is ahead of
+        // ours, or far behind, which means the AP restarted) and the bloom's sensitivity.
+        uint64_t beats;
+        if (next_u64(p, beats))
+        {
+            const uint32_t n = (uint32_t)beats;
+            const int32_t ahead = (int32_t)(n - state.beat_count);
+            if (ahead > 0 || ahead < -8)
+            {
+                state.beat_count = n;
+                changed = true;
+            }
+        }
+        float sens;
+        if (next_float(p, sens))
+        {
+            sens = sens < JellConfig::SENS_MIN ? JellConfig::SENS_MIN : (sens > JellConfig::SENS_MAX ? JellConfig::SENS_MAX : sens);
+            if (state.sensitivity != sens)
+            {
+                state.sensitivity = sens;
+                changed = true;
+            }
+        }
+
         // Time sync: the AP's clock at send time versus our clock at arrival.
         if (current_rx_us != 0)
         {
@@ -937,14 +962,21 @@ void Net::handle_line(const char* line, bool local)
     }
     else if (strcmp(verb, "BEAT") == 0)
     {
+        // "BEAT <n>" carries the AP's running count, so every jelly agrees on which beat this
+        // is (Relay walks on it) and a lost packet heals with the next one. Firmware before
+        // 1.2.0 sends the bare word; then we count ourselves.
         if (state.is_ap)
         {
-            // Only the AP ever sends BEAT, so this came from a laptop: pass it on.
-            send_line("BEAT");
+            // Only the AP ever sends BEAT, so this came from a laptop: count and pass it on.
+            state.beat_count++;
+            publish();
+            snprintf(out, sizeof out, "BEAT %lu", (unsigned long)state.beat_count);
+            send_line(out);
         }
         else
         {
-            state.beat_count++;
+            uint64_t n;
+            state.beat_count = next_u64(args, n) ? (uint32_t)n : state.beat_count + 1;
             publish();
         }
     }
@@ -1175,6 +1207,21 @@ void Net::poll()
         current_rx_us = 0;
     }
 
+    // Beats from our own microphone count whenever we are not following an AP (as the AP,
+    // or alone during an election): Relay walks on the count, and the AP announces each one.
+    if (!state.follow_network_beats && g_local_beat_count != last_local_beats)
+    {
+        state.beat_count += g_local_beat_count - last_local_beats;
+        last_local_beats = g_local_beat_count;
+        publish();
+        if (::role == Role::AccessPoint)
+        {
+            char line[NET_LINE_MAX];
+            snprintf(line, sizeof line, "BEAT %lu", (unsigned long)state.beat_count);
+            send_line(line);
+        }
+    }
+
     switch (::role) // the variable; unqualified `role` here is the accessor Net::role()
     {
     case Role::Scanning:
@@ -1324,12 +1371,6 @@ void Net::poll()
             || (state_dirty && now - last_state_sent_us >= (uint64_t)JellConfig::NET_STATE_MIN_GAP_MS * 1000))
         {
             send_state();
-        }
-
-        if (g_local_beat_count != last_local_beats)
-        {
-            last_local_beats = g_local_beat_count;
-            send_line("BEAT");
         }
 
         // Fresh timestamp: `now` was taken before the receive queue was drained, and a

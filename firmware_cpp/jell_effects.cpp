@@ -939,10 +939,16 @@ void effect_relay(Canvas& canvas, const AudioFrame& audio, float time, int slot,
 
     static uint64_t last_us = 0;
     static uint32_t seen_beats = 0;
+    static bool primed = false;      // the first call adopts the count instead of firing on it
     static float here = 0.0f;        // how brightly the pulse stands on this jelly
     static float neighbour = 0.0f;   // the tail of the jelly before us
     const float dt = seconds_since_last_call(last_us);
 
+    if (!primed)
+    {
+        seen_beats = beat_count;
+        primed = true;
+    }
     if (beat_count != seen_beats)
     {
         const int active = (int)(beat_count % (uint32_t)STATIONS);
