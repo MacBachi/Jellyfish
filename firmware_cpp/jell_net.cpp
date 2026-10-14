@@ -29,7 +29,9 @@ extern "C"
 namespace
 {
     constexpr uint32_t COUNTRY = CYW43_COUNTRY_WORLDWIDE;
-    constexpr size_t NET_LINE_MAX = 64;
+    // One line on the wire. STATE and HELLO grow trailing fields over time; the mandatory
+    // fields stay in front, so firmware that still cuts at 63 characters keeps following.
+    constexpr size_t NET_LINE_MAX = 96;
     constexpr int RX_QUEUE_SIZE = 8;
 
     // ---- receive queue: filled by the lwIP callback (IRQ context), drained by poll() ----

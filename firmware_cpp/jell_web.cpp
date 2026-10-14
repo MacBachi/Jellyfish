@@ -18,7 +18,7 @@ extern Canvas canvas; // the frame buffer core 1 draws into, see JellyFloatOS.cp
 namespace
 {
     constexpr size_t STATE_JSON_MAX = 3072; // 16 roster entries and the header fit with room to spare
-    constexpr size_t CMD_MAX = 64;          // same as a network line
+    constexpr size_t CMD_MAX = 64;          // commands are short; network lines may be longer (NET_LINE_MAX)
     constexpr int POST_SLOTS = 4;           // concurrent POSTs; the page sends one at a time
 
     // One command being received. httpd hands us the body in pieces.
