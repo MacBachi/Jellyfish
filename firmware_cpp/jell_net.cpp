@@ -94,6 +94,7 @@ namespace
     bool ssid_seen = false;
     bool state_dirty = false;   // AP: send a STATE soon
     uint32_t last_local_beats = 0;
+    uint64_t next_mic_log_us = 0;               // console: the microphone's calibration and bands, every 30 s
     volatile uint32_t dropped_datagrams = 0;    // receive queue full, counted in the lwIP callback
     uint32_t reported_datagram_drops = 0;
     int join_failures = 0;                      // joins that failed in a row since the last success
@@ -1298,6 +1299,16 @@ void Net::poll()
         current_from_port = copy.from_port;
         handle_line(copy.text, copy.local);
         current_rx_us = 0;
+    }
+
+    // What the microphone hears, for comparing jellies on their consoles: the level and its
+    // calibration (raw counts), the gain in use, and the three bands.
+    if (now >= next_mic_log_us)
+    {
+        next_mic_log_us = now + 30000000ull;
+        log("mic: level %.2f floor %.0f ceil %.0f gain %.2f bass %.2f mid %.2f treble %.2f",
+            g_local_level, g_local_floor, g_local_ceiling, state.sensitivity * g_trim,
+            g_local_bass, g_local_mid, g_local_treble);
     }
 
     // Beats from our own microphone count whenever we are not following an AP (as the AP,
