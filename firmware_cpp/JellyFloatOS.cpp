@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
+#include "hardware/watchdog.h"
 #include <cmath>
 #include <algorithm>
 
@@ -24,6 +25,7 @@ namespace {
 // Shared between the cores, see jell_state.hpp. Core 0 (jell_net) writes, core 1 reads.
 SharedState g_state;
 volatile uint32_t g_local_beat_count = 0;
+volatile uint32_t g_core1_frames = 0;
 volatile float g_local_level = 0.0f;
 // The filter bank, for the apps' virtual jellies: they render the same sound-reactive modes.
 volatile float g_local_bass = 0.0f;
@@ -244,6 +246,7 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         if (render_ident(s, master_us))
         {
             canvas.show();
+            g_core1_frames = g_core1_frames + 1;
             shown = mode; // no crossfade out of the blink
             fading = false;
             mix = 1.0f;
@@ -303,14 +306,22 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
         render_mode(mode, s, audio, time, beat);
         canvas.show(mix);
+        g_core1_frames = g_core1_frames + 1;
     }
 }
 
 
 [[noreturn]] int main()
 {
+    // Why did we start? A watchdog reboot leaves its reason in scratch[0] (see the loop below).
+    const bool watchdog_rebooted = watchdog_enable_caused_reboot();
+    const uint32_t watchdog_reason = watchdog_hw->scratch[0];
+    watchdog_hw->scratch[0] = 0;
+
     stdio_init_all();
     sleep_ms(1000);
+    if (watchdog_rebooted)
+        printf("watchdog reboot, reason 0x%08lx\n", (unsigned long)watchdog_reason);
 
     mic.init(
         pio0,
@@ -372,6 +383,13 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
     bool last_prev = false;
     bool last_next = false;
 
+    // From here on the watchdog runs. Everything slow (radio bring-up, BTstack) is done;
+    // nothing in the loop blocks for seconds. Core 1 must keep rendering for the feed.
+    uint32_t fed_frames = g_core1_frames;
+    uint64_t frames_moved_us = time_us_64();
+    bool core1_stalled = false;
+    watchdog_enable(JellConfig::WATCHDOG_TIMEOUT_MS, true);
+
     while (true)
     {
         const bool prev = !gpio_get(BUTTON_PREV);
@@ -397,6 +415,26 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
         Net::poll();
         FindMy::poll();
+
+        // Feed the watchdog only while core 1 still produces frames. A stalled core 1 is
+        // logged once, then the watchdog is left to bite.
+        const uint32_t frames = g_core1_frames;
+        const uint64_t now_us = time_us_64();
+        if (frames != fed_frames)
+        {
+            fed_frames = frames;
+            frames_moved_us = now_us;
+        }
+        if (now_us - frames_moved_us < (uint64_t)JellConfig::WATCHDOG_CORE1_STALL_MS * 1000)
+        {
+            watchdog_update();
+        }
+        else if (!core1_stalled)
+        {
+            core1_stalled = true;
+            watchdog_hw->scratch[0] = JellConfig::WATCHDOG_REASON_CORE1;
+            printf("core 1 stopped rendering, letting the watchdog restart us\n");
+        }
 
         sleep_ms(LOOP_SLEEP_DURATION_MS);
     }

@@ -187,6 +187,16 @@ public:
     static constexpr int NET_MAX_SUBSCRIBERS = 4;
     static constexpr uint32_t NET_SUB_TIMEOUT_MS = 15000;
     static constexpr uint32_t NET_LEVEL_PERIOD_MS = 100;    // AP -> subscribers: "LEVEL <0..1>" for mic modes
+
+    // --- Robustness ---
+    // The hardware watchdog restarts a jelly whose core 0 (network) or core 1 (LEDs) has
+    // stopped. Core 0 feeds it from the main loop, and only while core 1 keeps producing
+    // frames: a frozen picture with a live network is a hang too.
+    static constexpr uint32_t WATCHDOG_TIMEOUT_MS = 8000;     // longest stall before the reboot
+    static constexpr uint32_t WATCHDOG_CORE1_STALL_MS = 2000; // no new frame for this long: stop feeding
+    static constexpr uint32_t WATCHDOG_REASON_CORE1 = 0xC0DE0001u; // scratch[0] codes, printed at boot
+    static constexpr uint32_t WATCHDOG_REASON_AP_DEAD = 0xC0DE0002u;
+    static constexpr uint32_t WATCHDOG_REASON_FLASH = 0xC0DE0003u;
 };
 
 // Checked here, after the class is complete, because a constexpr member function

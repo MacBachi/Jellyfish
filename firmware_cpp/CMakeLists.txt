@@ -88,6 +88,7 @@ target_link_libraries(JellyFloatOS
         pico_multicore
         hardware_pwm
         hardware_dma
+        hardware_watchdog
         )
 
 # Add the standard include files to the build
