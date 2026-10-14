@@ -139,7 +139,11 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
         break;
 
     case JellConfig::DisplayMode::Relay:
-        effect_relay(canvas, audio, time, s.slot, s.beat_count);
+        effect_relay(canvas, audio, time, s.slot, s.beat_count, 1);
+        break;
+
+    case JellConfig::DisplayMode::Relay_Bar:
+        effect_relay(canvas, audio, time, s.slot, s.beat_count, 4);
         break;
 
     case JellConfig::DisplayMode::Palette:
@@ -325,7 +329,8 @@ void render_mode(JellConfig::DisplayMode mode, const JellState& s, const AudioFr
 
         // Drops and Relay both live off the bloom's shared beat; the AP is the ear.
         const bool wants_beats = mode == JellConfig::DisplayMode::Mic_Drops
-                              || mode == JellConfig::DisplayMode::Relay;
+                              || mode == JellConfig::DisplayMode::Relay
+                              || mode == JellConfig::DisplayMode::Relay_Bar;
         bool beat = false;
         if (wants_beats)
         {

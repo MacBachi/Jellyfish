@@ -6,6 +6,9 @@ entries start where the fork diverged.
 ## Unreleased
 
 ### Added
+- Mode 26, Relay 4/4: the pulse walks from jelly to jelly once per bar instead of on every beat
+  and lingers on each jelly, so the walk is easy to follow. The beat-by-beat Relay is now
+  called Relay 1/4; its number stays 18.
 - Sound sensitivity for the whole bloom (`SENS`, a slider on the web page) and a trim per jelly
   (`TRIM <id> <factor>`, −/+ next to each jelly in the roster), for microphones that hear louder
   or softer than the others. Every jelly announces how loud it hears and its own floor and

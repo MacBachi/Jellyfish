@@ -83,7 +83,9 @@ void effect_voice(Canvas& canvas, const AudioFrame& audio, float time);
 
 // The bloom as one instrument: each beat hands the pulse to the next jelly, in colour-slot
 // order, on the shared beat count. Needs more than one jelly to make sense.
-void effect_relay(Canvas& canvas, const AudioFrame& audio, float time, int slot, uint32_t beat_count);
+// beats_per_step: 1 hands the pulse on with every beat (Relay), 4 with every bar (Relay_Bar).
+void effect_relay(Canvas& canvas, const AudioFrame& audio, float time, int slot, uint32_t beat_count,
+                  int beats_per_step = 1);
 
 // The whole jelly flashes "SOS" in red Morse code, over and over, on the shared clock.
 void effect_sos(Canvas& canvas, float time);

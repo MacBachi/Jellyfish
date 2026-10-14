@@ -511,6 +511,16 @@
         }
       }
     },
+    "Every bar hands the pulse to the next jelly": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jeder Takt gibt den Puls an die nächste Qualle weiter"
+          }
+        }
+      }
+    },
     "Every beat hands the pulse to the next jelly": {
       "localizations": {
         "de": {
@@ -1057,6 +1067,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Staffel"
+          }
+        }
+      }
+    },
+    "Relay 1/4": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Staffel 1/4"
+          }
+        }
+      }
+    },
+    "Relay 4/4": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Staffel 4/4"
           }
         }
       }

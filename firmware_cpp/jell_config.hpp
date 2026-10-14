@@ -38,6 +38,7 @@ public:
         micLevelCheck,
         LEDChannelTest,
         SOS,
+        Relay_Bar,      // Relay one bar at a time: the pulse moves on every fourth beat
 
         Count
     };

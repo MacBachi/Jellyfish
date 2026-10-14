@@ -929,38 +929,42 @@ void effect_voice(Canvas& canvas, const AudioFrame& audio, float time)
     canvas.all_noodles_level((0.10f + 0.7f * held) * depth);
 }
 
-void effect_relay(Canvas& canvas, const AudioFrame& audio, float time, int slot, uint32_t beat_count)
+void effect_relay(Canvas& canvas, const AudioFrame& audio, float time, int slot, uint32_t beat_count,
+                  int beats_per_step)
 {
-    // The bloom as one instrument. Every beat the AP announces hands the pulse to the next
-    // colour slot, so the light walks from jelly to jelly around the room. A jelly on its
-    // own still shows every fourth beat, which reads as a slow pulse.
+    // The bloom as one instrument. Every beat (or every bar, beats_per_step = 4) the AP
+    // announces hands the pulse to the next colour slot, so the light walks from jelly to
+    // jelly around the room. A jelly on its own still shows every fourth step, which reads
+    // as a slow pulse. Per bar the pulse lingers longer, so the walk is easy to follow.
     constexpr int STATIONS = 4;      // how many jellies the pulse walks over before it wraps
-    constexpr float DECAY_TAU_S = 0.55f;
+    const float decay_tau_s = beats_per_step > 1 ? 1.2f : 0.55f;
 
-    static uint64_t last_us = 0;
-    static uint32_t seen_beats = 0;
-    static bool primed = false;      // the first call adopts the count instead of firing on it
-    static float here = 0.0f;        // how brightly the pulse stands on this jelly
-    static float neighbour = 0.0f;   // the tail of the jelly before us
-    const float dt = seconds_since_last_call(last_us);
+    // One set of state per variant, so switching between the two starts clean.
+    struct State { uint64_t last_us = 0; uint32_t seen = 0; bool primed = false; float here = 0, neighbour = 0; };
+    static State states[2];
+    State& st = states[beats_per_step > 1 ? 1 : 0];
+    float& here = st.here;           // how brightly the pulse stands on this jelly
+    float& neighbour = st.neighbour; // the tail of the jelly before us
+    const float dt = seconds_since_last_call(st.last_us);
 
-    if (!primed)
+    const uint32_t step = beat_count / (uint32_t)(beats_per_step < 1 ? 1 : beats_per_step);
+    if (!st.primed)
     {
-        seen_beats = beat_count;
-        primed = true;
+        st.seen = step;              // the first call adopts the count instead of firing on it
+        st.primed = true;
     }
-    if (beat_count != seen_beats)
+    if (step != st.seen)
     {
-        const int active = (int)(beat_count % (uint32_t)STATIONS);
+        const int active = (int)(step % (uint32_t)STATIONS);
         const int mine = slot < 0 ? 0 : slot % STATIONS;
         if (active == mine)
             here = 1.0f;
         else if (((active + 1) % STATIONS) == mine)
             neighbour = 0.6f;        // the pulse is next door: glow a little in anticipation
-        seen_beats = beat_count;
+        st.seen = step;
     }
 
-    const float keep = expf(-dt / DECAY_TAU_S);
+    const float keep = expf(-dt / decay_tau_s);
     here *= keep;
     neighbour *= keep;
 

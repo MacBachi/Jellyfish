@@ -236,7 +236,7 @@ In button order; the number is what `MODE n` takes.
 | 15 | Pulse | breathes on the beat the tempo tracker locked onto, colour from the melody band |
 | 16 | Rise | follows the arc of a track: cool to gold while it builds, a bloom when the bass returns |
 | 17 | Voice | a bright spot travels the ring with the lead line, colour and height from the melody band |
-| 18 | Relay | every beat hands the pulse to the next jelly, in colour-slot order |
+| 18 | Relay 1/4 | every beat hands the pulse to the next jelly, in colour-slot order |
 | 19 | Palette | one colour per jelly |
 | 20 | Palette cycle | same, rotating one colour further every `CYCLE` seconds |
 | 21 | Ambient rainbow | |
@@ -244,6 +244,7 @@ In button order; the number is what `MODE n` takes.
 | 23 | Mic level check | prints levels to the serial console |
 | 24 | LED channel test | red, green, blue, and one noodle at a time |
 | 25 | SOS | the whole jelly flashes SOS in red Morse code, all jellies in step |
+| 26 | Relay 4/4 | like Relay 1/4, but the pulse moves on once per bar (every fourth beat) and lingers, so the walk around the room is easy to follow |
 
 ## The web page
 

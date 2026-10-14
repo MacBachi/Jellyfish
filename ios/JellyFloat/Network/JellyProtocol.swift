@@ -9,6 +9,7 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
     case ambientRainbow, ambientDeepSea
     case micLevelCheck, ledChannelTest
     case sos
+    case relayBar   // appended after the firmware's SOS (mode 26)
 
     var id: Int { rawValue }
 
@@ -22,7 +23,7 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
     var group: Group {
         switch self {
         case .breathe, .glimmer, .aurora, .current, .lantern, .moonlight, .drizzle, .fireflies, .swarm, .whisper, .playlist: return .calm
-        case .micField, .drops, .sundown, .tide, .pulse, .rise, .voice, .relay: return .sound
+        case .micField, .drops, .sundown, .tide, .pulse, .rise, .voice, .relay, .relayBar: return .sound
         case .palette, .paletteCycle: return .colour
         case .ambientRainbow, .ambientDeepSea: return .ambient
         case .micLevelCheck, .ledChannelTest: return .test
@@ -50,7 +51,8 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
         case .pulse: return String(localized: "Pulse")
         case .rise: return String(localized: "Rise")
         case .voice: return String(localized: "Voice")
-        case .relay: return String(localized: "Relay")
+        case .relay: return String(localized: "Relay 1/4")
+        case .relayBar: return String(localized: "Relay 4/4")
         case .palette: return String(localized: "Palette")
         case .paletteCycle: return String(localized: "Palette cycle")
         case .ambientRainbow: return String(localized: "Rainbow")
@@ -82,6 +84,7 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
         case .rise: return String(localized: "Walks from cool to gold as the music builds, and blooms on the drop")
         case .voice: return String(localized: "A bright spot that follows the lead line around the ring")
         case .relay: return String(localized: "Every beat hands the pulse to the next jelly")
+        case .relayBar: return String(localized: "Every bar hands the pulse to the next jelly")
         case .palette: return String(localized: "One colour per jelly")
         case .paletteCycle: return String(localized: "Colours rotate through the bloom")
         case .ambientRainbow: return String(localized: "Every colour, slowly")
@@ -113,7 +116,7 @@ enum JellyMode: Int, CaseIterable, Identifiable, Codable {
         case .pulse: return [195, 330]
         case .rise: return [215, 42]
         case .voice: return [275, 55]
-        case .relay: return [0, 120, 220]
+        case .relay, .relayBar: return [0, 120, 220]
         case .palette: return [0, 60, 180, 270]
         case .paletteCycle: return [30, 120, 220, 310]
         case .ambientRainbow: return [0, 90, 180, 270]

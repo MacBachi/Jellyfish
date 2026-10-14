@@ -141,6 +141,7 @@ final class JellyEngine {
     private var relayNeighbour = 0.0
     private var relaySeenBeats = 0
     private var relayPrimed = false   // the first frame adopts the count instead of firing on it
+    private var relayVariant = 1      // beats per step of the Relay shown last (1 or 4)
     private var fireflyPool = [Spark](repeating: Spark(), count: 6)
     private var whisperEMA = 0.0
     private var testState = 0
@@ -212,7 +213,8 @@ final class JellyEngine {
         case .pulse: pulse(time, audio: input.audio)
         case .rise: riseMode(time, audio: input.audio, dt: dt)
         case .voice: voice(audio: input.audio, dt: dt)
-        case .relay: relay(time, audio: input.audio, dt: dt, slot: input.slot, beatCount: input.beatCount)
+        case .relay: relay(time, audio: input.audio, dt: dt, slot: input.slot, beatCount: input.beatCount, beatsPerStep: 1)
+        case .relayBar: relay(time, audio: input.audio, dt: dt, slot: input.slot, beatCount: input.beatCount, beatsPerStep: 4)
         case .palette: ambient(time, noiseScale: 1, hueBase: paletteHue(slot: input.slot, time: time, cyclePeriod: input.cyclePeriod, cycle: false), hueRange: 20, timeScale: 0.15)
         case .paletteCycle: ambient(time, noiseScale: 1, hueBase: paletteHue(slot: input.slot, time: time, cyclePeriod: input.cyclePeriod, cycle: true), hueRange: 20, timeScale: 0.15)
         case .ambientRainbow: ambient(time, noiseScale: 1, hueBase: 220, hueRange: 360, timeScale: 0.15)
@@ -507,16 +509,18 @@ final class JellyEngine {
     }
 
     // Every beat hands the pulse to the next colour slot, so it walks around the room.
-    private func relay(_ time: Double, audio: AudioLevels, dt: Double, slot: Int, beatCount: Int) {
+    private func relay(_ time: Double, audio: AudioLevels, dt: Double, slot: Int, beatCount: Int, beatsPerStep: Int) {
+        let step = beatCount / max(beatsPerStep, 1)
+        if beatsPerStep != relayVariant { relayVariant = beatsPerStep; relayPrimed = false; relayHere = 0; relayNeighbour = 0 }
         let stations = 4
-        if !relayPrimed { relaySeenBeats = beatCount; relayPrimed = true }
-        if beatCount != relaySeenBeats {
-            let active = ((beatCount % stations) + stations) % stations
+        if !relayPrimed { relaySeenBeats = step; relayPrimed = true }
+        if step != relaySeenBeats {
+            let active = ((step % stations) + stations) % stations
             let mine = ((max(slot, 0) % stations) + stations) % stations
             if active == mine { relayHere = 1 } else if (active + 1) % stations == mine { relayNeighbour = 0.6 }
-            relaySeenBeats = beatCount
+            relaySeenBeats = step
         }
-        let keep = exp(-dt / 0.55)
+        let keep = exp(-dt / (beatsPerStep > 1 ? 1.2 : 0.55)) // per bar the pulse lingers
         relayHere *= keep
         relayNeighbour *= keep
 
