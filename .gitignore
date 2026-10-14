@@ -23,6 +23,7 @@ ios/*.xcodeproj
 ios/Local.xcconfig
 ios/build/
 ios/build-sim/
+ios/build-dev/
 ios/Generated/
 ios/DerivedData/
 
