@@ -40,7 +40,7 @@ private struct JoinPromptForm: View {
                     .buttonStyle(.borderedProminent).tint(Theme.cyan).foregroundStyle(.black)
                 Button { model.connectWithoutJoining() } label: { Text("I'm already on it").frame(maxWidth: .infinity) }
                     .buttonStyle(.bordered).tint(Theme.cyan)
-                Button("Not now") { model.showJoinPrompt = false }.foregroundStyle(Theme.inkDim)
+                Button("Not now") { model.declineJoin() }.foregroundStyle(Theme.inkDim)
                 Button("No jellyfish yet? Try the demo bloom") { settings.demoMode = true; model.showJoinPrompt = false; model.startDemo() }
                     .font(.footnote).foregroundStyle(Theme.inkDim)
             }

@@ -41,6 +41,12 @@ final class AppModel: ObservableObject {
     @Published private(set) var lastHeardAt: Date?
     @Published private(set) var linkStatus = ""
     @Published var showJoinPrompt = false
+    /// The join was cancelled: ask whether to stop joining automatically for a while.
+    @Published var showJoinDeclined = false
+    /// Set by a cancelled join, cleared when the app goes to the background. iOS' own join
+    /// dialog makes the app inactive and active again; without this, cancelling it would
+    /// start the next attempt at once, over and over.
+    private var skipAutoJoinUntilBackground = false
     @Published var joinError: String?
 
     @Published private(set) var engine: JellyEngine
@@ -61,10 +67,11 @@ final class AppModel: ObservableObject {
         case .active:
             if connection.isLive { return }
             if settings.demoMode { startDemo(); return }
-            if settings.joinOnForeground {
-                if settings.askBeforeJoining { showJoinPrompt = true } else { Task { await joinAndConnect() } }
-            }
+            guard settings.joinOnForeground, !settings.autoJoinPaused, !skipAutoJoinUntilBackground,
+                  connection != .joiningWiFi, !showJoinPrompt, !showJoinDeclined else { return }
+            if settings.askBeforeJoining { showJoinPrompt = true } else { Task { await joinAndConnect() } }
         case .background:
+            skipAutoJoinUntilBackground = false
             stop()
         default: break
         }
@@ -78,13 +85,34 @@ final class AppModel: ObservableObject {
         let outcome = await NetworkJoiner.join(ssid: settings.ssid, password: settings.password, joinOnce: !settings.stayConnectedInBackground)
         switch outcome {
         case .joined, .alreadyConnected:
+            settings.autoJoinPausedUntil = nil
             startNetwork()
         case .denied:
             connection = .idle
+            declineJoin()
         case .unavailable(let why), .failed(let why):
             joinError = why
             connection = .failed(why)
         }
+    }
+
+    /// The user said no to joining (our prompt or iOS' dialog): no new attempt until the app
+    /// has been in the background, and the choice to pause or switch off joining automatically.
+    func declineJoin() {
+        showJoinPrompt = false
+        skipAutoJoinUntilBackground = true
+        if settings.joinOnForeground { showJoinDeclined = true }
+    }
+
+    func pauseAutoJoin(hours: Double) {
+        settings.autoJoinPausedUntil = Date().addingTimeInterval(hours * 3600)
+        showJoinDeclined = false
+    }
+
+    func disableAutoJoin() {
+        settings.joinOnForeground = false
+        settings.autoJoinPausedUntil = nil
+        showJoinDeclined = false
     }
 
     /// Skip the Wi-Fi step (already on the network, or joined by hand) and just connect.

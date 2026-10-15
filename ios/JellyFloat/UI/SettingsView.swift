@@ -32,6 +32,14 @@ private struct SettingsForm: View {
 
                 Section {
                     Toggle("Join when the app opens", isOn: $settings.joinOnForeground)
+                        .onChange(of: settings.joinOnForeground) { on in if on { settings.autoJoinPausedUntil = nil } }
+                    if settings.joinOnForeground, settings.autoJoinPaused, let until = settings.autoJoinPausedUntil {
+                        HStack {
+                            Text("Paused until \(until.formatted(date: .omitted, time: .shortened))").foregroundStyle(Theme.inkDim)
+                            Spacer()
+                            Button("Resume") { settings.autoJoinPausedUntil = nil }
+                        }
+                    }
                     Toggle("Ask first", isOn: $settings.askBeforeJoining).disabled(!settings.joinOnForeground)
                     Toggle("Stay on the jelly network in the background", isOn: $settings.stayConnectedInBackground)
                 } header: { Text("Switching") } footer: {

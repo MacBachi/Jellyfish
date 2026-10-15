@@ -811,6 +811,16 @@
         }
       }
     },
+    "Join the jelly network automatically?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatisch mit dem Quallen-Netz verbinden?"
+          }
+        }
+      }
+    },
     "Join the jelly network?": {
       "localizations": {
         "de": {
@@ -981,6 +991,16 @@
         }
       }
     },
+    "Never automatically": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nie automatisch"
+          }
+        }
+      }
+    },
     "Newest firmware": {
       "localizations": {
         "de": {
@@ -1061,6 +1081,16 @@
         }
       }
     },
+    "Not for an hour": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine Stunde lang nicht"
+          }
+        }
+      }
+    },
     "Not now": {
       "localizations": {
         "de": {
@@ -1101,6 +1131,16 @@
         }
       }
     },
+    "Only not now": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur jetzt nicht"
+          }
+        }
+      }
+    },
     "Palette": {
       "localizations": {
         "de": {
@@ -1127,6 +1167,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Passwort"
+          }
+        }
+      }
+    },
+    "Paused until %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausiert bis %@"
           }
         }
       }
@@ -1287,6 +1337,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Startet mit der neuen Firmware …"
+          }
+        }
+      }
+    },
+    "Resume": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fortsetzen"
           }
         }
       }
@@ -1621,6 +1681,16 @@
         }
       }
     },
+    "Try again now": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jetzt nochmal versuchen"
+          }
+        }
+      }
+    },
     "Update to %@": {
       "localizations": {
         "de": {
@@ -1697,6 +1767,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Flüstern"
+          }
+        }
+      }
+    },
+    "You can switch it back on under Settings, Switching.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du kannst es unter Einstellungen, Wechsel wieder einschalten."
           }
         }
       }

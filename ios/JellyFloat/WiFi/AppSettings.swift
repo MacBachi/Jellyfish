@@ -31,6 +31,14 @@ final class AppSettings: ObservableObject {
     }
     /// Join the jelly network whenever the app comes to the foreground. Default on.
     @Published var joinOnForeground: Bool { didSet { defaults.set(joinOnForeground, forKey: "joinOnForeground") } }
+    /// Joining automatically is paused until this moment ("not for an hour"); nil = not paused.
+    @Published var autoJoinPausedUntil: Date? {
+        didSet {
+            if let d = autoJoinPausedUntil { defaults.set(d.timeIntervalSince1970, forKey: "autoJoinPausedUntil") }
+            else { defaults.removeObject(forKey: "autoJoinPausedUntil") }
+        }
+    }
+    var autoJoinPaused: Bool { autoJoinPausedUntil.map { $0 > Date() } ?? false }
     /// Ask before joining. Default on.
     @Published var askBeforeJoining: Bool { didSet { defaults.set(askBeforeJoining, forKey: "askBeforeJoining") } }
     /// Keep the jelly network when the app goes to the background. Default off: iOS then
@@ -56,6 +64,8 @@ final class AppSettings: ObservableObject {
         customPassword = d.bool(forKey: "rememberPassword") ? (Keychain.get(account: "customPassword") ?? "") : ""
         joinOnForeground = d.object(forKey: "joinOnForeground") as? Bool ?? true
         askBeforeJoining = d.object(forKey: "askBeforeJoining") as? Bool ?? true
+        let paused = d.double(forKey: "autoJoinPausedUntil")
+        autoJoinPausedUntil = paused > 0 ? Date(timeIntervalSince1970: paused) : nil
         stayConnectedInBackground = d.bool(forKey: "stayConnectedInBackground")
         #if targetEnvironment(simulator)
         demoMode = d.object(forKey: "demoMode") as? Bool ?? true

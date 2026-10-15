@@ -13,5 +13,13 @@ struct RootView: View {
         .sheet(isPresented: $model.showJoinPrompt) {
             JoinPromptView().presentationDetents([.medium, .large]).presentationDragIndicator(.visible)
         }
+        .confirmationDialog("Join the jelly network automatically?", isPresented: $model.showJoinDeclined, titleVisibility: .visible) {
+            Button("Not for an hour") { model.pauseAutoJoin(hours: 1) }
+            Button("Never automatically", role: .destructive) { model.disableAutoJoin() }
+            Button("Try again now") { model.showJoinDeclined = false; Task { await model.joinAndConnect() } }
+            Button("Only not now", role: .cancel) { model.showJoinDeclined = false }
+        } message: {
+            Text("You can switch it back on under Settings, Switching.")
+        }
     }
 }
