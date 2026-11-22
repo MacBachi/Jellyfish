@@ -8,7 +8,7 @@
 # The jelly must be plugged into the Mac with a data cable; running or in BOOTSEL both work.
 set -eu
 here="$(cd "$(dirname "$0")" && pwd)"
-img="${1:?usage: $0 <JellyFloatOS .uf2 for this jelly's variant>}"
+img="${1:?usage: $0 <JellyFloatOS .uf2 for the variant of this jelly>}"
 pt="$(mktemp -d)/pt.uf2"
 picotool=$(command -v picotool || echo /opt/homebrew/bin/picotool)
 
